@@ -15,6 +15,12 @@ smaller cap only when the receiver actually implements that capacity. The cap
 does not reduce the 720×480 canvas dimensions and does not guarantee a given
 frame rate or image quality.
 
+The optional `--jpeg-retry-quality-drop 10` retries an oversized JPEG once at
+ten quality points lower (never below `--min-quality`). It drops the frame if
+that still exceeds the cap. Retries are disabled by default. A retry costs CPU
+time; the pipeline still discards a frame that is past `--max-age-ms` before
+sending, so a successful retry is not guaranteed to reach the receiver in time.
+
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
 and hardware measurements each item needs.

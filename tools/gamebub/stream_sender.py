@@ -79,7 +79,8 @@ class FeedbackGate:
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
-    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality, max_jpeg_bytes=MAX_FRAME):
+    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality,
+                 max_jpeg_bytes=MAX_FRAME, jpeg_retry_quality_drop=0):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
         @param sock Connected nonblocking datagram socket for the test peer.
@@ -90,6 +91,7 @@ class Session:
         @param quality Initial and maximum JPEG quality.
         @param min_quality Minimum adaptation quality.
         @param max_jpeg_bytes Maximum complete JPEG bytes accepted by the receiver profile.
+        @param jpeg_retry_quality_drop Optional one-time quality reduction on an oversize JPEG.
         """
         if (
             type(fps) is not int
@@ -101,12 +103,15 @@ class Session:
             or not 1 <= min_quality <= quality <= 95
             or type(max_jpeg_bytes) is not int
             or not 1 <= max_jpeg_bytes <= MAX_FRAME
+            or type(jpeg_retry_quality_drop) is not int
+            or not 0 <= jpeg_retry_quality_drop <= 94
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.max_jpeg_bytes = max_jpeg_bytes
+        self.jpeg_retry_quality_drop = jpeg_retry_quality_drop
         self.quality = QualityController(quality, min_quality)
         self.recovery_eligible = False
         self.lock = threading.Lock()
@@ -139,15 +144,33 @@ class Session:
                 self._event("encode_error", quality=quality, error=str(error))
             raise
         if len(jpeg) > self.max_jpeg_bytes:
+            initial_bytes = len(jpeg)
             with self.lock:
                 self.quality.congested()
                 self.recovery_eligible = False
-                self.counts['oversize_dropped'] += 1
-                self._event('oversize_drop', quality=quality, bytes=len(jpeg),
-                            max_jpeg_bytes=self.max_jpeg_bytes)
-            # Never send or truncate an oversized compressed frame. The next
-            # capture can use the reduced quality, subject to its own deadline.
-            raise ValueError('JPEG exceeds configured receiver frame capacity')
+                self.counts['oversize_initial'] += 1
+            retry_quality = max(self.quality.minimum, quality - self.jpeg_retry_quality_drop)
+            if self.jpeg_retry_quality_drop and retry_quality < quality:
+                try:
+                    jpeg = encode_receiver_jpeg(image, retry_quality)
+                except (OverflowError, OSError, ValueError) as error:
+                    with self.lock:
+                        self.counts['jpeg_retry_errors'] += 1
+                        self._event('jpeg_retry_error', quality=retry_quality, error=str(error))
+                    raise
+                with self.lock:
+                    self.counts['jpeg_retries'] += 1
+                    self._event('jpeg_retry', initial_quality=quality, quality=retry_quality,
+                                initial_bytes=initial_bytes, bytes=len(jpeg),
+                                max_jpeg_bytes=self.max_jpeg_bytes)
+                quality = retry_quality
+            if len(jpeg) > self.max_jpeg_bytes:
+                with self.lock:
+                    self.counts['oversize_dropped'] += 1
+                    self._event('oversize_drop', quality=quality, bytes=len(jpeg),
+                                max_jpeg_bytes=self.max_jpeg_bytes)
+                # Never send or truncate an oversized compressed frame.
+                raise ValueError('JPEG exceeds configured receiver frame capacity')
         wire = len(jpeg) + ((len(jpeg) + 1023) // 1024) * VIDEO.size
         with self.lock:
             self.counts["encoded_bytes"] += len(jpeg)
@@ -360,6 +383,7 @@ def run(args, source=None):
         session = Session(
             sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality,
             getattr(args, 'max_jpeg_bytes', MAX_FRAME),
+            getattr(args, 'jpeg_retry_quality_drop', 0),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -368,6 +392,7 @@ def run(args, source=None):
                 source="desktop" if frames is None else "clip_or_test_source",
                 desktop_filter=filter_name if frames is None else None,
                 max_jpeg_bytes=session.max_jpeg_bytes,
+                jpeg_retry_quality_drop=session.jpeg_retry_quality_drop,
             )
         started = time.perf_counter_ns()
         slot = 0
@@ -429,6 +454,8 @@ def main(argv=None):
     parser.add_argument("--min-quality", type=int, default=20)
     parser.add_argument("--max-jpeg-bytes", type=int, default=MAX_FRAME,
                         help="Maximum complete JPEG bytes; e.g. 49152 for the experimental 48 KiB bank")
+    parser.add_argument("--jpeg-retry-quality-drop", type=int, default=0,
+                        help="For an oversize JPEG, retry once at this lower quality; 0 disables retries")
     args = parser.parse_args(argv)
     if (
         not 1 <= args.port <= 65535
@@ -438,6 +465,7 @@ def main(argv=None):
         or not 1 <= args.fps <= 30
         or not 1 <= args.min_quality <= args.quality <= 95
         or not 1 <= args.max_jpeg_bytes <= MAX_FRAME
+        or not 0 <= args.jpeg_retry_quality_drop <= 94
         or any(not math.isfinite(v) or v <= 0 for v in (args.mbps, args.max_age_ms))
     ):
         parser.error("Invalid port, frame count, fps, quality, bitrate or deadline")

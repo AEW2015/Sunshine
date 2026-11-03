@@ -313,6 +313,7 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
         s.quality = QualityController(75, 20, recovery_frames=1)
         s.max_jpeg_bytes = MAX_FRAME
+        s.jpeg_retry_quality_drop = 0
         s.recovery_eligible = True
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
@@ -362,6 +363,7 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(0, 10, 20)
         s.max_jpeg_bytes = MAX_FRAME
+        s.jpeg_retry_quality_drop = 0
         s.quality.congested()
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
         with (
@@ -377,6 +379,7 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20), FeedbackGate(0)
         s.max_jpeg_bytes = 49152
+        s.jpeg_retry_quality_drop = 0
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 10**9, 30, Counter()
         with patch('stream_sender.encode_receiver_jpeg', return_value=b'x' * 49153):
             with self.assertRaisesRegex(ValueError, 'frame capacity'):
@@ -398,6 +401,32 @@ class StreamSenderTests(unittest.TestCase):
         for bad in (0, True, MAX_FRAME + 1):
             with self.assertRaises(ValueError):
                 Session(None, None, 30, 20, 200, 75, 20, bad)
+
+    def test_optional_oversize_retry_is_bounded_and_not_truncated(self):
+        s = Session.__new__(Session)
+        s.lock, s.log = threading.Lock(), MemoryEvents()
+        s.quality, s.gate = QualityController(90, 20), FeedbackGate(0)
+        s.max_jpeg_bytes, s.jpeg_retry_quality_drop = 49152, 10
+        s.recovery_eligible, s.rate, s.fps, s.counts = True, 10**9, 30, Counter()
+        with patch('stream_sender.encode_receiver_jpeg', side_effect=[b'x' * 49153, b'y' * 49152]) as enc:
+            self.assertEqual(s._encode(None), b'y' * 49152)
+        self.assertEqual([call.args[1] for call in enc.call_args_list], [90, 80])
+        self.assertEqual(s.counts['jpeg_retries'], 1)
+        self.assertEqual(s.counts['oversize_dropped'], 0)
+        self.assertEqual(s.quality.value, 85)
+        with patch('stream_sender.encode_receiver_jpeg', side_effect=[b'x' * 49153, b'y' * 49153]) as enc:
+            with self.assertRaisesRegex(ValueError, 'frame capacity'):
+                s._encode(None)
+        self.assertEqual(enc.call_count, 2)
+        self.assertEqual(s.counts['oversize_dropped'], 1)
+        s.quality.value = s.quality.minimum
+        with patch('stream_sender.encode_receiver_jpeg', return_value=b'x' * 49153) as enc:
+            with self.assertRaisesRegex(ValueError, 'frame capacity'):
+                s._encode(None)
+        self.assertEqual(enc.call_count, 1)
+        for bad in (-1, True, 95):
+            with self.assertRaises(ValueError):
+                Session(None, None, 30, 20, 200, 75, 20, 49152, bad)
 
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
