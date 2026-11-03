@@ -6,6 +6,13 @@ receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
 mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+This performance-study work is published on
+[`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
+The matching FPGA/firmware research and [developer handoff](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/dev-handoff-2026-11-03.md)
+are on `AEW2015/moonbub:study/30fps-sim-20261102`. The Windows checkout and
+`gamebub/host` clone instructions later in this document describe an earlier
+host baseline; use the study branch above for these experimental additions.
+
 For the experimental FPGA design with 48 KiB compressed-frame banks, the
 standalone sender can be run with `--max-jpeg-bytes 49152`. It drops a JPEG
 that exceeds the configured limit before sending any packet, records an
