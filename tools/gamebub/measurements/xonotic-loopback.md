@@ -21,6 +21,7 @@ measured. The 300 ms final feedback grace period is included in each duration.
 | Windows GetTickCount64 | 30.344 s | 900 | 899 | 841 (27.72/s) | 1 / 58 | 9.16 Mbps |
 | Windows QueryPerformanceCounter | 30.323 s | 900 | 899 | 863 (28.46/s) | 1 / 36 | 9.45 Mbps |
 | High-resolution clock, one JPEG validation | 30.330 s | 898 | 897 | 875 (28.85/s) | 1 / 22 | 9.62 Mbps |
+| Reproducible reference harness | 30.327 s | 900 | 899 | 880 (29.02/s) | 1 / 19 | 9.68 Mbps |
 
 All reference runs had zero malformed packets, zero unacknowledged completed
 frames, zero dropped log records and JPEG quality 75 throughout. In the first
@@ -41,15 +42,28 @@ software decode. Unmarked external JPEG bytes are still checked before sending.
 Because load and capture samples differ, the run does not establish a causal FPS
 improvement; it does confirm receiver-reference compatibility under this setup.
 
+The fourth run used the checked-in `reference_loopback.py` command below. It
+encoded 899 frames at quality 75, with 880 received and no malformed packets.
+Host completion age was p50 46.93 ms, p95 72.04 ms and max 112.25 ms; sender
+queue age was p50 0.37 ms and p95 19.16 ms. No physical playback is implied.
+
 The source may be downloaded into ignored local artifacts for repeat testing:
 
 ```powershell
 curl.exe -L --fail --output artifacts\media\Xonotic-0-8-2-gameplay.webm 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Xonotic_0-8-2_gameplay.webm'
 Get-FileHash artifacts\media\Xonotic-0-8-2-gameplay.webm -Algorithm SHA256
+git clone --no-checkout https://github.com/AEW2015/moonbub.git C:\ai\moonbub-reference
+py -3.11 -m uv run --locked python reference_loopback.py --reference-repo C:\ai\moonbub-reference --clip artifacts\media\Xonotic-0-8-2-gameplay.webm --log artifacts\xonotic-repeat.jsonl --frames 900 --fps 30 --mbps 20 --quality 75
 ```
+
+Clone into a new path or point `--reference-repo` at an existing clone. The
+harness reads the exact pinned revision through Git and verifies its source
+hash before loading it. It binds only an ephemeral localhost receiver; use a
+fresh log filename. Timings vary with machine load and later code changes.
 
 The two detailed JSONL logs remain in ignored local artifacts, named
 `stream-reference-xonotic-20261102.jsonl` and
 `stream-reference-xonotic-perfclock-20261102.jsonl`; the third run is
-`stream-reference-xonotic-single-validate-20261102.jsonl`. The reference peer is a
+`stream-reference-xonotic-single-validate-20261102.jsonl` and the fourth is
+`xonotic-repro-20261102.jsonl`. The reference peer is a
 host test harness, not a physical receiver.

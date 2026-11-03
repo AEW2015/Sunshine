@@ -70,6 +70,7 @@ py -3.11 -m uv run --locked ruff format --check .
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append make_assets.py --output artifacts/coverage-fixtures'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append msv1.py 127.0.0.1 --jpeg fixtures/receiver-pattern-720x480-420-q65.jpg --deadline-ms 0.001 || test $? -eq 2'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append stream_sender.py --help'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append reference_loopback.py --help'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage report --fail-under=100'
 ```
 
@@ -79,7 +80,8 @@ do not use that run for performance measurements. Regression tests use controlle
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
 `make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
-`stream_sender.py`, `controller.py`, `quality.py`, and `event_log.py`.
+`stream_sender.py`, `controller.py`, `quality.py`, `event_log.py`, and
+`reference_loopback.py`.
 
 `controller.py` tracks the 12-bit feedback snapshots and logs translated
 Windows-style gamepad flags. It rejects old video-frame identities, emits a
