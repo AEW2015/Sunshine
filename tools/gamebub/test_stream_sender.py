@@ -2,6 +2,7 @@
 
 import io
 import json
+import random
 import socket
 import tempfile
 import threading
@@ -262,6 +263,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertFalse(gate.feedback((2, 2), True, 22))
         self.assertEqual(gate.offer((5, 5), 41), (True, True))
         self.assertFalse(gate.feedback((3, 3), True, 42))
+        gate.packet_sent((5, 5), 100, 41)
         self.assertTrue(gate.feedback((5, 5), True, 42))
         self.assertFalse(gate.probing)
         self.assertEqual(gate.offer((6, 6), 43), (True, False))
@@ -280,6 +282,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(gate.probing)
         self.assertFalse(gate.feedback((1, 1), True, 42))
         self.assertEqual(gate.offer((3, 3), 42), (True, True))
+        gate.packet_sent((3, 3), 100, 42)
         self.assertTrue(gate.feedback((3, 3), True, 43))
         self.assertFalse(gate.probing)
 
@@ -321,6 +324,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertFalse(gate.permit_packet((1, 1), 53))
         self.assertFalse(gate.feedback((1, 1), True, 54))
         self.assertEqual(gate.offer((2, 2), 54), (True, True))
+        gate.packet_sent((2, 2), 1000, 54)
         self.assertTrue(gate.feedback((2, 2), True, 55))
 
     def test_probe_ack_is_bounded_even_without_an_intervening_packet_check(self):
@@ -340,7 +344,127 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(late.probing)
         self.assertIsNone(late.probe_key)
         self.assertEqual(late.offer((2, 2), 54), (True, True))
+        late.packet_sent((2, 2), 1000, 54)
         self.assertTrue(late.feedback((2, 2), True, 55))
+
+    def test_matching_probe_ack_requires_a_successfully_sent_datagram(self):
+        """@brief A matching ACK during preflight cannot revive a zero-traffic probe."""
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        self.assertTrue(gate.expire(11))
+        self.assertEqual(gate.offer((1, 1), 11), (True, True))
+        self.assertFalse(gate.feedback((1, 1), True, 12))
+        self.assertTrue(gate.probing)
+        self.assertEqual(gate.last_feedback, 0)
+        gate.packet_sent((1, 1), 100, 13)
+        self.assertTrue(gate.feedback((1, 1), True, 14))
+        self.assertFalse(gate.probing)
+
+    def test_feedback_gate_randomized_production_order_invariants(self):
+        """@brief Stress silence, probe expiry, and wrapping IDs without peer assumptions.
+
+        Events follow Session ordering: offers expire first, packet checks expire before
+        permitting sends, and feedback expires the epoch before matching a response.
+        """
+        wrap = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        for now, frame_id, capture_us in (
+            (1, 0xFFFFFFFE, 10),
+            (2, 0xFFFFFFFF, 11),
+            (3, 0, 12),
+        ):
+            self.assertTrue(wrap.feedback((frame_id, capture_us), True, now))
+            self.assertEqual(wrap.heartbeat_key, (frame_id, capture_us))
+        self.assertTrue(wrap.feedback((0xFFFFFFFE, 10), True, 4))
+        self.assertEqual(wrap.heartbeat_key, (0, 12))
+
+        seeds, events_per_seed = 24, 400
+        for seed in range(seeds):
+            rng = random.Random(seed)
+            gate = FeedbackGate(0, timeout_ns=7, probe_ns=11, max_silence_ns=31)
+            now = 0
+            serial = 0xFFFFFFFC
+            key_serial = 0
+            current_key = (serial, 10_000)
+            stale_probe_keys = []
+            pending = {current_key}
+            transmitted = {current_key}
+            gate.packet_sent(current_key, 100, now)
+            gate.send_finished(current_key, now)
+
+            def expire_epoch(gate, now, pending):
+                """@brief Mirror production expiry handling and pending abandonment."""
+                if gate.expire(now):
+                    pending.clear()
+
+            for event_index in range(events_per_seed):
+                now += rng.randint(0, 8)
+                action = rng.choice(("offer", "packet", "finish", "feedback", "expire", "permit"))
+                if action == "offer":
+                    serial = (serial + 1) & 0xFFFFFFFF
+                    key_serial += 1
+                    key = (serial, 10_000 + key_serial)
+                    accepted, clear_pending = gate.offer(key, now)
+                    if clear_pending:
+                        pending.clear()
+                    if accepted:
+                        current_key = key
+                        pending.add(key)
+                elif action == "packet":
+                    expire_epoch(gate, now, pending)
+                    if gate.permit_packet(current_key, now):
+                        gate.packet_sent(current_key, now + 100, now)
+                        transmitted.add(current_key)
+                    else:
+                        pending.discard(current_key)
+                        if gate.probing:
+                            stale_probe_keys.append(current_key)
+                elif action == "finish":
+                    gate.send_finished(current_key, now)
+                elif action == "expire":
+                    expire_epoch(gate, now, pending)
+                elif action == "permit":
+                    expire_epoch(gate, now, pending)
+                    gate.permit_packet(current_key, now)
+                else:
+                    candidates = [key for key in pending if key in transmitted]
+                    if gate.heartbeat_key is not None:
+                        candidates.append(gate.heartbeat_key)
+                    candidates.extend(stale_probe_keys)
+                    key = rng.choice(candidates) if candidates else current_key
+                    expire_epoch(gate, now, pending)
+                    matched = key in pending and key in transmitted
+                    was_probing = gate.probing
+                    old_probe = gate.probe_key
+                    probe_age = (
+                        None if gate.probe_started_ns is None else now - gate.probe_started_ns
+                    )
+                    accepted = gate.feedback(key, matched, now)
+                    if was_probing:
+                        if not matched or key != old_probe:
+                            self.assertFalse(accepted, (seed, event_index, "stale/unmatched ACK"))
+                        if probe_age is None:
+                            self.assertFalse(accepted, (seed, event_index, "unsent probe ACK"))
+                        if probe_age is not None and probe_age > gate.max_silence_ns:
+                            self.assertFalse(accepted, (seed, event_index, "late probe ACK"))
+                        if accepted:
+                            pending.discard(key)
+                            stale_probe_keys.append(key)
+                    elif accepted and matched:
+                        pending.discard(key)
+
+                expire_epoch(gate, now, pending)
+                if gate.probing and gate.probe_key is not None:
+                    probe_key = gate.probe_key
+                    if not gate.permit_packet(probe_key, now):
+                        stale_probe_keys.append(probe_key)
+                    for stale_key in stale_probe_keys:
+                        if stale_key != gate.probe_key:
+                            self.assertFalse(gate.permit_packet(stale_key, now))
+                if not gate.probing and gate.candidate is None:
+                    self.assertLessEqual(
+                        now,
+                        gate.last_feedback + gate.max_silence_ns,
+                        (seed, event_index, "silence exceeded absolute bound"),
+                    )
 
     def test_inflight_frame_stops_after_absolute_silence_limit(self):
         """@brief Continuous datagrams cannot continue after the fixed silence bound."""
@@ -544,6 +668,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(gate.expire(17))
         self.assertFalse(gate.feedback((0, 90), True, 18))
         self.assertEqual(gate.offer((1, 80), 18), (True, True))
+        gate.packet_sent((1, 80), 100, 18)
         self.assertTrue(gate.feedback((1, 80), True, 19))
         self.assertEqual(gate.heartbeat_key, (1, 80))
 
@@ -874,6 +999,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(gate.probing)
         self.assertEqual(gate.offer((2, 2), 1_011), (True, True))
         self.assertFalse(gate.feedback((1, 1), True, 1_012))
+        gate.packet_sent((2, 2), 10_000, 1_011)
         self.assertTrue(gate.feedback((2, 2), True, 1_012))
 
     def test_initial_feedback_during_send_is_not_overwritten(self):

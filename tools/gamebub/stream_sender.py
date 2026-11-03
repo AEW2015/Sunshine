@@ -180,7 +180,12 @@ class FeedbackGate:
     def feedback(self, key, matched, now_ns):
         """@brief Process a matching ACK or current heartbeat and report liveness."""
         if self.probing:
-            if not matched or key != self.probe_key or not self.permit_packet(key, now_ns):
+            if (
+                not matched
+                or key != self.probe_key
+                or self.probe_started_ns is None
+                or not self.permit_packet(key, now_ns)
+            ):
                 return False
             self.probing = False
             self.probe_key = None
