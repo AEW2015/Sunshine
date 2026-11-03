@@ -135,6 +135,26 @@ py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --clip C:\clips
 py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --desktop --log artifacts\desktop-run.jsonl --frames 300
 ```
 
+### Sequential localhost rate sweep
+
+`rate_sweep.py` runs the same clip and explicit FPS, frame count, JPEG quality,
+minimum quality, and frame deadline through `reference_loopback.run_reference`
+at each listed cap in ascending order. The pinned receiver binds only to
+`127.0.0.1`; this measures its localhost ingress behavior. It makes no claim
+about a display, handheld decode, or network link. The output directory must be
+new, and each stage receives a distinct exclusive log path. `results.jsonl`
+records started, completed, failed, interrupted, and not-run stages. Failures
+are recorded and the next cap runs; Ctrl+C marks the active cap interrupted and
+remaining caps not-run. Logs are retained for review.
+
+Every sweep setting is required. The per-stage and total-frame bounds prevent an
+accidental unbounded run; six-hour runs should use explicit frame counts and
+rates chosen to match the intended duration.
+
+```powershell
+py -3.11 -m uv run --locked python rate_sweep.py --reference-repo C:\ai\moonbub-reference --clip C:\clips\game.mp4 --output-dir artifacts\localhost-sweep-2026-11-02 --rates 1,2,5 --frames 36000 --fps 5 --quality 25 --min-quality 20 --max-age-ms 200
+```
+
 On Windows, `--desktop --desktop-backend ddagrab` opts into the experimental
 FFmpeg Desktop Duplication capture path. It uses the primary output, downloads
 BGRA frames and applies bilinear libswscale scaling; `--desktop-filter` only
