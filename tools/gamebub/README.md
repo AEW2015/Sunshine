@@ -104,6 +104,7 @@ changing Sunshine's dependencies. From `tools\gamebub`:
 py -3.11 -m uv sync --locked
 py -3.11 -m uv run --locked ruff check .
 py -3.11 -m uv run --locked ruff format --check .
+$env:MOONBUB_REFERENCE = 'C:/ai/moonbub-reference'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run -m unittest -v'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append host.py --output artifacts/coverage-entry --frames 1 --link-mbps 1000'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append make_assets.py --output artifacts/coverage-fixtures'
@@ -111,6 +112,8 @@ py -3.11 -m uv run --locked ruff format --check .
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append stream_sender.py --help'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append reference_loopback.py --help'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append quality_budget.py --help'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append analyze_sender_log.py --help'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append rate_sweep.py --help'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage report --fail-under=100'
 ```
 
@@ -121,7 +124,9 @@ clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
 `make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
 `stream_sender.py`, `controller.py`, `quality.py`, `event_log.py`, and
-`reference_loopback.py`, and `quality_budget.py`.
+`reference_loopback.py`, `quality_budget.py`, `analyze_sender_log.py`, and
+`rate_sweep.py`. The pinned MoonBub clone is required for reference integration
+tests; see the reference setup below.
 
 `controller.py` tracks the 12-bit feedback snapshots and logs translated
 Windows-style gamepad flags. It rejects old video-frame identities, emits a
@@ -153,6 +158,11 @@ records started, completed, failed, interrupted, and not-run stages. Failures
 are recorded and the next cap runs; Ctrl+C marks the active cap interrupted and
 remaining caps not-run. Logs are retained for review.
 
+The local reference's feedback drop field is populated from its invalid
+datagram count, not a physical receiver's dropped-frame counter. It does not
+count every incomplete frame abandoned when a newer frame starts. Use the
+sender's partial-send and replacement counts alongside reassembly totals.
+
 A stage is healthy only when the reference reports at least one complete frame
 and sender pipeline, peer, and logging summaries contain no internal errors.
 Zero complete frames and capture, encode, feedback/socket, peer-reply, or log
@@ -168,7 +178,7 @@ accidental unbounded run; six-hour runs should use explicit frame counts and
 rates chosen to match the intended duration.
 
 ```powershell
-py -3.11 -m uv run --locked python rate_sweep.py --reference-repo C:\ai\moonbub-reference --clip C:\clips\game.mp4 --output-dir artifacts\localhost-sweep-2026-11-02 --rates 1,2,5 --frames 36000 --fps 5 --quality 25 --min-quality 20 --max-age-ms 200
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked python rate_sweep.py --reference-repo /c/ai/moonbub-reference --clip /c/clips/game.mp4 --output-dir artifacts/localhost-sweep-2026-11-02 --rates 1,2,5 --frames 36000 --fps 5 --quality 25 --min-quality 20 --max-age-ms 200'
 ```
 
 On Windows, `--desktop --desktop-backend ddagrab` opts into the experimental
