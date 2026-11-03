@@ -37,8 +37,10 @@ or the physical display. See [the receiver study](https://github.com/AEW2015/moo
 
 A separate ESP32-S3 emulator test receives one synthetic JPEG over a virtual
 localhost-only UDP path using the unchanged receiver logic; packets are
-ACK-paced, and its RTL replay is a separate model. Neither test measures live
-capture, sender goodput or game-to-photon latency. See [the emulator study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/esp-emulator-study/README.md).
+ACK-paced. An additional one-frame functional bridge now connects the emulated
+receiver to a Verilator FPGA model and checks all 345,600 output pixels; its
+simulators have no shared clock. Neither test measures live capture, sender
+goodput or game-to-photon latency. See [the emulator study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/esp-emulator-study/README.md).
 
 ## Next host-side checks
 
