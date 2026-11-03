@@ -27,10 +27,11 @@ are not controlled quality or filter comparisons. See [the probe](dxgi-desktop-p
 
 ## Companion receiver simulation update
 
-The Moonbub study has since replayed 90 game-derived JPEG frames through a
-behavioral QSPI-to-display model, at 30.009 presentations per second across
-89 intervals, with a 37.507 ms maximum modeled arrival-to-swap age. This was
-roughly three seconds, used precompressed source footage, and assumed complete
+The Moonbub study has since replayed 300 game-derived JPEG inputs through a
+behavioral QSPI-to-display model, at 29.981 presentations per second across
+299 intervals, with a 37.507 ms maximum modeled arrival-to-swap age. The
+inputs contain 299 distinct images because source resampling repeated one.
+This roughly ten-second run used precompressed footage and assumed complete
 compressed frames were already available at the receiver. It did not measure
 capture or encode on this Windows host, live Sunshine, real Wi-Fi, target CPU,
 or the physical display. See [the receiver study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/gameplay-study/README.md).
