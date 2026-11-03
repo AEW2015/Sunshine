@@ -2,7 +2,9 @@
 
 The Windows work is isolated in `C:\ai\sunshine-gamebub`, branch `gamebub/host`,
 based on upstream `3d6e1d60`. Nothing changes the installed Sunshine service.
-A hosted GitHub fork has not been created yet.
+Hosted branch: https://github.com/AEW2015/Sunshine/tree/gamebub/host.
+The shared protocol draft is published on that branch under
+`tools/gamebub/protocol/0.1.0-draft.md`; it still awaits receiver-agent agreement.
 
 Please review [protocol/0.1.0-draft.md](protocol/0.1.0-draft.md) and return:
 
@@ -16,7 +18,8 @@ Please review [protocol/0.1.0-draft.md](protocol/0.1.0-draft.md) and return:
 4. Suggested packet/control layout and recovery rules so both agents can approve
    an exact version before network transmission is implemented.
 
-Transfer the `tools/gamebub` directory (omit `.venv`, `artifacts`, `.coverage`,
+Read or clone the hosted branch, or transfer the `tools/gamebub` directory
+(omit `.venv`, `artifacts`, `.coverage`,
 and `__pycache__`). These paths are local to the Windows machine; the relay does
 not transfer them and a second machine cannot access them by path alone.
 

@@ -13,6 +13,14 @@ base `3d6e1d60`. The branch belongs to the original local repository through
 and uv. On this machine uv was installed with `py -3.11 -m pip install --user uv`;
 `py -3.11 -m uv` works without changing PATH.
 
+Published fork: https://github.com/AEW2015/Sunshine/tree/gamebub/host.
+For a fresh machine, clone to an unused directory:
+
+```powershell
+git clone --branch gamebub/host --recurse-submodules https://github.com/AEW2015/Sunshine.git C:\ai\sunshine-gamebub-clean
+Set-Location C:\ai\sunshine-gamebub-clean
+```
+
 From the repository root, refresh the repository's own tooling:
 
 ```powershell

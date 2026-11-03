@@ -1,16 +1,17 @@
-﻿{
-    "client_date":  "2026-11-02",
-    "base_commit":  "3d6e1d6008bd4a24906283ab25fcd0becc0a1c07",
-    "host_py_sha256":  "38377b69cec5d3da4f0e1129c286434ed268e2c1aea54b2b8e9173241a286301",
-    "unit_tests":  25,
-    "line_coverage_percent":  100,
-    "branch_coverage_percent":  100,
-    "measured_statements":  330,
-    "measured_branches":  130,
-    "lint":  "ruff check and format check passed",
-    "native_build":  "not run: MSYS2/UCRT64 absent; receiver gate pending",
-    "receiver_playback_verified":  false,
-    "hosted_fork_created":  false,
-    "operating_system":  "Microsoft Windows 10 Pro",
-    "installed_service_state":  "Running"
+{
+  "client_date": "2026-11-02",
+  "base_commit": "3d6e1d6008bd4a24906283ab25fcd0becc0a1c07",
+  "host_py_sha256": "38377b69cec5d3da4f0e1129c286434ed268e2c1aea54b2b8e9173241a286301",
+  "unit_tests": 25,
+  "line_coverage_percent": 100,
+  "branch_coverage_percent": 100,
+  "measured_statements": 330,
+  "measured_branches": 130,
+  "lint": "ruff check and format check passed",
+  "native_build": "not run: MSYS2/UCRT64 absent; receiver gate pending",
+  "receiver_playback_verified": false,
+  "hosted_fork_created": true,
+  "operating_system": "Microsoft Windows 10 Pro",
+  "installed_service_state": "Running",
+  "hosted_branch": "https://github.com/AEW2015/Sunshine/tree/gamebub/host"
 }
