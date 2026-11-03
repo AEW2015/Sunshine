@@ -40,3 +40,8 @@ cursor visibility, display mode changes, sleep/resume and multi-GPU selection.
 Check both throughput and frame age, distinguish new frames from repeats, and
 measure the full path rather than only a `grab()` call. HDR and protected
 content need explicit behavior rather than silent color or black-frame claims.
+
+An exploratory third-party DXcam test and static CPU scaling comparison are
+recorded in [dxgi-desktop-probe.md](measurements/dxgi-desktop-probe.md). They
+are not benchmarks of Sunshine's capture code, and the third-party test printed
+a COM cleanup access-violation warning in one run.

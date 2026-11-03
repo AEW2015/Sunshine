@@ -336,6 +336,13 @@ def run(args, source=None):
         session = Session(
             sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality
         )
+        filter_name = getattr(args, "desktop_filter", "bilinear")
+        with session.lock:
+            session._event(
+                "capture_config",
+                source="desktop" if frames is None else "clip_or_test_source",
+                desktop_filter=filter_name if frames is None else None,
+            )
         started = time.perf_counter_ns()
         slot = 0
         try:
@@ -352,7 +359,7 @@ def run(args, source=None):
                     image = ImageGrab.grab()
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
-                prepared = canvas(image, Image.Resampling.BILINEAR)
+                prepared = canvas(image, Image.Resampling[filter_name.upper()])
                 frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
                 session.pipeline.submit(Frame(frame_id, now, stamp_us, prepared))
                 with session.lock:
@@ -374,6 +381,12 @@ def main(argv=None):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--clip", type=Path)
     group.add_argument("--desktop", action="store_true")
+    parser.add_argument(
+        "--desktop-filter",
+        choices=("bilinear", "box"),
+        default="bilinear",
+        help="Experimental desktop scaling filter; clip video uses libswscale bilinear",
+    )
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--port", type=int, default=5533)
     parser.add_argument(

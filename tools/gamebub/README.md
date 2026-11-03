@@ -105,6 +105,10 @@ py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --clip C:\clips
 py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --desktop --log artifacts\desktop-run.jsonl --frames 300
 ```
 
+The optional `--desktop-filter box` uses a faster resize filter in one static
+desktop microbenchmark, but its visual quality on moving games is unverified.
+The default stays bilinear; see [DXGI probe results](measurements/dxgi-desktop-probe.md).
+
 Use a new log filename each run. The default is 30 fps, 20 Mbps of MSV1
 datagrams, 200 ms maximum host age and adaptive JPEG quality 20..75. Lower
 network-layer overhead is not included. It captures or reads frames, scales to

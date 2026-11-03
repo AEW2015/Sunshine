@@ -62,7 +62,11 @@ class ImageTests(unittest.TestCase):
         """@brief Desktop filters preserve letterbox geometry while changing interpolation."""
         source = host.pattern(2)
         lanczos = host.canvas(source)
-        for filter_type in (Image.Resampling.BILINEAR, Image.Resampling.BICUBIC):
+        for filter_type in (
+            Image.Resampling.BILINEAR,
+            Image.Resampling.BICUBIC,
+            Image.Resampling.BOX,
+        ):
             with self.subTest(filter_type=filter_type):
                 scaled = host.canvas(source, filter_type)
                 self.assertEqual(scaled.size, (720, 480))

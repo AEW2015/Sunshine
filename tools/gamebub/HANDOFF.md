@@ -61,6 +61,8 @@ are no physical receiver results yet. The host has a moving-game localhost run
 using [Xonotic footage](measurements/xonotic-loopback.md); Big Buck Bunny is a
 separate animation baseline. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.
+A [ten-minute localhost soak](measurements/xonotic-soak-10m.md) and packet-loss,
+reordering, delayed-feedback and restart tests are also available.
 The transport-independent `realtime.py` provides bounded media buffers and
 button-state bookkeeping only; it does not capture audio or inject input.
 `seed_pairing.py` prepares an isolated Sunshine certificate state file; the

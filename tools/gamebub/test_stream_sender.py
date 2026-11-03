@@ -16,6 +16,7 @@ from unittest.mock import Mock, patch
 from PIL import Image
 
 from controller import ControllerTracker
+from host import canvas as reference_canvas
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
 from quality import QualityController
@@ -496,11 +497,19 @@ class StreamSenderTests(unittest.TestCase):
                     empty = run(args)
                 self.assertEqual(empty["pipeline"]["counts"], {})
                 args.log, args.clip = Path(directory) / "desktop.jsonl", None
-                with patch(
-                    "stream_sender.ImageGrab.grab", return_value=Image.new("RGB", (720, 480))
+                args.desktop_filter = "box"
+                with (
+                    patch(
+                        "stream_sender.ImageGrab.grab", return_value=Image.new("RGB", (720, 480))
+                    ),
+                    patch("stream_sender.canvas", wraps=reference_canvas) as resize,
                 ):
                     desktop = run(args)
                 self.assertEqual(desktop["pipeline"]["counts"]["submitted"], 1)
+                self.assertEqual(desktop["pipeline"]["counts"]["encoded"], 1)
+                self.assertEqual(resize.call_args.args[1], Image.Resampling.BOX)
+                config = json.loads(args.log.read_text().splitlines()[0])
+                self.assertEqual((config["source"], config["desktop_filter"]), ("desktop", "box"))
 
 
 if __name__ == "__main__":
