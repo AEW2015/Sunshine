@@ -4,10 +4,10 @@ The Windows work is isolated in `C:\ai\sunshine-gamebub`, branch `gamebub/host`,
 based on upstream `3d6e1d60`. Nothing changes the installed Sunshine service.
 Hosted branch: https://github.com/AEW2015/Sunshine/tree/gamebub/host.
 The current shared protocol draft is
-[`protocol/0.2.0-draft.md`](protocol/0.2.0-draft.md); it still awaits
+[`protocol/0.3.0-draft.md`](protocol/0.3.0-draft.md); it still awaits
 receiver-agent agreement. It defines one dedicated video/audio/button mode.
 
-Please review [protocol/0.2.0-draft.md](protocol/0.2.0-draft.md) and return:
+Please review [protocol/0.3.0-draft.md](protocol/0.3.0-draft.md) and return:
 
 1. FPGA decoder name/HDL revision, JPEG vs H.264 decision, and an accepted encoded
    sample. For JPEG: sampling, DHT/DQT, restart intervals, permitted markers,
@@ -19,7 +19,8 @@ Please review [protocol/0.2.0-draft.md](protocol/0.2.0-draft.md) and return:
 4. Suggested packet/control layout and recovery rules so both agents can approve
    an exact version before network transmission is implemented.
 5. Audio output hardware, decoder, sample rate/channels, buffer capacity,
-   and acceptable block duration; button names, state update rate and mapping.
+   and acceptable block duration. Confirm the documented 12-button mapping,
+   how the streaming core exposes those states, and their update rate.
 
 Read or clone the hosted branch, or transfer the `tools/gamebub` directory
 (omit `.venv`, `artifacts`, `.coverage`,

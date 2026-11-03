@@ -3,7 +3,7 @@
 import concurrent.futures
 import unittest
 
-from realtime import AudioBlock, ButtonState, MediaBuffers, VideoFrame
+from realtime import AudioBlock, ButtonState, MediaBuffers, VideoFrame, gamepad_buttons
 
 
 class MediaBufferTests(unittest.TestCase):
@@ -131,16 +131,44 @@ class ButtonStateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             buttons.apply(0, ["unknown"])
 
+    def test_gamebub_gameplay_buttons_map_to_sunshine_flags(self):
+        """@brief Each physical button maps to the intended digital gamepad flag."""
+        cases = {
+            "up": 0x0001,
+            "down": 0x0002,
+            "left": 0x0004,
+            "right": 0x0008,
+            "start": 0x0010,
+            "select": 0x0020,
+            "l": 0x0100,
+            "r": 0x0200,
+            "a": 0x1000,
+            "b": 0x2000,
+            "x": 0x4000,
+            "y": 0x8000,
+        }
+        for name, flag in cases.items():
+            with self.subTest(name=name):
+                self.assertEqual(gamepad_buttons([name]), flag)
+        self.assertEqual(gamepad_buttons(cases), 0xF33F)
+        self.assertEqual(gamepad_buttons(["a", "a"]), 0x1000)
+        self.assertEqual(gamepad_buttons([]), 0)
+        for name in ("home", "power", "volume_up", "A"):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                gamepad_buttons([name])
+
     def test_snapshots_reordering_and_disconnect_release(self):
         """@brief Ignore old states, emit deltas, and release all held buttons on disconnect."""
-        buttons = ButtonState(["A", "B"])
-        self.assertEqual(buttons.apply(0, ["A"]), (frozenset(["A"]), frozenset()))
-        self.assertEqual(buttons.apply(2, ["B"]), (frozenset(["B"]), frozenset(["A"])))
-        self.assertEqual(buttons.apply(1, ["A"]), (frozenset(), frozenset()))
-        self.assertEqual(buttons.apply(2, ["A"]), (frozenset(), frozenset()))
-        self.assertEqual(buttons.disconnect(), frozenset(["B"]))
+        buttons = ButtonState(["a", "b"])
+        self.assertEqual(buttons.apply(0, ["a"]), (frozenset(["a"]), frozenset()))
+        self.assertEqual(buttons.apply(2, ["b"]), (frozenset(["b"]), frozenset(["a"])))
+        self.assertEqual(gamepad_buttons(buttons.pressed), 0x2000)
+        self.assertEqual(buttons.apply(1, ["a"]), (frozenset(), frozenset()))
+        self.assertEqual(buttons.apply(2, ["a"]), (frozenset(), frozenset()))
+        self.assertEqual(buttons.disconnect(), frozenset(["b"]))
+        self.assertEqual(gamepad_buttons(buttons.pressed), 0)
         self.assertEqual(buttons.disconnect(), frozenset())
-        self.assertEqual(buttons.apply(0, ["A", "B"]), (frozenset(["A", "B"]), frozenset()))
+        self.assertEqual(buttons.apply(0, ["a", "b"]), (frozenset(["a", "b"]), frozenset()))
 
 
 if __name__ == "__main__":

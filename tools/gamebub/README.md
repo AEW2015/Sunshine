@@ -8,12 +8,13 @@ The installed Sunshine service and original checkout remain unchanged.
 The target product is one dedicated 720×480/30 fps video, audio and simple
 button mode, rather than a general Moonlight feature set. Its exact codec and
 audio profile await the receiver agent; see the
-[current protocol draft](protocol/0.2.0-draft.md). The wider options below are
+[current protocol draft](protocol/0.3.0-draft.md). The wider options below are
 laboratory controls for experiments, not proposed end-user modes.
 
-`realtime.py` contains a latest-video slot, bounded audio queue and logical
-button-state tracker. Audio drops signal discontinuity; disconnect returns held
-buttons for release. These components are tested independently and are not yet
+`realtime.py` contains a latest-video slot, bounded audio queue, logical
+button-state tracker and a 12-button Sunshine gamepad flag mapping. Audio drops
+signal discontinuity; disconnect returns held buttons for release. These
+components are tested independently and are not yet
 connected to a capture device, network transport, or Windows input injection.
 They use host monotonic timestamps. Stop old producers and gate old sessions before
 resetting the objects; they do not themselves identify or authenticate a session.
@@ -158,7 +159,7 @@ absent. The installed `SunshineService` was running from `C:\Program Files\Sunsh
 No native Sunshine build, installation, service restart, or Moonlight session
 was attempted. `src/` and stock protocol behavior are unchanged.
 
-After the standalone receiver gate in the [protocol draft](protocol/0.2.0-draft.md)
+After the standalone receiver gate in the [protocol draft](protocol/0.3.0-draft.md)
 passes, use a separately built candidate with its own configuration/state and
 ports. `src/nvhttp.cpp` advertises stock codec capabilities, `src/rtsp.cpp` parses
 video format/launch configuration, and `src/video.cpp`/`src/stream.cpp` connect

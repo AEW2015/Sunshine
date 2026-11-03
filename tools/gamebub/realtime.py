@@ -9,6 +9,36 @@ from dataclasses import dataclass, replace
 from threading import Lock
 from time import monotonic_ns
 
+# Logical Game Bub button names mapped to Sunshine's platform gamepad flags.
+# This is an internal adapter mapping, not an ESP32 packet format.
+GAMEBUB_GAMEPAD_FLAGS = {
+    "up": 0x0001,
+    "down": 0x0002,
+    "left": 0x0004,
+    "right": 0x0008,
+    "start": 0x0010,
+    "select": 0x0020,
+    "l": 0x0100,
+    "r": 0x0200,
+    "a": 0x1000,
+    "b": 0x2000,
+    "x": 0x4000,
+    "y": 0x8000,
+}
+
+
+def gamepad_buttons(pressed):
+    """@brief Translate a complete Game Bub snapshot to Sunshine gamepad flags.
+
+    @param pressed Iterable of the twelve lowercase Game Bub gameplay button names.
+    @return Sunshine's internal digital gamepad button mask; empty means neutral.
+    @throws ValueError If any name is not a Game Bub gameplay button.
+    """
+    state = frozenset(pressed)
+    if not state <= GAMEBUB_GAMEPAD_FLAGS.keys():
+        raise ValueError("Unknown Game Bub gameplay button")
+    return sum(GAMEBUB_GAMEPAD_FLAGS[name] for name in state)
+
 
 @dataclass(frozen=True)
 class VideoFrame:
