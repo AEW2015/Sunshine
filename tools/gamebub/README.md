@@ -18,6 +18,10 @@ The proposed custom-codec research track is described in the
 Tile/RLE and DPCM remain candidates to benchmark against the current JPEG
 path; this document does not enable a new Sunshine codec mode.
 
+Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
+defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
+gates that must precede any receiver-buffer or frame-cap change.
+
 For the experimental FPGA design with 48 KiB compressed-frame banks, the
 standalone sender can be run with `--max-jpeg-bytes 49152`. It drops a JPEG
 that exceeds the configured limit before sending any packet, records an
