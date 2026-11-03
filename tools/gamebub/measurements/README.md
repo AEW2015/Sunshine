@@ -102,6 +102,14 @@ resizing still take too long for the 30 fps target on this machine. The next
 practical work is a faster capture path and a bounded capture/encode/transmit
 pipeline once real transport and feedback are agreed.
 
+The initial transport-independent media/button core was measured separately on
+the same CPU, using Python 3.11.9, 100,000 single-thread iterations, and reused
+immutable payload objects. Mean time per video put/take pair was 1.37 µs, per
+audio put/take pair 3.99 µs, and per button snapshot 1.02 µs. The test used a
+72,000-byte video payload and 1,024-byte audio payload; it did not copy payloads,
+capture audio, encode video, process Wi-Fi, or exercise concurrent contention.
+These timings do not establish streaming or input latency.
+
 ## Remaining acceptance evidence
 
 - Decoder-approved capabilities, a mutually versioned wire specification, and

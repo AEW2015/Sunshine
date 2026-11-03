@@ -5,6 +5,19 @@ agent. It is **not a network sender or an integrated Sunshine JPEG mode**.
 There is no socket code, selected packet format, or receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+The target product is one dedicated 720×480/30 fps video, audio and simple
+button mode, rather than a general Moonlight feature set. Its exact codec and
+audio profile await the receiver agent; see the
+[current protocol draft](protocol/0.2.0-draft.md). The wider options below are
+laboratory controls for experiments, not proposed end-user modes.
+
+`realtime.py` contains a latest-video slot, bounded audio queue and logical
+button-state tracker. Audio drops signal discontinuity; disconnect returns held
+buttons for release. These components are tested independently and are not yet
+connected to a capture device, network transport, or Windows input injection.
+They use host monotonic timestamps. Stop old producers and gate old sessions before
+resetting the objects; they do not themselves identify or authenticate a session.
+
 ## Windows setup and verification
 
 Development checkout: `C:\ai\sunshine-gamebub`, branch `gamebub/host`, upstream
@@ -46,7 +59,7 @@ The appended coverage commands exercise CLI entry points under instrumentation;
 do not use that run for performance measurements. Regression tests use controlled
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
-and `make_assets.py`.
+`make_assets.py`, and `realtime.py`.
 
 ## Capture and experiments
 
@@ -145,7 +158,7 @@ absent. The installed `SunshineService` was running from `C:\Program Files\Sunsh
 No native Sunshine build, installation, service restart, or Moonlight session
 was attempted. `src/` and stock protocol behavior are unchanged.
 
-After the standalone receiver gate in the [protocol draft](protocol/0.1.0-draft.md)
+After the standalone receiver gate in the [protocol draft](protocol/0.2.0-draft.md)
 passes, use a separately built candidate with its own configuration/state and
 ports. `src/nvhttp.cpp` advertises stock codec capabilities, `src/rtsp.cpp` parses
 video format/launch configuration, and `src/video.cpp`/`src/stream.cpp` connect

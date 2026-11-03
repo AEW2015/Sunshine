@@ -3,10 +3,11 @@
 The Windows work is isolated in `C:\ai\sunshine-gamebub`, branch `gamebub/host`,
 based on upstream `3d6e1d60`. Nothing changes the installed Sunshine service.
 Hosted branch: https://github.com/AEW2015/Sunshine/tree/gamebub/host.
-The shared protocol draft is published on that branch under
-`tools/gamebub/protocol/0.1.0-draft.md`; it still awaits receiver-agent agreement.
+The current shared protocol draft is
+[`protocol/0.2.0-draft.md`](protocol/0.2.0-draft.md); it still awaits
+receiver-agent agreement. It defines one dedicated video/audio/button mode.
 
-Please review [protocol/0.1.0-draft.md](protocol/0.1.0-draft.md) and return:
+Please review [protocol/0.2.0-draft.md](protocol/0.2.0-draft.md) and return:
 
 1. FPGA decoder name/HDL revision, JPEG vs H.264 decision, and an accepted encoded
    sample. For JPEG: sampling, DHT/DQT, restart intervals, permitted markers,
@@ -17,6 +18,8 @@ Please review [protocol/0.1.0-draft.md](protocol/0.1.0-draft.md) and return:
    failure reason, frame IDs, geometry/colors, and decode/display timings.
 4. Suggested packet/control layout and recovery rules so both agents can approve
    an exact version before network transmission is implemented.
+5. Audio output hardware, decoder, sample rate/channels, buffer capacity,
+   and acceptable block duration; button names, state update rate and mapping.
 
 Read or clone the hosted branch, or transfer the `tools/gamebub` directory
 (omit `.venv`, `artifacts`, `.coverage`,
@@ -34,6 +37,8 @@ No network sender or Sunshine JPEG mode is enabled. There are no receiver or
 moving-game-footage results yet. Big Buck Bunny is an animation baseline, not
 game footage. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.
+The transport-independent `realtime.py` provides bounded media buffers and
+button-state bookkeeping only; it does not capture audio or inject input.
 
 After agreement: implement exact framing/feedback, pass receiver tests, then add
 the opt-in Sunshine extension. Preserve pairing, application launch, input, and
