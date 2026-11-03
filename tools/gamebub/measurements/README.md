@@ -53,6 +53,9 @@ modeled completions. A later sender needs bounded overlap and real receiver
 credits. The desktop source also requires a faster capture path, such as the
 existing Sunshine DXGI path, before its latency is suitable.
 
+A subsequent fixed-quality, host-only overlap experiment is described in
+[pipeline-overlap.md](pipeline-overlap.md); it is not a network or playback test.
+
 An additional 30.04-second clip run using explicit bilinear video scaling is
 recorded in [bbb-bilinear.json](bbb-bilinear.json). It encoded 738 frames at
 24.57 fps and completed 732 at 24.37 fps in the same zero-overhead 20 Mbps

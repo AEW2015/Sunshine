@@ -23,6 +23,14 @@ connected to a capture device, network transport, or Windows input injection.
 They use host monotonic timestamps. Stop old producers and gate old sessions before
 resetting the objects; they do not themselves identify or authenticate a session.
 
+`pipeline.py` is an experimental two-worker primitive: it copies a prepared
+720x480 RGB capture, keeps at most one waiting raw frame and one waiting JPEG,
+and checks capture age before encoding and sending. Its caller must pace capture,
+provide receiver-conforming encoding and a deadline-aware sender, handle feedback,
+and ensure callbacks return promptly: `close()` drains and joins both workers but
+cannot interrupt a blocked callback. It does not itself send network traffic,
+adapt quality, connect to Sunshine, or establish receiver playback.
+
 ## Windows setup and verification
 
 Development checkout: `C:\ai\sunshine-gamebub`, branch `gamebub/host`, upstream
@@ -65,7 +73,7 @@ The appended coverage commands exercise CLI entry points under instrumentation;
 do not use that run for performance measurements. Regression tests use controlled
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
-`make_assets.py`, `realtime.py`, `seed_pairing.py`, and `msv1.py`.
+`make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, and `pipeline.py`.
 
 ## Send a single receiver test frame
 

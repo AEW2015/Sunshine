@@ -1,0 +1,221 @@
+"""@brief Deterministic tests for the bounded overlapping video pipeline."""
+
+import threading
+import unittest
+
+from PIL import Image
+
+from host import Profile, encode
+from msv1 import VIDEO, frame_datagrams, validate_receiver_jpeg
+from pipeline import Frame, VideoPipeline
+
+
+class PipelineTests(unittest.TestCase):
+    """@brief Verify queue bounds, worker overlap, expiry, and lifecycle."""
+
+    def setUp(self):
+        """@brief Use a fixed clock and a small solid RGB canvas."""
+        self.now = 100
+        self.image = Image.new("RGB", (720, 480), "red")
+
+    def frame(self, number, captured=100):
+        """@brief Construct a timestamped input for the pipeline."""
+        return Frame(number, captured, number, self.image)
+
+    def test_encoder_overlaps_blocked_sender_and_keeps_latest_encoded(self):
+        """@brief A blocked sender does not prevent encoding or create an unbounded queue."""
+        entered, release, third_encoded = threading.Event(), threading.Event(), threading.Event()
+        sent, encoded = [], []
+
+        def encode(image):
+            encoded.append(image.getpixel((0, 0))[0])
+            if len(encoded) == 3:
+                third_encoded.set()
+            return bytes([len(encoded)])
+
+        def send(frame, payload):
+            sent.append((frame.frame_id, payload))
+            if frame.frame_id == 1:
+                entered.set()
+                self.assertTrue(release.wait(5))
+            return True
+
+        pipeline = VideoPipeline(encode, send, 100, 10, lambda: self.now)
+        try:
+            pipeline.submit(self.frame(1))
+            self.assertTrue(entered.wait(5))
+            pipeline.submit(self.frame(2))
+            # Wait until frame 2 has been encoded before submitting frame 3.
+            with pipeline.condition:
+                self.assertTrue(
+                    pipeline.condition.wait_for(lambda: pipeline.encoded is not None, 5)
+                )
+            pipeline.submit(self.frame(3))
+            self.assertTrue(third_encoded.wait(5))
+            with pipeline.condition:
+                self.assertTrue(
+                    pipeline.condition.wait_for(lambda: pipeline.counts["encoded_replaced"] == 1, 5)
+                )
+        finally:
+            release.set()
+            pipeline.close()
+        self.assertEqual(sent, [(1, b"\x01"), (3, b"\x03")])
+        self.assertEqual(pipeline.snapshot()["counts"]["encoded_replaced"], 1)
+
+    def test_latest_raw_and_owned_image(self):
+        """@brief A blocked encoder retains only the newest copied waiting canvas."""
+        entered, release = threading.Event(), threading.Event()
+        sent = []
+
+        def encode(image):
+            if not entered.is_set():
+                entered.set()
+                self.assertTrue(release.wait(5))
+            return bytes([image.getpixel((0, 0))[0]])
+
+        pipeline = VideoPipeline(
+            encode, lambda f, b: sent.append((f.frame_id, b)) or True, 100, 10, lambda: self.now
+        )
+        try:
+            pipeline.submit(self.frame(1))
+            self.assertTrue(entered.wait(5))
+            pipeline.submit(self.frame(2))
+            pipeline.submit(self.frame(3))
+            self.image.putpixel((0, 0), (0, 0, 0))
+            self.assertEqual(pipeline.snapshot()["raw_waiting"], 1)
+        finally:
+            release.set()
+            pipeline.close()
+        self.assertEqual(sent[-1], (3, b"\xff"))
+        self.assertEqual(pipeline.snapshot()["counts"]["raw_replaced"], 1)
+
+    def test_stale_before_encoding_and_after_encoding(self):
+        """@brief Expired work is dropped before either costly step."""
+        calls = []
+        pipeline = VideoPipeline(
+            lambda image: calls.append("encode") or b"x",
+            lambda f, b: calls.append("send") or True,
+            10,
+            10,
+            lambda: self.now,
+        )
+        pipeline.submit(self.frame(1, 89))
+        pipeline.close()
+        self.assertEqual(calls, [])
+        self.assertEqual(pipeline.snapshot()["counts"]["stale_before_encode"], 1)
+
+        def slow_encode(image):
+            self.now = 111
+            return b"x"
+
+        self.now = 100
+        pipeline = VideoPipeline(
+            slow_encode, lambda f, b: calls.append("send") or True, 10, 10, lambda: self.now
+        )
+        pipeline.submit(self.frame(2))
+        pipeline.close()
+        self.assertEqual(calls, [])
+        self.assertEqual(pipeline.snapshot()["counts"]["stale_before_send"], 1)
+
+    def test_invalid_input_failures_and_closed_submission(self):
+        """@brief Reject invalid input and bound failures without killing worker threads."""
+        for limits in ((0, 1), (1, True)):
+            with self.assertRaises(ValueError):
+                VideoPipeline(None, None, *limits)
+        outcomes = iter((b"", b"too large", b"ok", b"ok"))
+        sends = iter((False, True))
+        p = VideoPipeline(
+            lambda image: next(outcomes), lambda f, b: next(sends), 100, 2, lambda: self.now
+        )
+        for bad in (
+            None,
+            Frame(-1, 100, 1, self.image),
+            Frame(0, 101, 1, self.image),
+            Frame(0, 100, 1, Image.new("L", (720, 480))),
+        ):
+            with self.assertRaises(ValueError):
+                p.submit(bad)
+        # Synchronize after each attempt to avoid intentional latest-slot replacement.
+        for number in range(4):
+            p.submit(self.frame(number))
+            with p.condition:
+                self.assertTrue(
+                    p.condition.wait_for(
+                        lambda number=number: (
+                            sum(p.counts[k] for k in ("encode_failures", "sent", "send_failures"))
+                            == number + 1
+                        ),
+                        5,
+                    )
+                )
+        p.close()
+        self.assertFalse(p.submit(self.frame(5)))
+        self.assertEqual(p.snapshot()["counts"]["encode_failures"], 2)
+        self.assertEqual(p.snapshot()["counts"]["send_failures"], 1)
+        self.assertEqual(p.snapshot()["counts"]["sent"], 1)
+
+    def test_real_jpeg_through_msv1_packetization(self):
+        """@brief The overlapped pipeline can hand actual conforming JPEG to MSV1."""
+        packets = []
+        p = VideoPipeline(
+            lambda image: encode(image, 75, Profile())[0],
+            lambda frame, jpeg: (
+                packets.extend(frame_datagrams(jpeg, frame.frame_id, frame.capture_us)) or True
+            ),
+            100,
+            262144,
+            lambda: self.now,
+        )
+        p.submit(self.frame(7))
+        p.close()
+        self.assertEqual(p.snapshot()["counts"]["sent"], 1)
+        self.assertGreater(len(packets), 1)
+        self.assertTrue(all(VIDEO.unpack(packet[: VIDEO.size])[4] == 7 for packet in packets))
+        jpeg = b"".join(packet[VIDEO.size :] for packet in packets)
+        self.assertEqual(validate_receiver_jpeg(jpeg)["subsampling"], "4:2:0")
+
+    def test_callback_exceptions_and_older_capture(self):
+        """@brief Callback errors are counted, and capture timestamps cannot regress."""
+        results = iter((ValueError("encode"), b"ok", b"ok"))
+        sends = iter((OSError("send"), True))
+
+        def encode_callback(image):
+            value = next(results)
+            if isinstance(value, Exception):
+                raise value
+            return value
+
+        def send_callback(frame, payload):
+            value = next(sends)
+            if isinstance(value, Exception):
+                raise value
+            return value
+
+        p = VideoPipeline(encode_callback, send_callback, 100, 2, lambda: self.now)
+        try:
+            for number in range(3):
+                self.assertTrue(p.submit(self.frame(number)))
+                with p.condition:
+                    self.assertTrue(
+                        p.condition.wait_for(
+                            lambda number=number: (
+                                sum(
+                                    p.counts[k]
+                                    for k in ("encode_failures", "sent", "send_failures")
+                                )
+                                == number + 1
+                            ),
+                            5,
+                        )
+                    )
+            self.assertFalse(p.submit(self.frame(4, 99)))
+        finally:
+            p.close()
+        self.assertEqual(p.snapshot()["counts"]["encode_failures"], 1)
+        self.assertEqual(p.snapshot()["counts"]["send_failures"], 1)
+        self.assertEqual(p.snapshot()["counts"]["sent"], 1)
+        self.assertEqual(p.snapshot()["last_error"], "send: OSError: send")
+
+
+if __name__ == "__main__":
+    unittest.main()
