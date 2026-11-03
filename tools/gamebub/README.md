@@ -5,6 +5,10 @@ sends one video fixture over the receiver's video-only UDP test protocol; it is
 not an integrated Sunshine JPEG mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
+prioritized pipeline, audio, controller, and compatibility work and the tests
+and hardware measurements each item needs.
+
 The target product is one dedicated 720×480/30 fps video, audio and simple
 button mode, rather than a general Moonlight feature set. Its exact codec and
 audio profile await the receiver agent; see the

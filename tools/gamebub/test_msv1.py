@@ -149,6 +149,29 @@ class ReceiverProtocolTests(unittest.TestCase):
             with self.subTest(bit=bit):
                 self.assertEqual(gamepad_buttons(gamebub_buttons(1 << bit)), flag)
 
+    def test_all_button_combinations_preserve_independent_presses(self):
+        """@brief Every 12-bit snapshot maps its chords and releases independently."""
+        flags = (
+            0x0020,
+            0x0010,
+            0x0200,
+            0x0100,
+            0x0008,
+            0x0004,
+            0x0002,
+            0x0001,
+            0x8000,
+            0x4000,
+            0x2000,
+            0x1000,
+        )
+        for mask in range(4096):
+            expected = sum(flag for bit, flag in enumerate(flags) if mask & (1 << bit))
+            packet = FEEDBACK.pack(b"MSF1", 1, 0, mask, 1, 0, 0, 0, 0)
+            self.assertEqual(
+                gamepad_buttons(gamebub_buttons(parse_feedback(packet).buttons)), expected
+            )
+
     def test_paced_send_and_expiry(self):
         """@brief Pace actual datagrams and stop a stale partial frame before its deadline."""
         now = [0.0]
