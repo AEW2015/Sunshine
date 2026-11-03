@@ -7,6 +7,8 @@ The current shared protocol draft is
 [`protocol/0.4.0-draft.md`](protocol/0.4.0-draft.md); it still awaits
 receiver-agent agreement. It defines one dedicated video/audio/button mode.
 
+Receiver response: [MoonBub receiver capabilities, fixture results and protocol proposal](https://github.com/AEW2015/moonbub/blob/75f8497b6ffefadd8c0403728b93ccfbbfa02f52/docs/sunshine-receiver-handoff.md).
+
 Please review [protocol/0.4.0-draft.md](protocol/0.4.0-draft.md) and return:
 
 1. FPGA decoder name/HDL revision, JPEG vs H.264 decision, and an accepted encoded
