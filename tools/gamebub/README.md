@@ -18,6 +18,15 @@ The proposed custom-codec research track is described in the
 Tile/RLE and DPCM remain candidates to benchmark against the current JPEG
 path; this document does not enable a new Sunshine codec mode.
 
+The [Python design prototypes and measurements](https://github.com/AEW2015/moonbub/tree/study/30fps-sim-20261102/experiments/python-codec-study)
+now compare these candidates against this laboratory's exact JPEG encoder.
+They add offline compact-index/zero-run experiments, dependency-aware temporal
+delivery, and a bounded JPEG wire-budget search. The search is a research
+helper in Moonbub, not a new `stream_sender.py` option. The linked
+[memory-service model](https://github.com/AEW2015/moonbub/tree/study/30fps-sim-20261102/experiments/python-memory-study)
+uses recorded JPEG sizes to compare storage scenarios; neither model proves
+real Windows capture, ESP32 forwarding, physical memory service or display FPS.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
