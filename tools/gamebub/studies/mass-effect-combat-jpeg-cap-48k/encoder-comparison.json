@@ -1,0 +1,68 @@
+{
+  "study": "Full-clip byte comparison between Sunshine host encoder and sender function",
+  "source_file": "/home/lori/gamebub-streaming-prototype/media/mass-effect-combat.mp4",
+  "source_sha256": "defff415bc1fdff6e18a70b0a0fbbddebb0429c5c0b8b5d5d04d8283bb315d3b",
+  "sampling_fps": 25,
+  "sample_count": 1493,
+  "qualities": [
+    80,
+    90
+  ],
+  "host_encoder": {
+    "path": "tools/gamebub/host.py::encode",
+    "sha256": "94b42a1e7e81dab0aebad59472fe177a078760ef595a3d6b1e079fe6ff788bfa"
+  },
+  "sender_encoder": {
+    "path": "tools/gamebub/msv1.py::encode_receiver_jpeg",
+    "sha256": "abbfe5021cdf60ab5908aae0583fcef40231869a0a25b7919eb238d9801a44d6"
+  },
+  "profile": {
+    "width": 720,
+    "height": 480,
+    "subsampling": "4:2:0",
+    "restart_mcus": 0,
+    "progressive": false,
+    "optimized_huffman": false
+  },
+  "summary": [
+    {
+      "quality": 80,
+      "sample_count": 1493,
+      "byte_identical_frames": 1493,
+      "different_frames": 0,
+      "host_size_bytes": {
+        "min": 6027,
+        "max": 43594
+      },
+      "sender_size_bytes": {
+        "min": 6027,
+        "max": 43594
+      },
+      "sender_minus_host_size_bytes": {
+        "min": 0,
+        "max": 0
+      },
+      "first_byte_differences": []
+    },
+    {
+      "quality": 90,
+      "sample_count": 1493,
+      "byte_identical_frames": 1493,
+      "different_frames": 0,
+      "host_size_bytes": {
+        "min": 6027,
+        "max": 62340
+      },
+      "sender_size_bytes": {
+        "min": 6027,
+        "max": 62340
+      },
+      "sender_minus_host_size_bytes": {
+        "min": 0,
+        "max": 0
+      },
+      "first_byte_differences": []
+    }
+  ],
+  "scope": "Direct offline function comparison. Does not run sender adaptation, packetization, transmission, receiver, or display."
+}

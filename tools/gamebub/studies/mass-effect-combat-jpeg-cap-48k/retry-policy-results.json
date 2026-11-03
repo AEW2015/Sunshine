@@ -1,0 +1,75 @@
+{
+  "study": "Same-frame single-retry policy; offline host encode only",
+  "source_file": "/home/lori/gamebub-streaming-prototype/media/mass-effect-combat.mp4",
+  "sampling_fps": 25,
+  "sample_count": 1493,
+  "cap_bytes": 49152,
+  "initial_quality": 90,
+  "retry_quality": 80,
+  "profile": {
+    "subsampling": "4:2:0",
+    "restart_mcus": 0,
+    "progressive": false,
+    "optimized_huffman": false
+  },
+  "comparison": {
+    "drop_only": {
+      "rule": "Encode at initial quality; drop frame if size exceeds cap.",
+      "sent_frames": 990,
+      "dropped_frames": 503,
+      "drop_percent": 33.69055592766242,
+      "chosen_quality_counts": {
+        "90": 990
+      },
+      "sent_jpeg_size": {
+        "sample_count": 990,
+        "mean": 35581.39595959596,
+        "p95": 47492.65,
+        "max": 49138,
+        "unit": "bytes"
+      },
+      "host_encode_validation_ms_per_capture": {
+        "sample_count": 1493,
+        "mean": 1.4797367700746773,
+        "p95": 1.899152365513146,
+        "max": 4.811960039660335,
+        "unit": "milliseconds"
+      },
+      "total_encode_ms": 2209.2469977214932
+    },
+    "one_lower_quality_retry": {
+      "rule": "Encode at initial quality; on oversize re-encode that same frame once at retry quality; drop only if retry remains oversized.",
+      "retried_frames": 503,
+      "retry_successes": 503,
+      "dropped_frames": 0,
+      "drop_percent": 0.0,
+      "chosen_quality_counts": {
+        "80": 503,
+        "90": 990
+      },
+      "sent_jpeg_size": {
+        "sample_count": 1493,
+        "mean": 36176.827193569996,
+        "p95": 46877.8,
+        "max": 49138,
+        "unit": "bytes"
+      },
+      "host_retry_encode_validation_ms": {
+        "sample_count": 503,
+        "mean": 1.3724979729286098,
+        "p95": 1.4979815110564232,
+        "max": 1.9405829953029752,
+        "unit": "milliseconds"
+      },
+      "host_encode_validation_ms_per_capture_including_retry": {
+        "sample_count": 1493,
+        "mean": 1.9421389672502236,
+        "p95": 3.241379559040071,
+        "max": 4.811960039660335,
+        "unit": "milliseconds"
+      },
+      "total_encode_ms_including_retry": 2899.613478104584
+    }
+  },
+  "scope": "No sender invocation or transmission. Encode timings are this Linux host/Pillow run and include Sunshine host JPEG inspection and software decode validation."
+}
