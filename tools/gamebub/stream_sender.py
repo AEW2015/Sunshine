@@ -4,11 +4,13 @@ This is not Sunshine integration. Feedback confirms ingress, not displayed video
 """
 
 import argparse
+from contextlib import ExitStack
 import json
 import math
 import socket
 import threading
 import time
+import uuid
 from collections import Counter, OrderedDict
 from pathlib import Path
 
@@ -16,6 +18,7 @@ from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
 from event_log import EventLog
+from frame_telemetry import FrameTelemetry
 from host import canvas, clip_frames
 from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, encode_receiver_jpeg, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
@@ -80,7 +83,9 @@ class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
     def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality,
-                 max_jpeg_bytes=MAX_FRAME, jpeg_retry_quality_drop=0):
+                 max_jpeg_bytes=MAX_FRAME, jpeg_retry_quality_drop=0,
+                 frame_telemetry_output=None, telemetry_session_id=None,
+                 telemetry_evidence_kind="simulated"):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
         @param sock Connected nonblocking datagram socket for the test peer.
@@ -93,21 +98,30 @@ class Session:
         @param max_jpeg_bytes Maximum complete JPEG bytes accepted by the receiver profile.
         @param jpeg_retry_quality_drop Optional one-time quality reduction on an oversize JPEG.
         """
-        if (
-            type(fps) is not int
-            or not 1 <= fps <= 30
-            or not math.isfinite(mbps)
-            or mbps <= 0
-            or not math.isfinite(max_age_ms)
-            or max_age_ms < 0.000001
-            or not 1 <= min_quality <= quality <= 95
-            or type(max_jpeg_bytes) is not int
-            or not 1 <= max_jpeg_bytes <= MAX_FRAME
-            or type(jpeg_retry_quality_drop) is not int
-            or not 0 <= jpeg_retry_quality_drop <= 94
-        ):
-            raise ValueError("Invalid session rate, deadline or quality")
-        self.sock, self.log, self.fps = sock, EventLog(log), fps
+        self.validate_configuration(
+            fps, mbps, max_age_ms, quality, min_quality,
+            max_jpeg_bytes, jpeg_retry_quality_drop,
+        )
+        if frame_telemetry_output is not None:
+            FrameTelemetry.validate_configuration(telemetry_session_id, telemetry_evidence_kind)
+
+        self.sock, self.fps = sock, fps
+        self.log = EventLog(log)
+        self.frame_telemetry = None
+        try:
+            if frame_telemetry_output is not None:
+                telemetry_sink = EventLog(frame_telemetry_output)
+                try:
+                    self.frame_telemetry = FrameTelemetry(
+                        telemetry_sink, telemetry_session_id, telemetry_evidence_kind
+                    )
+                except Exception:
+                    telemetry_sink.close()
+                    raise
+        except Exception:
+            self.log.close()
+            raise
+
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.max_jpeg_bytes = max_jpeg_bytes
@@ -125,6 +139,25 @@ class Session:
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
         self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, max_jpeg_bytes)
+
+    @staticmethod
+    def validate_configuration(fps, mbps, max_age_ms, quality, min_quality,
+                               max_jpeg_bytes=MAX_FRAME, jpeg_retry_quality_drop=0):
+        """Validate all scalar settings before any logger or worker is created."""
+        if (
+            type(fps) is not int
+            or not 1 <= fps <= 30
+            or not math.isfinite(mbps)
+            or mbps <= 0
+            or not math.isfinite(max_age_ms)
+            or max_age_ms < 0.000001
+            or not 1 <= min_quality <= quality <= 95
+            or type(max_jpeg_bytes) is not int
+            or not 1 <= max_jpeg_bytes <= MAX_FRAME
+            or type(jpeg_retry_quality_drop) is not int
+            or not 0 <= jpeg_retry_quality_drop <= 94
+        ):
+            raise ValueError("Invalid session rate, deadline or quality")
 
     def _event(self, kind, **fields):
         """@brief Serialize one event under the session lock."""
@@ -189,6 +222,11 @@ class Session:
             )
         return jpeg
 
+    def _capture_telemetry(self, frame, capture_wall_us):
+        """Write optional normalized capture evidence without blocking capture."""
+        if self.frame_telemetry is not None:
+            self.frame_telemetry.capture(frame, capture_wall_us)
+
     def _send(self, frame, jpeg):
         """@brief Send a paced frame and track only a bounded set of potential ACKs."""
         key = (frame.frame_id, frame.capture_us)
@@ -235,6 +273,7 @@ class Session:
                     error=str(error),
                 )
             raise
+        send_complete_ns = time.perf_counter_ns()
         with self.lock:
             self.counts["wire_bytes"] += sent
             if not done:
@@ -251,6 +290,9 @@ class Session:
                 queue_age_ms=queue_age_ms,
                 age_ms=(time.perf_counter_ns() - frame.captured_ns) / 1e6,
             )
+        frame_telemetry = getattr(self, "frame_telemetry", None)
+        if done and frame_telemetry is not None:
+            frame_telemetry.send_complete(frame, send_complete_ns, sent)
         return done
 
     def _feedback_loop(self):
@@ -354,12 +396,17 @@ class Session:
                 "feedback_probing": self.gate.probing,
                 "pipeline": self.pipeline.snapshot(),
             }
+            if self.frame_telemetry is not None:
+                result["telemetry_session_id"] = self.frame_telemetry.session_id
+                result["telemetry_evidence_kind"] = self.frame_telemetry.evidence_kind
             result["wire_mbps"] = self.counts["wire_bytes"] * 8 / duration / 1e6
             result["encoded_mbps"] = self.counts["encoded_bytes"] * 8 / duration / 1e6
             result["encoded_fps"] = result["pipeline"]["counts"].get("encoded", 0) / duration
             result["sent_fps"] = result["pipeline"]["counts"].get("sent", 0) / duration
             self._event("summary", **result)
         result["logging"] = self.log.close()
+        if self.frame_telemetry is not None:
+            result["frame_telemetry_logging"] = self.frame_telemetry.sink.close()
         return result
 
 
@@ -370,20 +417,40 @@ def run(args, source=None):
     @param source Optional iterator of images for tests; None uses clip or desktop.
     @return Run summary without any claim of receiver decode or display.
     """
+    telemetry_path = getattr(args, "frame_telemetry", None)
+    if telemetry_path is not None and Path(telemetry_path).resolve() == args.log.resolve():
+        raise ValueError("Frame telemetry must use a separate JSONL output path")
+    max_jpeg_bytes = getattr(args, 'max_jpeg_bytes', MAX_FRAME)
+    retry_drop = getattr(args, 'jpeg_retry_quality_drop', 0)
+    Session.validate_configuration(
+        args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality,
+        max_jpeg_bytes, retry_drop,
+    )
+    telemetry_session_id = None
+    telemetry_evidence_kind = getattr(args, "telemetry_evidence_kind", "simulated")
+    if telemetry_path is not None:
+        telemetry_session_id = getattr(args, "telemetry_session_id", None)
+        if telemetry_session_id is None:
+            telemetry_session_id = uuid.uuid4().hex
+        FrameTelemetry.validate_configuration(telemetry_session_id, telemetry_evidence_kind)
     frames = (
         source if source is not None else (clip_frames(args.clip, args.fps) if args.clip else None)
     )
-    with (
-        args.log.open("x", encoding="utf-8", newline="\n") as log,
-        socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock,
-    ):
+    with ExitStack() as outputs:
+        log = outputs.enter_context(args.log.open("x", encoding="utf-8", newline="\n"))
+        telemetry_output = None
+        if telemetry_path is not None:
+            telemetry_output = outputs.enter_context(
+                Path(telemetry_path).open("x", encoding="utf-8", newline="\n")
+            )
+        sock = outputs.enter_context(socket.socket(socket.AF_INET, socket.SOCK_DGRAM))
         sock.bind(("0.0.0.0", getattr(args, "source_port", 0)))
         sock.connect((args.target, args.port))
         sock.setblocking(False)
         session = Session(
             sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality,
-            getattr(args, 'max_jpeg_bytes', MAX_FRAME),
-            getattr(args, 'jpeg_retry_quality_drop', 0),
+            max_jpeg_bytes, retry_drop,
+            telemetry_output, telemetry_session_id, telemetry_evidence_kind,
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -396,6 +463,7 @@ def run(args, source=None):
             )
         started = time.perf_counter_ns()
         slot = 0
+        frame_seq = 0
         try:
             while slot < args.frames:
                 due = started + slot * 1_000_000_000 // args.fps
@@ -411,8 +479,17 @@ def run(args, source=None):
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
                 prepared = canvas(image, Image.Resampling[filter_name.upper()])
+                capture_end_ns = (
+                    time.perf_counter_ns() if session.frame_telemetry is not None else None
+                )
                 frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
-                session.pipeline.submit(Frame(frame_id, now, stamp_us, prepared))
+                frame = Frame(
+                    frame_id, now, stamp_us, prepared,
+                    frame_seq=frame_seq, capture_end_ns=capture_end_ns,
+                )
+                session._capture_telemetry(frame, stamp_us)
+                session.pipeline.submit(frame)
+                frame_seq += 1
                 with session.lock:
                     session.counts["skipped_slots"] += skipped
                 slot += 1
@@ -439,6 +516,18 @@ def main(argv=None):
         help="Experimental desktop scaling filter; clip video uses libswscale bilinear",
     )
     parser.add_argument("--log", type=Path, required=True)
+    parser.add_argument(
+        "--frame-telemetry", type=Path,
+        help="Optional separate bounded normalized JSONL capture/send telemetry output",
+    )
+    parser.add_argument(
+        "--telemetry-evidence-kind", choices=("hardware", "simulated"), default="simulated",
+        help="Evidence label for --frame-telemetry (default: simulated)",
+    )
+    parser.add_argument(
+        "--telemetry-session-id",
+        help="Optional caller-coordinated session ID (1..128 chars); otherwise generate a UUID",
+    )
     parser.add_argument("--port", type=int, default=5533)
     parser.add_argument(
         "--source-port", type=int, default=0, help="Local UDP port; 0 chooses an ephemeral port"

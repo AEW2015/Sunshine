@@ -28,6 +28,48 @@ that still exceeds the cap. Retries are disabled by default. A retry costs CPU
 time; the pipeline still discards a frame that is past `--max-age-ms` before
 sending, so a successful retry is not guaranteed to reach the receiver in time.
 
+Use `--frame-telemetry PATH` to write a second, bounded JSONL file in the
+normalized format accepted by Moonbub's
+[telemetry correlator](https://github.com/AEW2015/moonbub/tree/study/30fps-sim-20261102/telemetry-study).
+By default the run uses a fresh UUID; `--telemetry-session-id` can set an ID
+coordinated with receiver instrumentation. Each sampled capture gets a stable
+session-local `frame_seq`, the actual 32-bit wire `frame_id`, and host monotonic
+capture-start/end nanoseconds. Capture start is sampled before source
+acquisition; for a clip that skips pacing slots, this includes decoding the
+discarded clip frames. Capture end is sampled after acquiring/decoding the
+selected frame and fitting/scaling it to the sender canvas. Thus capture-to-send
+includes source and canvas preparation, encoding, queueing and packet submission;
+it is not camera-only capture time. The existing Unix wall-clock wire timestamp
+is retained separately as `capture_wall_us`. A `send` record is written only
+after the local sender finishes submitting all frame datagrams; this is not
+receiver ingress or presentation. Capture records without a send record expose skipped/replaced/failed frames to the
+correlator, but do not identify a drop cause. Unmaterialized pacing slots have
+no capture sequence and appear as wire-ID gaps. `--telemetry-evidence-kind`
+defaults to `simulated`; use `hardware` only for a run actually performed with
+the identified hardware. The independent output uses the existing asynchronous
+logger's queue and 64 MiB file bound. Telemetry is disabled by default and does
+not affect frame scheduling, packet contents, feedback handling, or the existing
+event log. The resulting file can be passed directly to `correlate.py`; no
+presentation event or cross-clock calibration is fabricated.
+
+`frame_seq` and the telemetry session ID are host-only metadata; neither is
+transmitted in MSV1. Receiver instrumentation must use the coordinated session
+ID and map its observed 32-bit wire IDs to the host capture sequences. Preserve
+the per-session mapping across wire-ID wrap; a raw frame ID alone is ambiguous
+after wrap. This option does not add a protocol field or receiver stage.
+
+Example:
+
+```sh
+python stream_sender.py 192.0.2.10 --clip game.mp4 --frames 300 --fps 30 \
+  --log run-events.jsonl --frame-telemetry frame-telemetry.jsonl \
+  --telemetry-evidence-kind simulated
+```
+
+The session UUID and telemetry logging drop/error counts are included in the
+sender's final stdout summary. A saturated log can omit records; check those
+counters before correlating.
+
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
 and hardware measurements each item needs.

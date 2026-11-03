@@ -27,6 +27,8 @@ class Frame:
     capture_us: int
     image: Image.Image
     encoded_ns: int = 0
+    frame_seq: int | None = None
+    capture_end_ns: int | None = None
 
 
 class VideoPipeline:
@@ -85,7 +87,8 @@ class VideoPipeline:
             if self.raw is not None:
                 self.counts["raw_replaced"] += 1
             self.raw = Frame(
-                frame.frame_id, frame.captured_ns, frame.capture_us, frame.image.copy()
+                frame.frame_id, frame.captured_ns, frame.capture_us, frame.image.copy(),
+                frame_seq=frame.frame_seq, capture_end_ns=frame.capture_end_ns,
             )
             self.last_capture = frame.captured_ns
             self.counts["submitted"] += 1

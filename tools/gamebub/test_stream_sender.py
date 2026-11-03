@@ -194,6 +194,9 @@ class StreamSenderTests(unittest.TestCase):
                         target="127.0.0.1",
                         port=receiver.getsockname()[1],
                         log=Path(directory) / "run.jsonl",
+                        frame_telemetry=Path(directory) / "frames.jsonl",
+                        telemetry_evidence_kind="simulated",
+                        telemetry_session_id="loopback-test-session",
                         fps=10,
                         mbps=100,
                         max_age_ms=500,
@@ -206,6 +209,9 @@ class StreamSenderTests(unittest.TestCase):
                     source = iter([Image.new("RGB", (720, 480), (i * 40, 0, 0)) for i in range(4)])
                     result = run(args, source)
                     events = [json.loads(line) for line in args.log.read_text().splitlines()]
+                    frame_events = [
+                        json.loads(line) for line in args.frame_telemetry.read_text().splitlines()
+                    ]
             finally:
                 stop.set()
                 thread.join(2)
@@ -221,6 +227,22 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(feedback[-1]["dropped_frames"], 0)
         self.assertEqual(result["logging"]["dropped"], 0)
         self.assertIsNone(result["logging"]["error"])
+        self.assertEqual(result["frame_telemetry_logging"]["dropped"], 0)
+        self.assertEqual(result["telemetry_evidence_kind"], "simulated")
+        self.assertEqual(result["telemetry_session_id"], "loopback-test-session")
+        self.assertEqual([event["stage"] for event in frame_events],
+                         ["capture", "send"] * 4)
+        self.assertEqual([event["frame_seq"] for event in frame_events[::2]], [0, 1, 2, 3])
+        self.assertEqual([event["frame_id"] for event in frame_events[::2]],
+                         [0xFFFFFFFE, 0xFFFFFFFF, 0, 1])
+        self.assertTrue(all(event["session_id"] == result["telemetry_session_id"]
+                            for event in frame_events))
+        for capture, send_event in zip(frame_events[::2], frame_events[1::2]):
+            self.assertEqual(capture["clock_domain"], "host_monotonic")
+            self.assertGreaterEqual(capture["capture_end_ns"], capture["capture_start_ns"])
+            self.assertGreater(capture["capture_wall_us"] * 1000, capture["timestamp_ns"])
+            self.assertGreaterEqual(send_event["send_complete_ns"], capture["timestamp_ns"])
+        self.assertNotIn("presented", {event["stage"] for event in frame_events})
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
         self.assertEqual(
             [
