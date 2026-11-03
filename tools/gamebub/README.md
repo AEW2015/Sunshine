@@ -7,10 +7,10 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v7-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v7-20261103),
-paired with [Moonbub v7](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v7-20261103).
-It adds software codec experiments and a combined-profile plan; the v6 handoff
-remains an unchanged snapshot.
+[`handoff/gamebub-app-codec-v8-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v8-20261103),
+paired with [Moonbub v8](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v8-20261103).
+It contains the combined software codec, controller, guards and golden vectors;
+the v6 and v7 handoffs remain unchanged snapshots.
 
 This performance-study work is published on
 [`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
@@ -81,6 +81,16 @@ the237–395 ms offline search is not a live rate controller. The
 selects a new temporal-residual plus ROI profile as the next prototype. These
 formats require matching receiver support and do not add an installed Sunshine
 mode or prove physical30 fps. The v6 handoff remains a separate snapshot.
+
+[Iteration8](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v8-20261103/docs/custom-codec-prototype-v8-2026-11-03.md)
+implements actual GM01 temporal residuals plus priority quantization, bounded
+two-candidate admission and shared transforms. ROI8/background16 improves
+priority-region PSNR1.39–2.14 dB versus uniform GM01 at4.2–10.5% more bytes in
+the codec sample. Normal preparation means20–24 ms exclude acquisition/receiver/
+transport; fallback tails remain over33.33 ms. A conservative byte bound cuts
+eight seeded-noise rejects113.7→25.0 ms without entropy serialization, with no
+general normal/pressure speedup. The new GM01/GF01 golden vectors are in-process
+software evidence, not an installed sender/firmware mode or physical30 fps.
 
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
