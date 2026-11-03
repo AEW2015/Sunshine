@@ -19,6 +19,9 @@ passes the receiver's pinned packet fixture and Rust parser tests. Please review
    capture ingress, decode, and displayed-frame evidence separately.
 2. Measure concurrent Wi-Fi/QSPI throughput, display rate, frame age, drops,
    and input response using detailed moving gameplay.
+   Please also evaluate the host's experimental 750 ms feedback timeout and
+   one-frame-per-second recovery probes against the receiver's 250 ms heartbeat
+   and reconnect behavior; these are host policies, not a new wire format.
 3. Agree and implement the audio codec, rate/channels, block duration, clock,
    buffering and recovery. The current streaming FPGA has no audio path.
 4. Agree a versioned, authenticated session and fixed-device provisioning for

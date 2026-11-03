@@ -5,6 +5,7 @@ import json
 import socket
 import tempfile
 import threading
+import time
 import unittest
 import zlib
 from collections import Counter, OrderedDict
@@ -16,11 +17,107 @@ from PIL import Image
 
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
-from stream_sender import Session, main, run
+from stream_sender import FeedbackGate, Session, main, run
 
 
 class StreamSenderTests(unittest.TestCase):
     """@brief Exercise capture, JPEG, packetization and ingress feedback on loopback."""
+
+    def test_feedback_gate_timeout_heartbeat_and_probe_recovery(self):
+        """@brief Silence limits traffic; only a fresh probe can restore regular sending."""
+        with self.assertRaises(ValueError):
+            FeedbackGate(0, timeout_ns=0)
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20)
+        self.assertEqual(gate.offer((1, 1), 0), (True, False))
+        self.assertTrue(gate.feedback((1, 1), True, 1))
+        self.assertTrue(gate.feedback((1, 1), False, 10))
+        self.assertFalse(gate.feedback((9, 9), False, 10))
+        self.assertEqual(gate.offer((2, 2), 20), (True, False))
+        self.assertEqual(gate.offer((3, 3), 21), (True, True))
+        self.assertTrue(gate.probing)
+        self.assertEqual(gate.offer((4, 4), 22), (False, False))
+        self.assertFalse(gate.feedback((1, 1), False, 22))
+        self.assertFalse(gate.feedback((2, 2), True, 22))
+        self.assertEqual(gate.offer((5, 5), 41), (True, True))
+        self.assertFalse(gate.feedback((3, 3), True, 42))
+        self.assertTrue(gate.feedback((5, 5), True, 42))
+        self.assertFalse(gate.probing)
+        self.assertEqual(gate.offer((6, 6), 43), (True, False))
+
+    def test_silent_peer_suppresses_frames_and_clears_stale_pending(self):
+        """@brief Timeout limits datagrams to probes and rejects delayed old feedback."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), io.StringIO(), Mock()
+        s.quality, s.min_quality, s.age_ns, s.rate, s.pacer = 75, 20, 100, 3000, Pacer()
+        s.pending, s.counts = OrderedDict({(0, 0): None}), Counter()
+        s.gate = FeedbackGate(0, timeout_ns=10, probe_ns=20)
+        frame = Frame(2, 1, 2, Image.new("RGB", (720, 480)))
+        with (
+            patch("stream_sender.time.monotonic_ns", return_value=11),
+            patch("stream_sender.send_frame", return_value=(True, 40)) as send,
+        ):
+            self.assertTrue(s._send(frame, b"x"))
+            self.assertEqual(list(s.pending), [(2, 2)])
+            self.assertFalse(s._send(Frame(3, 1, 3, frame.image), b"x"))
+            self.assertEqual(send.call_count, 1)
+        self.assertEqual(s.counts["feedback_suppressed"], 1)
+        self.assertEqual(s.counts["feedback_abandoned"], 1)
+
+    def test_loopback_silence_then_fresh_probe_restores_video(self):
+        """@brief A silent localhost peer causes suppression and later probe recovery."""
+        stop = threading.Event()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+            receiver.bind(("127.0.0.1", 0))
+            receiver.settimeout(0.05)
+            starts = []
+            started = time.monotonic()
+
+            def peer():
+                """@brief Delay feedback, then acknowledge each complete test frame."""
+                while not stop.is_set():
+                    try:
+                        packet, address = receiver.recvfrom(2048)
+                    except TimeoutError:
+                        continue
+                    fields = VIDEO.unpack(packet[: VIDEO.size])
+                    if fields[3] & 1:
+                        starts.append(fields[4])
+                    if fields[3] & 2 and time.monotonic() - started > 1.2:
+                        receiver.sendto(
+                            FEEDBACK.pack(b"MSF1", 1, 0, 0, fields[4], 0, 0, 0, fields[12]),
+                            address,
+                        )
+
+            thread = threading.Thread(target=peer)
+            thread.start()
+            try:
+                with tempfile.TemporaryDirectory() as directory:
+                    args = SimpleNamespace(
+                        target="127.0.0.1",
+                        port=receiver.getsockname()[1],
+                        log=Path(directory) / "recovery.jsonl",
+                        fps=20,
+                        mbps=100,
+                        max_age_ms=500,
+                        quality=75,
+                        min_quality=20,
+                        frames=50,
+                    )
+                    image = Image.new("RGB", (720, 480), "red")
+                    result = run(args, iter([image] * args.frames))
+                    events = [
+                        json.loads(line)["event"] for line in args.log.read_text().splitlines()
+                    ]
+            finally:
+                stop.set()
+                thread.join(2)
+        self.assertFalse(thread.is_alive())
+        self.assertGreater(result["counts"]["feedback_suppressed"], 0)
+        self.assertGreater(result["counts"].get("feedback_accepted", 0), 1)
+        self.assertFalse(result["feedback_probing"])
+        self.assertLess(len(starts), args.frames)
+        self.assertIn("feedback_timeout", events)
+        self.assertIn("feedback_restored", events)
 
     def test_loopback_frames_and_feedback(self):
         """@brief A receiver reassembles complete CRC-checked JPEGs and acknowledges ingress."""
@@ -99,6 +196,7 @@ class StreamSenderTests(unittest.TestCase):
         s.quality, s.min_quality, s.max_quality = 75, 20, 75
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(time.monotonic_ns())
         with patch("stream_sender.encode", return_value=(b"x" * 100, {})):
             s._encode(None)
         self.assertEqual(s.quality, 70)
@@ -136,6 +234,7 @@ class StreamSenderTests(unittest.TestCase):
         s = Session.__new__(Session)
         s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
+        s.gate = FeedbackGate(time.monotonic_ns())
         s.quality, s.min_quality = 75, 20
         s.sock = Mock()
         s.sock.recv.side_effect = [
@@ -150,6 +249,25 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(s.counts["feedback_rejected"], 1)
         self.assertEqual(s.quality, 70)
         self.assertEqual(s.counts["feedback_socket_failures"], 1)
+
+    def test_feedback_heartbeat_and_ack_after_timeout(self):
+        """@brief Repeated current heartbeats count, but delayed ACKs do not revive silence."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.pending = OrderedDict({(4, 10): None, (5, 11): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=10, probe_ns=20)
+        s.quality, s.min_quality = 75, 20
+        s.sock = Mock()
+        ack = FEEDBACK.pack(b"MSF1", 1, 0, 0, 4, 0, 0, 0, 10)
+        late = FEEDBACK.pack(b"MSF1", 1, 0, 0, 5, 0, 0, 0, 11)
+        s.sock.recv.side_effect = [ack, ack, late, OSError("closed")]
+        with patch("stream_sender.time.monotonic_ns", side_effect=[1, 2, 20]):
+            s._feedback_loop()
+        self.assertEqual(s.counts["feedback_accepted"], 1)
+        self.assertEqual(s.counts["feedback_heartbeats"], 1)
+        self.assertEqual(s.counts["feedback_abandoned"], 1)
+        self.assertEqual(s.counts["unmatched_feedback"], 1)
+        self.assertTrue(s.gate.probing)
 
     def test_cli_validation_and_ack_exit_status(self):
         """@brief The CLI fails without ingress confirmation and rejects invalid limits."""

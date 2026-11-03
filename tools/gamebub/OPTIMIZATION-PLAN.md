@@ -34,7 +34,9 @@ a reliable unit-test assertion on shared machines.
 7. **Respond to backpressure.** Test: receiver busy/dropped feedback stops or
    reduces offered work, delayed or unrelated feedback cannot acknowledge a
    newer frame, and missing feedback times out. Confirm exact semantics with
-   the receiver team before changing the protocol.
+   the receiver team before changing the protocol. The test sender now lowers
+   quality for busy/dropped responses and limits silent peers to recovery probes;
+   physical behavior and receiver-policy agreement remain to be validated.
 8. **Adapt quality with hysteresis.** Test: scripted congestion reduces quality
    within allowed bounds, sustained headroom raises it slowly, transient loss
    does not oscillate, and oversize frames are dropped or re-encoded within

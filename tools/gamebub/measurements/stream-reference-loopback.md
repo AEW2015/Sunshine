@@ -23,3 +23,10 @@ Settings: 30 fps target, 20 Mbps MSV1 rate cap, 200 ms host age deadline,
 quality range 20..75. Packet rate excludes UDP/IP/Wi-Fi overhead. Detailed
 JSONL was written to the ignored local `artifacts/stream-reference-20261102.jsonl`;
 it is not committed. The test peer did not simulate feedback loss or busy status.
+
+After adding the feedback-silence gate, the same localhost/reference run was
+repeated: 150 frames were accepted, zero invalid datagrams, no pending feedback
+and the gate remained out of probe mode. The run lasted 5.312 seconds including
+the feedback grace period, with 3,007,765 MSV1 bytes (4.53 Mbps over that
+duration). A separate localhost regression test simulates a silent peer and
+verifies fresh-probe recovery; it is not a physical-network measurement.

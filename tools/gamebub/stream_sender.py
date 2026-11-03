@@ -19,6 +19,60 @@ from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
 
 
+class FeedbackGate:
+    """@brief Limit sends during feedback silence while retaining recovery probes.
+
+    Only matching feedback from the current session confirms liveness. Once
+    silence exceeds the deadline, only feedback for a newly sent probe can
+    resume normal sending; old ACKs and heartbeats cannot revive the session.
+    """
+
+    def __init__(self, now_ns, timeout_ns=750_000_000, probe_ns=1_000_000_000):
+        """@brief Start with a grace period and fixed monotonic durations."""
+        if timeout_ns <= 0 or probe_ns <= 0:
+            raise ValueError("Feedback timing must be positive")
+        self.last_feedback = now_ns
+        self.timeout_ns, self.probe_ns = timeout_ns, probe_ns
+        self.probing = False
+        self.next_probe = now_ns
+        self.probe_key = None
+        self.heartbeat_key = None
+
+    def expire(self, now_ns):
+        """@brief Enter probing once and indicate when old pending ACKs must be cleared."""
+        if not self.probing and now_ns - self.last_feedback > self.timeout_ns:
+            self.probing = True
+            self.next_probe = now_ns
+            self.probe_key = None
+            self.heartbeat_key = None
+            return True
+        return False
+
+    def offer(self, key, now_ns):
+        """@brief Allow a frame or a bounded recovery probe; signal pending reset."""
+        expired = self.expire(now_ns)
+        if not self.probing:
+            return True, expired
+        if now_ns < self.next_probe:
+            return False, expired
+        self.next_probe = now_ns + self.probe_ns
+        self.probe_key = key
+        return True, True
+
+    def feedback(self, key, matched, now_ns):
+        """@brief Process a matching ACK or current heartbeat and report liveness."""
+        if self.probing:
+            if not matched or key != self.probe_key:
+                return False
+            self.probing = False
+            self.probe_key = None
+        elif not matched and key != self.heartbeat_key:
+            return False
+        self.last_feedback = now_ns
+        self.heartbeat_key = key
+        return True
+
+
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
@@ -53,6 +107,7 @@ class Session:
         self.stop = threading.Event()
         self.pacer = Pacer()
         self.start_ns = time.monotonic_ns()
+        self.gate = FeedbackGate(self.start_ns)
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
         self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, MAX_FRAME)
@@ -95,6 +150,17 @@ class Session:
         key = (frame.frame_id, frame.capture_us)
         queue_age_ms = (time.monotonic_ns() - frame.encoded_ns) / 1e6
         with self.lock:
+            was_probing = self.gate.probing
+            allowed, clear_pending = self.gate.offer(key, time.monotonic_ns())
+            if not was_probing and self.gate.probing:
+                self._event("feedback_timeout")
+            if clear_pending:
+                self.counts["feedback_abandoned"] += len(self.pending)
+                self.pending.clear()
+            if not allowed:
+                self.counts["feedback_suppressed"] += 1
+                self._event("send_suppressed", frame_id=frame.frame_id, reason="feedback_silence")
+                return False
             self.pending[key] = None
             while len(self.pending) > 512:
                 self.pending.popitem(last=False)
@@ -153,8 +219,20 @@ class Session:
                 continue
             key = (feedback.frame_id, feedback.capture_us)
             with self.lock:
-                if key not in self.pending:
+                now = time.monotonic_ns()
+                if self.gate.expire(now):
+                    self.counts["feedback_abandoned"] += len(self.pending)
+                    self.pending.clear()
+                    self._event("feedback_timeout")
+                matched = key in self.pending
+                was_probing = self.gate.probing
+                if not self.gate.feedback(key, matched, now):
                     self.counts["unmatched_feedback"] += 1
+                    continue
+                if was_probing:
+                    self._event("feedback_restored", frame_id=feedback.frame_id)
+                if not matched:
+                    self.counts["feedback_heartbeats"] += 1
                     continue
                 del self.pending[key]
                 self.counts[
@@ -186,6 +264,7 @@ class Session:
                 "quality_final": self.quality,
                 "counts": dict(self.counts),
                 "pending_feedback": len(self.pending),
+                "feedback_probing": self.gate.probing,
                 "pipeline": self.pipeline.snapshot(),
             }
             result["wire_mbps"] = self.counts["wire_bytes"] * 8 / duration / 1e6
