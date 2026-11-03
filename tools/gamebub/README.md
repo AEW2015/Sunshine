@@ -207,6 +207,13 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+Each run attempts one `session_config` event with its configured FPS, MSV1 Mbps
+cap, maximum frame age, initial and minimum JPEG quality, target slot count,
+effective source backend, requested start frame ID and packet-timing setting.
+These are requested settings, not measured throughput or playback. The event does
+not include addresses, ports or image data and is subject to the bounded logger's
+drop and I/O limits described below. Record the fork revision separately; this
+event does not identify the source revision.
 Matched feedback events include the receiver's cumulative received and dropped
 counts. A status-0 heartbeat may occur before a frame finishes; check counter
 changes and the handheld's independent decode/display counters.

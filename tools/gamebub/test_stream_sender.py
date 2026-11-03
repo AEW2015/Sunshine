@@ -192,7 +192,7 @@ class StreamSenderTests(unittest.TestCase):
                 run(args)
         self.assertEqual(
             [c.args[0] for c in session._event.call_args_list],
-            ["capture_config", "capture_error", "capture_restored"],
+            ["capture_config", "session_config", "capture_error", "capture_restored"],
         )
         broken.close.assert_called_once()
         session.pipeline.submit.assert_called_once()
@@ -1262,6 +1262,24 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(feedback[-1]["dropped_frames"], 0)
         self.assertEqual(result["logging"]["dropped"], 0)
         self.assertIsNone(result["logging"]["error"])
+        configs = [event for event in events if event["event"] == "session_config"]
+        self.assertEqual(
+            configs,
+            [
+                {
+                    "event": "session_config",
+                    "fps": 10,
+                    "cap_mbps": 100,
+                    "max_age_ms": 500,
+                    "initial_quality": 75,
+                    "min_quality": 20,
+                    "frames_target": 4,
+                    "source_backend": "provided_iterator",
+                    "start_frame_id": 0xFFFFFFFE,
+                    "packet_timing": True,
+                }
+            ],
+        )
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
         timing = [event for event in events if event["event"] == "packet_timing"]
         self.assertEqual([event["frame_id"] for event in timing], completed)
@@ -1632,6 +1650,10 @@ class StreamSenderTests(unittest.TestCase):
                 with patch("stream_sender.clip_frames", return_value=(x for x in ())):
                     empty = run(args)
                 self.assertEqual(empty["pipeline"]["counts"], {})
+                clip_config = json.loads(args.log.read_text().splitlines()[1])
+                self.assertEqual(clip_config["source_backend"], "clip")
+                self.assertEqual(clip_config["start_frame_id"], 0)
+                self.assertIs(clip_config["packet_timing"], False)
                 args.log, args.clip = Path(directory) / "desktop.jsonl", None
                 args.desktop_filter = "box"
                 with (
@@ -1646,6 +1668,10 @@ class StreamSenderTests(unittest.TestCase):
                 self.assertEqual(resize.call_args.args[1], Image.Resampling.BOX)
                 config = json.loads(args.log.read_text().splitlines()[0])
                 self.assertEqual((config["source"], config["desktop_filter"]), ("desktop", "box"))
+                self.assertEqual(
+                    json.loads(args.log.read_text().splitlines()[1])["source_backend"],
+                    "desktop_imagegrab",
+                )
                 args.log = Path(directory) / "ddagrab.jsonl"
                 args.desktop_backend = "ddagrab"
                 source = MagicMock()
@@ -1661,6 +1687,10 @@ class StreamSenderTests(unittest.TestCase):
                 config = json.loads(args.log.read_text().splitlines()[0])
                 self.assertEqual(
                     (config["source"], config["desktop_filter"]), ("desktop_ddagrab", None)
+                )
+                self.assertEqual(
+                    json.loads(args.log.read_text().splitlines()[1])["source_backend"],
+                    "desktop_ddagrab",
                 )
                 args.log = Path(directory) / "failed-capture.jsonl"
                 source = MagicMock()

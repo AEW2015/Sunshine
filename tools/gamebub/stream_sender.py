@@ -803,6 +803,24 @@ def run(args, source=None):
                 else "clip_or_test_source",
                 desktop_filter=filter_name if frames is None else None,
             )
+            session._event(
+                "session_config",
+                fps=args.fps,
+                cap_mbps=args.mbps,
+                max_age_ms=args.max_age_ms,
+                initial_quality=args.quality,
+                min_quality=args.min_quality,
+                frames_target=args.frames,
+                source_backend="provided_iterator"
+                if source is not None
+                else "clip"
+                if args.clip
+                else "desktop_ddagrab"
+                if dxgi
+                else "desktop_imagegrab",
+                start_frame_id=getattr(args, "start_frame_id", 0),
+                packet_timing=bool(getattr(args, "packet_timing", False)),
+            )
         started = time.perf_counter_ns()
         slot = 0
         try:
