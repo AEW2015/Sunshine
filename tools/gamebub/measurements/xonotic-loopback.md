@@ -20,16 +20,26 @@ measured. The 300 ms final feedback grace period is included in each duration.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Windows GetTickCount64 | 30.344 s | 900 | 899 | 841 (27.72/s) | 1 / 58 | 9.16 Mbps |
 | Windows QueryPerformanceCounter | 30.323 s | 900 | 899 | 863 (28.46/s) | 1 / 36 | 9.45 Mbps |
+| High-resolution clock, one JPEG validation | 30.330 s | 898 | 897 | 875 (28.85/s) | 1 / 22 | 9.62 Mbps |
 
-Both reference runs had zero malformed packets, zero unacknowledged completed
-frames, zero dropped log records and JPEG quality 75 for all 899 encodes. Mean
-encoded frame size was 40,372 bytes (p95 53,547; max 58,722). With the
+All reference runs had zero malformed packets, zero unacknowledged completed
+frames, zero dropped log records and JPEG quality 75 throughout. In the first
+two runs, mean encoded frame size was 40,372 bytes (p95 53,547; max 58,722). With the
 high-resolution clock, encode duration was p50 4.49 ms and p95 5.95 ms; host
 capture-to-last-datagram age was p50 51.84 ms, p95 78.39 ms and max 115.15 ms.
 These are not display latency. The prior clock reported 15.625 ms resolution,
 while `perf_counter` reports 0.1 microseconds. The results are separate runs
 under changing build load, so the FPS difference is not a controlled estimate
 of the clock change's impact.
+
+The third run encoded 897 frames at quality 75; two pacing slots were skipped,
+one raw capture and 22 waiting encoded frames were replaced. The mean encoded
+JPEG was 40,356 bytes, p95 53,547 and max 58,722. Host completion age was p50
+49.02 ms, p95 73.04 ms and max 181.56 ms. This path validates each actual JPEG
+once, retains the verified immutable bytes, and packetizes them without repeating
+software decode. Unmarked external JPEG bytes are still checked before sending.
+Because load and capture samples differ, the run does not establish a causal FPS
+improvement; it does confirm receiver-reference compatibility under this setup.
 
 The source may be downloaded into ignored local artifacts for repeat testing:
 
@@ -40,5 +50,6 @@ Get-FileHash artifacts\media\Xonotic-0-8-2-gameplay.webm -Algorithm SHA256
 
 The two detailed JSONL logs remain in ignored local artifacts, named
 `stream-reference-xonotic-20261102.jsonl` and
-`stream-reference-xonotic-perfclock-20261102.jsonl`. The reference peer is a
+`stream-reference-xonotic-perfclock-20261102.jsonl`; the third run is
+`stream-reference-xonotic-single-validate-20261102.jsonl`. The reference peer is a
 host test harness, not a physical receiver.

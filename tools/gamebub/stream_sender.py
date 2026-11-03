@@ -16,8 +16,8 @@ from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
 from event_log import EventLog
-from host import Profile, canvas, clip_frames, encode
-from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, parse_feedback, send_frame
+from host import canvas, clip_frames
+from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, encode_receiver_jpeg, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
 from quality import QualityController
 
@@ -127,7 +127,7 @@ class Session:
             quality = self.quality.value
         started = time.perf_counter_ns()
         try:
-            jpeg, _ = encode(image, quality, Profile(huffman_sha256=None))
+            jpeg = encode_receiver_jpeg(image, quality)
         except (OverflowError, OSError, ValueError) as error:
             with self.lock:
                 self.quality.congested()

@@ -108,6 +108,9 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+Each actual encoder output is checked for the exact receiver profile and decoded
+in software once; immutable verified bytes are then packetized without repeating
+that validation. Other supplied JPEG bytes are validated before transmission.
 
 JSONL events are written by a separate bounded worker so file writes do not
 hold the sender/feedback lock. The queue is limited to 256 KiB and the log file

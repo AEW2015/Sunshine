@@ -247,17 +247,17 @@ class StreamSenderTests(unittest.TestCase):
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
         s.gate = FeedbackGate(time.perf_counter_ns())
-        with patch("stream_sender.encode", return_value=(b"x" * 100, {})):
+        with patch("stream_sender.encode_receiver_jpeg", return_value=b"x" * 100):
             s._encode(None)
         self.assertEqual(s.quality.value, 70)
-        with patch("stream_sender.encode", return_value=(b"x", {})):
+        with patch("stream_sender.encode_receiver_jpeg", return_value=b"x"):
             s._encode(None)
         self.assertEqual(s.quality.value, 71)
-        with patch("stream_sender.encode", return_value=(b"x" * 40, {})):
+        with patch("stream_sender.encode_receiver_jpeg", return_value=b"x" * 40):
             s._encode(None)
         self.assertEqual(s.quality.value, 71)
         with (
-            patch("stream_sender.encode", side_effect=OverflowError("too big")),
+            patch("stream_sender.encode_receiver_jpeg", side_effect=OverflowError("too big")),
             self.assertRaises(OverflowError),
         ):
             s._encode(None)
@@ -288,7 +288,7 @@ class StreamSenderTests(unittest.TestCase):
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
         with (
             patch("stream_sender.time.perf_counter_ns", return_value=11),
-            patch("stream_sender.encode", return_value=(b"x", {})),
+            patch("stream_sender.encode_receiver_jpeg", return_value=b"x"),
         ):
             s._encode(None)
         self.assertEqual(s.quality.value, 70)

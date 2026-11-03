@@ -11,10 +11,14 @@ from itertools import pairwise
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
+from PIL import Image
+
 from host import Profile, canvas, encode, pattern
 from msv1 import (
     FEEDBACK,
     Pacer,
+    ValidatedJpeg,
+    encode_receiver_jpeg,
     frame_datagrams,
     gamebub_buttons,
     main,
@@ -63,6 +67,36 @@ class ReceiverProtocolTests(unittest.TestCase):
         for jpeg in unsupported:
             with self.subTest(length=len(jpeg)), self.assertRaises(ValueError):
                 validate_receiver_jpeg(jpeg)
+
+    def test_receiver_encoder_validates_once_and_preserves_packet_bytes(self):
+        """@brief Strictly inspect each encoded JPEG once and packetize immutable bytes."""
+        image = canvas(pattern(0))
+        reference, _ = encode(image, 75, Profile())
+        with patch("msv1.validate_receiver_jpeg", wraps=validate_receiver_jpeg) as validate:
+            jpeg = encode_receiver_jpeg(image, 75)
+            self.assertIsInstance(jpeg, ValidatedJpeg)
+            self.assertEqual(jpeg, reference)
+            packets = list(frame_datagrams(jpeg, 1, 2))
+            self.assertEqual(validate.call_count, 1)
+            self.assertEqual(packets, list(frame_datagrams(reference, 1, 2)))
+            self.assertEqual(validate.call_count, 2)
+
+    def test_validated_jpeg_and_encoder_reject_invalid_inputs(self):
+        """@brief Reject mutable or invalid bytes, wrong canvas modes and invalid quality."""
+        for data in (bytearray(self.jpeg), b"invalid"):
+            with self.subTest(data=type(data)), self.assertRaises(ValueError):
+                ValidatedJpeg(data)
+        image = canvas(pattern(0))
+        for bad_image, quality in (
+            (None, 75),
+            (Image.new("L", (720, 480)), 75),
+            (Image.new("RGB", (10, 10)), 75),
+            (image, True),
+            (image, 0),
+            (image, 96),
+        ):
+            with self.subTest(quality=quality), self.assertRaises(ValueError):
+                encode_receiver_jpeg(bad_image, quality)
 
     def test_receiver_rtl_verified_host_fixture_is_transmittable(self):
         """@brief The exact 420 frame exercised by the receiver RTL meets the host profile."""

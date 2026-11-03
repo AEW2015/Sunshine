@@ -62,6 +62,50 @@ def validate_receiver_jpeg(data: bytes) -> dict:
     return metadata
 
 
+class ValidatedJpeg(bytes):
+    """@brief Immutable JPEG validated once against the receiver's exact test profile.
+
+    This is an internal correctness marker, not an authentication boundary.
+    Construct it normally from ordinary bytes; do not bypass the constructor.
+    """
+
+    def __new__(cls, data):
+        """@brief Validate complete immutable JPEG bytes before constructing the marker."""
+        if type(data) is not bytes:
+            raise ValueError("Expected immutable JPEG bytes")
+        validate_receiver_jpeg(data)
+        return super().__new__(cls, data)
+
+
+def encode_receiver_jpeg(image, quality):
+    """@brief Encode and validate one exact receiver-profile JPEG.
+
+    @param image RGB 720x480 source canvas.
+    @param quality JPEG quality from 1 to 95.
+    @return Immutable validated JPEG, ready for MSV1 packetization.
+    @throws ValueError If image, quality or actual JPEG format is unsupported.
+    """
+    if (
+        not isinstance(image, Image.Image)
+        or image.mode != "RGB"
+        or image.size != (WIDTH, HEIGHT)
+        or type(quality) is not int
+        or not 1 <= quality <= 95
+    ):
+        raise ValueError("Expected RGB 720x480 and JPEG quality 1..95")
+    output = BytesIO()
+    image.save(
+        output,
+        format="JPEG",
+        quality=quality,
+        subsampling="4:2:0",
+        optimize=False,
+        progressive=False,
+        restart_marker_blocks=0,
+    )
+    return ValidatedJpeg(output.getvalue())
+
+
 def frame_datagrams(jpeg: bytes, frame_id: int, capture_us: int, payload_size: int = MAX_PAYLOAD):
     """@brief Yield a validated complete frame as sequential MSV1 UDP datagrams.
 
@@ -80,7 +124,8 @@ def frame_datagrams(jpeg: bytes, frame_id: int, capture_us: int, payload_size: i
         or not 1 <= payload_size <= MAX_PAYLOAD
     ):
         raise ValueError("Invalid MSV1 identifier, timestamp or payload size")
-    validate_receiver_jpeg(jpeg)
+    if type(jpeg) is not ValidatedJpeg:
+        validate_receiver_jpeg(jpeg)
     crc = zlib.crc32(jpeg)
     for offset in range(0, len(jpeg), payload_size):
         payload = jpeg[offset : offset + payload_size]
