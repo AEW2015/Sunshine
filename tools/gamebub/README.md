@@ -35,6 +35,13 @@ do not remove its phase-dependent count/latency failures or qualify hardware.
 These research helpers do not change the installed Sunshine service or add a
 new sender option.
 
+[Iteration3](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/custom-codec-prototype-v3-2026-11-03.md)
+adds DC/AC contexts, compressed-byte stripe decoding and a temporal transform
+prototype with epoch-bound commit ACK checks. Short temporal samples use fewer
+bytes than receiver JPEG at slightly lower PSNR; real-time feedback, memory,
+visual quality and integration gates remain open. MT02/SS01 are research
+formats and cannot be sent through this JPEG-only tool as installed modes.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
