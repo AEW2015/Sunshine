@@ -19,12 +19,13 @@ temporal row patches save34.44% complete bytes versus HP01 at identical exact
 area. BM01 bounded block prediction is a separate format with mixed real results
 and paid search/vector overhead; it is not a universal replacement.
 
-The next coded software target is512×28830fps, with20fps as secondary. Short
-measured-call replay reaches30 diagnostic IDs/s for512 base,29 for periodic-refresh
-UI and20 at a20fps UI target. A separate initial-key-only UI probe reaches30
-inside its diagnostic window, while missing startup/strict frames. None qualifies
-sustained hardware30fps or a default refresh policy. Native display scaling and
-fixed scanout still need implementation/service validation.
+The primary product target remains **720×480 coded video at30fps**, preserving
+720×405 active16:9 game content. The512×288/20fps cases are diagnostic comparisons.
+The [updated plan](https://github.com/AEW2015/moonbub/blob/plan/gamebub-720x480-20261103/docs/gamebub-application-specific-codec-plan.md)
+prioritizes compression, native decoder service and key/ACK/refresh scheduling
+at the primary resolution. Current high-resolution replay remains below target;
+no hardware30fps result or default refresh policy is qualified. The original
+v11 handoff remains a frozen experiment snapshot.
 
 The FPGA study separates constrained conformant HEVC, full AV1 porting and custom
 inspired codecs. Existing public full AV1 builds exceed this Artix-7 unchanged;
