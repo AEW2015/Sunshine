@@ -35,14 +35,12 @@ ctest --test-dir build --output-on-failure
 
 ## Validation record
 
-Built and tested in the `radiant-xrdp` container, using scratch build trees
-outside the repository at `/tmp/gamebub-capture-buffer-adapter-build` and
-`/tmp/gamebub-capture-buffer-adapter-warnings`. A third Debug build with
-ASan/UBSan used `/tmp/gamebub-capture-buffer-adapter-sanitizers`. Toolchain:
-CMake 3.28.3, GNU C++ 13.3.0, C++20. All three CTest runs passed (1/1 test
-executable, with twelve internal test functions). The warning build used
-`-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion`; compilation emitted
-no warnings. ASan/UBSan reported no issues.
+The adapter was built and tested in `radiant-xrdp` with CMake 3.28.3, GNU C++
+13.3.0 and C++20. For the randomized extension, Release, warning-enabled and
+ASan/UBSan builds in `/tmp/gamebub-capture-buffer-random-{release,warnings,sanitizers}`
+each passed CTest (1/1 executable; fourteen internal test functions). The
+warning build used `-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion`
+and emitted no warnings. ASan/UBSan reported no issues.
 
 The paired synthetic scaler-only probe used a generated 1280×720 RGB buffer,
 three warmups and 35 calls per mode in the Release warning build. Bilinear
@@ -111,3 +109,44 @@ env -u LD_LIBRARY_PATH ctest --test-dir /tmp/gamebub-capture-buffer-adapter-sani
   --output-on-failure
 env -u LD_LIBRARY_PATH /tmp/gamebub-capture-buffer-adapter-warnings/bench_capture_buffer
 ```
+
+## Randomized optimized-area comparison
+
+The C++ unit test now compares the integer optimized scaler to the double
+reference over 34 deterministic RGB inputs. Seed `0x5ca1ab1e` (`1554098974`)
+produced 35,251,200 compared channel values and a maximum absolute output
+difference of **1 channel level**. Inputs include 1×1, 1×1536, 1536×1, odd and
+even dimensions, dimensions near the canvas ratio, plus 24 seeded random
+dimensions in `[1, 1536]`; all channel values are seeded pseudorandom bytes.
+The 1-pixel-wide/tall cases exercise the optimized scaler's reference-area
+fallback when fitting requires upscaling. The same comparison passed in Release,
+warning-enabled and ASan/UBSan builds.
+
+A separate allocation-bound case uses a 1×3,000,000 RGB source (9,000,000
+bytes). Its scaled horizontal intermediate would require 72,000,000 bytes,
+above the configured 64 MiB cap. Both the double reference and optimized path
+reject it before allocating that intermediate. This tests this specific guard;
+it does not prove every allocator failure path or all possible dimensions.
+
+Reproduce the added checks inside `radiant-xrdp` (host repository is mounted at
+`/mnt/main_os`):
+
+```sh
+env -u LD_LIBRARY_PATH cmake -S \
+  /mnt/main_os/gamebub-streaming-prototype/repos/sunshine-30fps-study/tools/gamebub/experiments/capture-buffer-adapter \
+  -B /tmp/gamebub-capture-buffer-random-release -DCMAKE_BUILD_TYPE=Release
+env -u LD_LIBRARY_PATH cmake --build /tmp/gamebub-capture-buffer-random-release --parallel 2
+env -u LD_LIBRARY_PATH ctest --test-dir /tmp/gamebub-capture-buffer-random-release --output-on-failure
+env -u LD_LIBRARY_PATH cmake -S \
+  /mnt/main_os/gamebub-streaming-prototype/repos/sunshine-30fps-study/tools/gamebub/experiments/capture-buffer-adapter \
+  -B /tmp/gamebub-capture-buffer-random-sanitizers -DCMAKE_BUILD_TYPE=Debug \
+  '-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer' \
+  '-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined'
+env -u LD_LIBRARY_PATH cmake --build /tmp/gamebub-capture-buffer-random-sanitizers --parallel 2
+env -u LD_LIBRARY_PATH ctest --test-dir /tmp/gamebub-capture-buffer-random-sanitizers --output-on-failure
+```
+
+These checks compare two implementations of the same area-coverage definition;
+they do not measure perceived quality, arbitrary image fidelity, game capture,
+real-time deadline performance or hardware behavior. The seeded cases are broad
+directed/randomized coverage, not exhaustive over the input space.

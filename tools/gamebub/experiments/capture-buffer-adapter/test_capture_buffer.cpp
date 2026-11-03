@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -247,6 +248,60 @@ namespace {
       CHECK(maximum_difference <= 1);
     }
   }
+
+  void test_optimized_area_randomized_against_reference() {
+    // Fixed seed keeps failures and the measured maximum error reproducible.
+    constexpr std::uint32_t seed = 0x5ca1ab1e;
+    std::mt19937 random {seed};
+    std::uniform_int_distribution<std::uint32_t> dimension {1, 1536};
+    std::uniform_int_distribution<int> channel {0, 255};
+    std::vector<std::pair<std::uint32_t, std::uint32_t>> sizes {
+      {1, 1}, {1, 1536}, {1536, 1}, {3, 1025}, {1024, 3},
+      {17, 31}, {32, 17}, {719, 479}, {1280, 720}, {1536, 864},
+    };
+    for (int i = 0; i < 24; ++i) {
+      sizes.emplace_back(dimension(random), dimension(random));
+    }
+
+    std::uint8_t maximum_difference = 0;
+    std::size_t compared_values = 0;
+    for (const auto &[width, height] : sizes) {
+      const auto byte_count = static_cast<std::size_t>(width) * height * 3;
+      gamebub::capture_buffer::rgb_frame_t source {width, height, std::vector<std::uint8_t>(byte_count)};
+      for (auto &value : source.pixels) {
+        value = static_cast<std::uint8_t>(channel(random));
+      }
+
+      const auto reference = area_letterbox_720x480(source);
+      const auto optimized = optimized_area_letterbox_720x480(source);
+      CHECK(optimized.width == 720 && optimized.height == 480);
+      CHECK(reference.pixels.size() == 720 * 480 * 3);
+      CHECK(optimized.pixels.size() == reference.pixels.size());
+      for (std::size_t i = 0; i < reference.pixels.size(); ++i) {
+        const auto difference = static_cast<std::uint8_t>(std::abs(
+          static_cast<int>(optimized.pixels[i]) - static_cast<int>(reference.pixels[i])
+        ));
+        maximum_difference = std::max(maximum_difference, difference);
+        ++compared_values;
+      }
+      CHECK(maximum_difference <= 1);
+    }
+    std::cout << "randomized optimized-area comparison: seed=" << seed
+              << " cases=" << sizes.size() << " channel_values=" << compared_values
+              << " max_abs_error=" << static_cast<unsigned>(maximum_difference) << '\n';
+  }
+
+  void test_area_scalers_reject_large_intermediate_before_allocating_it() {
+    // A narrow, tall source is only 9 MiB, while the separable intermediate
+    // would exceed the configured 64 MiB bound. This avoids a huge test fixture.
+    constexpr std::uint32_t width = 1;
+    constexpr std::uint32_t height = 3'000'000;
+    gamebub::capture_buffer::rgb_frame_t source {
+      width, height, std::vector<std::uint8_t>(static_cast<std::size_t>(height) * 3, 127)
+    };
+    expect_throws<std::length_error>([&] { (void) area_letterbox_720x480(source); });
+    expect_throws<std::length_error>([&] { (void) optimized_area_letterbox_720x480(source); });
+  }
 }  // namespace
 
 int main() {
@@ -262,5 +317,7 @@ int main() {
   test_scaler_rejects_invalid_source_shape();
   test_area_filter_is_bounded_and_antialiases_high_frequency_pattern();
   test_optimized_area_matches_reference_across_patterns();
+  test_optimized_area_randomized_against_reference();
+  test_area_scalers_reject_large_intermediate_before_allocating_it();
   return 0;
 }
