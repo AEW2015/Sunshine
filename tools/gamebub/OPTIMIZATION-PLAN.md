@@ -94,7 +94,9 @@ a reliable unit-test assertion on shared machines.
     sender or admit stale input.
 23. **Keep telemetry cheap and bounded.** Test: counters distinguish capture,
     encode, stale, congestion and receiver failures; logs use bounded storage
-    and aggregation does not block the media workers.
+    and aggregation does not block the media workers. The standalone sender
+    now queues JSONL records to a separate writer with memory and file bounds;
+    records can be dropped and final stdout reports logging failures.
 24. **Negotiate a versioned dedicated session.** Test: unknown versions and
     unsupported capabilities fail cleanly, and stock Moonlight never receives
     JPEG labeled as H.264. Exact handshake remains to be agreed.

@@ -22,6 +22,22 @@ from quality import QualityController
 from stream_sender import FeedbackGate, Session, main, run
 
 
+class MemoryEvents:
+    """@brief Synchronous event collector for isolated Session method tests."""
+
+    def __init__(self):
+        """@brief Start an in-memory JSONL stream."""
+        self.output = io.StringIO()
+
+    def submit(self, event):
+        """@brief Record one structured event without starting a writer thread."""
+        self.output.write(json.dumps(event) + "\n")
+
+    def getvalue(self):
+        """@brief Return the recorded JSONL events."""
+        return self.output.getvalue()
+
+
 class StreamSenderTests(unittest.TestCase):
     """@brief Exercise capture, JPEG, packetization and ingress feedback on loopback."""
 
@@ -49,7 +65,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_silent_peer_suppresses_frames_and_clears_stale_pending(self):
         """@brief Timeout limits datagrams to probes and rejects delayed old feedback."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.sock = threading.Lock(), io.StringIO(), Mock()
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
         s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
         s.recovery_eligible = True
         s.pending, s.counts = OrderedDict({(0, 0): None}), Counter()
@@ -191,6 +207,8 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(result["counts"]["feedback_accepted"], 4)
         self.assertEqual(result["pipeline"]["counts"]["sent"], 4)
         self.assertFalse(result["end_to_end_verified"])
+        self.assertEqual(result["logging"]["dropped"], 0)
+        self.assertIsNone(result["logging"]["error"])
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
         self.assertEqual(
             [
@@ -202,10 +220,28 @@ class StreamSenderTests(unittest.TestCase):
         )
         self.assertEqual(events[-1]["event"], "summary")
 
+    def test_log_io_failure_is_reported_at_close(self):
+        """@brief Log storage failure does not crash the sender and is visible in its summary."""
+
+        class BrokenFile(io.StringIO):
+            """@brief Deterministically fail all logging writes."""
+
+            def write(self, value):
+                """@brief Simulate a full disk."""
+                raise OSError("disk full")
+
+        sock = Mock()
+        sock.recv.side_effect = BlockingIOError()
+        session = Session(sock, BrokenFile(), 30, 20, 200, 75, 20)
+        session._event("test")
+        result = session.close()
+        self.assertIn("disk full", result["logging"]["error"])
+        self.assertGreaterEqual(result["logging"]["dropped"], 1)
+
     def test_adaptation_and_network_errors(self):
         """@brief Congestion and encoder/socket failures lower quality within bounds."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.sock = threading.Lock(), io.StringIO(), Mock()
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
         s.quality = QualityController(75, 20, recovery_frames=1)
         s.recovery_eligible = True
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
@@ -246,7 +282,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_quality_does_not_recover_on_old_feedback(self):
         """@brief Old ACKs do not permit quality recovery while the send worker is blocked."""
         s = Session.__new__(Session)
-        s.lock, s.log = threading.Lock(), io.StringIO()
+        s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(0, 10, 20)
         s.quality.congested()
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
@@ -260,7 +296,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
         s.gate = FeedbackGate(time.monotonic_ns())
         s.controller = ControllerTracker()
@@ -283,7 +319,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_feedback_heartbeat_and_ack_after_timeout(self):
         """@brief Repeated current heartbeats count, but delayed ACKs do not revive silence."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
         s.pending = OrderedDict({(4, 10): None, (5, 11): None})
         s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=10, probe_ns=20)
         s.controller = ControllerTracker()
@@ -304,7 +340,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_button_logging_timeout_and_late_heartbeat(self):
         """@brief Accepted snapshots are logged; silence emits a neutral state."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
         s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(10)
         s.quality = QualityController(75, 20)
@@ -322,7 +358,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_bad_button_mask_and_socket_error_release(self):
         """@brief Reject reserved button bits and neutralize held state on socket error."""
         s = Session.__new__(Session)
-        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None, (5, 11): None}), Counter()
         s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(1000)
         s.quality = QualityController(75, 20)

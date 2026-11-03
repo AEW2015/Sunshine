@@ -15,6 +15,7 @@ from pathlib import Path
 from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
+from event_log import EventLog
 from host import Profile, canvas, clip_frames, encode
 from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
@@ -99,7 +100,7 @@ class Session:
             or not 1 <= min_quality <= quality <= 95
         ):
             raise ValueError("Invalid session rate, deadline or quality")
-        self.sock, self.log, self.fps = sock, log, fps
+        self.sock, self.log, self.fps = sock, EventLog(log), fps
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.quality = QualityController(quality, min_quality)
@@ -118,8 +119,7 @@ class Session:
 
     def _event(self, kind, **fields):
         """@brief Serialize one event under the session lock."""
-        self.log.write(json.dumps({"event": kind, **fields}) + "\n")
-        self.log.flush()
+        self.log.submit({"event": kind, **fields})
 
     def _encode(self, image):
         """@brief Encode a frame and slowly adapt quality to the per-frame wire budget."""
@@ -304,7 +304,8 @@ class Session:
             result["encoded_fps"] = result["pipeline"]["counts"].get("encoded", 0) / duration
             result["sent_fps"] = result["pipeline"]["counts"].get("sent", 0) / duration
             self._event("summary", **result)
-            return result
+        result["logging"] = self.log.close()
+        return result
 
 
 def run(args, source=None):
@@ -318,7 +319,7 @@ def run(args, source=None):
         source if source is not None else (clip_frames(args.clip, args.fps) if args.clip else None)
     )
     with (
-        args.log.open("x", encoding="utf-8") as log,
+        args.log.open("x", encoding="utf-8", newline="\n") as log,
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock,
     ):
         sock.connect((args.target, args.port))

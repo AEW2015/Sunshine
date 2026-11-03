@@ -76,7 +76,7 @@ do not use that run for performance measurements. Regression tests use controlle
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
 `make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
-`stream_sender.py`, `controller.py`, and `quality.py`.
+`stream_sender.py`, `controller.py`, `quality.py`, and `event_log.py`.
 
 `controller.py` tracks the 12-bit feedback snapshots and logs translated
 Windows-style gamepad flags. It rejects old video-frame identities, emits a
@@ -105,6 +105,13 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+
+JSONL events are written by a separate bounded worker so file writes do not
+hold the sender/feedback lock. The queue is limited to 256 KiB and the log file
+to 64 MiB; records may be dropped when either bound is reached or the file
+fails. The printed final summary reports written and dropped records and any
+I/O error. A summary record is attempted in JSONL but can itself be dropped
+when logging is saturated. Shutdown waits for the file writer to return.
 
 The quality controller decreases promptly on oversized wire budget, send failure,
 or receiver busy/drop feedback. It requires 30 consecutive small encoded frames
