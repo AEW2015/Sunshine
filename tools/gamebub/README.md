@@ -10,6 +10,10 @@ See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
 and hardware measurements each item needs.
 
+An optional, default-off native MSV1 packet serializer has been built and tested
+against the receiver's golden packets. It does not enable a Sunshine streaming
+mode; see [native build evidence](measurements/native-msv1-build.md).
+
 The target product is one dedicated 720×480/30 fps video, audio and simple
 button mode, rather than a general Moonlight feature set. Its exact codec and
 audio profile await the receiver agent; see the

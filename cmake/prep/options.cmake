@@ -17,6 +17,8 @@ option(BUILD_WERROR "Enable -Werror flag." OFF)
 option(SUNSHINE_CONFIGURE_ONLY "Configure special files only, then exit." OFF)
 
 option(SUNSHINE_ENABLE_TRAY "Enable system tray icon." ON)
+option(SUNSHINE_GAMEBUB_EXPERIMENTAL
+        "Compile experimental Game Bub protocol groundwork." OFF)
 
 if(WIN32)
     option(SUNSHINE_USE_STATIC_QT

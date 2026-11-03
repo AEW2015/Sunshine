@@ -54,7 +54,9 @@ a reliable unit-test assertion on shared machines.
 
 11. **Use Sunshine's DXGI capture path** for the integrated host. Test: a fake
     capture source supplies frames, timeout, device loss and size changes;
-    recovery restores the fixed canvas without leaking resources.
+    recovery restores the fixed canvas without leaking resources. A preliminary
+    [desktop capture probe](measurements/desktop-capture-probe.md) identifies
+    existing ImageGrab overhead but does not select a backend.
 12. **Keep scaling efficient.** Test: wide, tall, tiny and 16:9 inputs preserve
     proportions and black bars. Existing clip-path bilinear tests cover a solid
     frame; add moving-detail visual comparison on real hardware.
