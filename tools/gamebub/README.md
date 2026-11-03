@@ -42,6 +42,12 @@ bytes than receiver JPEG at slightly lower PSNR; real-time feedback, memory,
 visual quality and integration gates remain open. MT02/SS01 are research
 formats and cannot be sent through this JPEG-only tool as installed modes.
 
+[Iteration4](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/custom-codec-prototype-v4-2026-11-03.md)
+actually re-encodes after capture skips under virtual ACK/cap timing and tests
+an immutable-anchor overlap profile. It records conditional rate improvements,
+cap/quality failures and Python service costs slower than real time. No
+installed Sunshine mode, receiver support or physical30 fps is established.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
