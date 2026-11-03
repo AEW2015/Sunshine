@@ -93,6 +93,16 @@ class ReceiverFirmwareIntegration(unittest.TestCase):
             rows, _ = execute(frame[:2] + newer)
             self.assertTrue(all(row[:2] == (1, 1) for row in rows))
             self.assertEqual(rows[-1][2:4], (1, 8))
+            for impaired in (
+                frame[:1] + frame[2:],
+                frame[:2] + frame[1:],
+                frame[:1] + frame[2:3] + frame[1:2] + frame[3:],
+            ):
+                with self.subTest(packets=len(impaired)):
+                    rows, _ = execute(impaired + newer)
+                    damaged_rows, recovered_rows = rows[: len(impaired)], rows[len(impaired) :]
+                    self.assertFalse(any(row[2] == 1 for row in damaged_rows))
+                    self.assertEqual(recovered_rows[-1][2:4], (1, 8))
             wrapped = list(frame_datagrams(jpeg, 0xFFFFFFFF, 1)) + list(frame_datagrams(jpeg, 0, 2))
             rows, _ = execute(wrapped)
             self.assertEqual(rows[-1][2:4], (1, 0))

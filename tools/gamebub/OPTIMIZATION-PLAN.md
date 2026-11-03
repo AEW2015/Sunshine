@@ -56,7 +56,9 @@ a reliable unit-test assertion on shared machines.
     capture source supplies frames, timeout, device loss and size changes;
     recovery restores the fixed canvas without leaking resources. A preliminary
     [desktop capture probe](measurements/desktop-capture-probe.md) identifies
-    existing ImageGrab overhead but does not select a backend.
+    existing ImageGrab overhead but does not select a backend. See the
+    [DXGI investigation](DXGI-INVESTIGATION.md) for the current capture path,
+    ownership constraints and proposed tests.
 12. **Keep scaling efficient.** Test: wide, tall, tiny and 16:9 inputs preserve
     proportions and black bars. Existing clip-path bilinear tests cover a solid
     frame; add moving-detail visual comparison on real hardware.
@@ -90,7 +92,10 @@ a reliable unit-test assertion on shared machines.
     valid frames and several malformed/recovery paths; extend as needed.
 21. **Recover from dropped, duplicated and reordered chunks.** Test: parser
     never presents a partial frame and accepts the next valid SOF according to
-    the receiver's actual recovery contract.
+    the receiver's actual recovery contract. The pinned Rust parser now has
+    deterministic tests for all three faults followed by a complete new frame;
+    a separate localhost test injects the same faults before the pinned Python
+    reassembler. Neither substitutes for physical Wi-Fi/QSPI testing.
 22. **Handle network failure and reconnection.** Test: socket errors, unreachable
     peer, restart, sequence rollover and old-session packets cannot wedge the
     sender or admit stale input.

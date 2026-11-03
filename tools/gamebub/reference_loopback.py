@@ -14,6 +14,7 @@ import types
 from pathlib import Path
 from types import SimpleNamespace
 
+from host import clip_frames
 from stream_sender import run
 
 REVISION = "75f8497b6ffefadd8c0403728b93ccfbbfa02f52"
@@ -96,6 +97,26 @@ class ReferencePeer:
         return dict(self.stats)
 
 
+def loop_clip(path, fps):
+    """@brief Repeat a clip for a soak test without retaining decoded frames.
+
+    @param path Source video path.
+    @param fps Desired output timeline rate.
+    @return Iterator of decoded frames; an empty clip terminates without spinning.
+    """
+    while True:
+        frames = clip_frames(path, fps)
+        emitted = False
+        try:
+            for frame in frames:
+                emitted = True
+                yield frame
+        finally:
+            frames.close()
+        if not emitted:
+            return
+
+
 def run_reference(args, source=None):
     """@brief Run the sender against the pinned localhost peer.
 
@@ -105,6 +126,8 @@ def run_reference(args, source=None):
     """
     reference = load_reference(args.reference_repo)
     peer = ReferencePeer(reference)
+    if source is None and getattr(args, "loop", False):
+        source = loop_clip(args.clip, args.fps)
     options = SimpleNamespace(
         target="127.0.0.1",
         port=peer.port,
@@ -139,6 +162,9 @@ def main(argv=None):
     parser.add_argument("--clip", type=Path, required=True)
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--frames", type=int, default=900)
+    parser.add_argument(
+        "--loop", action="store_true", help="Repeat the clip until frame count is reached"
+    )
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--mbps", type=float, default=20)
     parser.add_argument("--max-age-ms", type=float, default=200)

@@ -71,6 +71,9 @@ Clone into a new path or point `--reference-repo` at an existing clone. The
 harness reads the exact pinned revision through Git and verifies its source
 hash before loading it. It binds only an ephemeral localhost receiver; use a
 fresh log filename. Timings vary with machine load and later code changes.
+For a 10-minute localhost soak, replace `--frames 900` with
+`--frames 18000 --loop`; the clip is reopened at its end without accumulating
+decoded frames. This is not a test of Wi-Fi or a physical receiver.
 
 The two detailed JSONL logs remain in ignored local artifacts, named
 `stream-reference-xonotic-20261102.jsonl` and
