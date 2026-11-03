@@ -108,6 +108,14 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+The pinned firmware locks onto the first sender's IP **and UDP source port**
+for its test session. Restarting the sender with a new ephemeral port will be
+ignored until the receiver test session is restarted. For a coordinated host
+restart within the same receiver session, use `--source-port` to retain the
+same local port and `--start-frame-id` to choose an ID newer than every frame
+previously started, using the receiver's wrapping serial-number rule. The
+caller must know the last attempted ID; logging may be incomplete after a crash.
+Otherwise restart the receiver's Test MJPEG session before restarting the host.
 Each actual encoder output is checked for the exact receiver profile and decoded
 in software once; immutable verified bytes are then packetized without repeating
 that validation. Other supplied JPEG bytes are validated before transmission.

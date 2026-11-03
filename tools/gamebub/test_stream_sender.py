@@ -140,7 +140,7 @@ class StreamSenderTests(unittest.TestCase):
 
     def test_loopback_frames_and_feedback(self):
         """@brief A receiver reassembles complete CRC-checked JPEGs and acknowledges ingress."""
-        completed, errors = [], []
+        completed, errors, source_ports = [], [], set()
         stop = threading.Event()
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
             receiver.bind(("127.0.0.1", 0))
@@ -154,6 +154,7 @@ class StreamSenderTests(unittest.TestCase):
                         packet, address = receiver.recvfrom(2048)
                     except TimeoutError:
                         continue
+                    source_ports.add(address[1])
                     fields = VIDEO.unpack(packet[: VIDEO.size])
                     _, _, _, flags, frame, width, height, total, offset, size, _, crc, stamp = (
                         fields
@@ -183,6 +184,9 @@ class StreamSenderTests(unittest.TestCase):
             thread = threading.Thread(target=peer)
             thread.start()
             try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as reserve:
+                    reserve.bind(("127.0.0.1", 0))
+                    source_port = reserve.getsockname()[1]
                 with tempfile.TemporaryDirectory() as directory:
                     args = SimpleNamespace(
                         target="127.0.0.1",
@@ -194,6 +198,8 @@ class StreamSenderTests(unittest.TestCase):
                         quality=75,
                         min_quality=20,
                         frames=4,
+                        source_port=source_port,
+                        start_frame_id=0xFFFFFFFE,
                     )
                     source = iter([Image.new("RGB", (720, 480), (i * 40, 0, 0)) for i in range(4)])
                     result = run(args, source)
@@ -203,7 +209,8 @@ class StreamSenderTests(unittest.TestCase):
                 thread.join(2)
         self.assertFalse(thread.is_alive())
         self.assertEqual(errors, [])
-        self.assertEqual(completed, [0, 1, 2, 3])
+        self.assertEqual(completed, [0xFFFFFFFE, 0xFFFFFFFF, 0, 1])
+        self.assertEqual(source_ports, {source_port})
         self.assertEqual(result["counts"]["feedback_accepted"], 4)
         self.assertEqual(result["pipeline"]["counts"]["sent"], 4)
         self.assertFalse(result["end_to_end_verified"])
@@ -219,6 +226,64 @@ class StreamSenderTests(unittest.TestCase):
             [(0x1000, "feedback"), (0, "shutdown")],
         )
         self.assertEqual(events[-1]["event"], "summary")
+
+    def test_restart_keeps_source_port_and_advances_frame_id(self):
+        """@brief Two sender runs can match a peer pinned to the first source port."""
+        stopped, complete, peers = threading.Event(), [], []
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+            receiver.bind(("127.0.0.1", 0))
+            receiver.settimeout(0.05)
+
+            def peer():
+                """@brief Enforce the peer port and monotonically newer completed IDs."""
+                while not stopped.is_set():
+                    try:
+                        packet, address = receiver.recvfrom(2048)
+                    except TimeoutError:
+                        continue
+                    if peers and address != peers[0]:
+                        continue
+                    if not peers:
+                        peers.append(address)
+                    header = VIDEO.unpack(packet[: VIDEO.size])
+                    if header[3] & 2 and (not complete or header[4] > complete[-1]):
+                        complete.append(header[4])
+                        receiver.sendto(
+                            FEEDBACK.pack(b"MSF1", 1, 0, 0, header[4], 0, 0, 0, header[12]),
+                            address,
+                        )
+
+            thread = threading.Thread(target=peer)
+            thread.start()
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as reserve:
+                    reserve.bind(("127.0.0.1", 0))
+                    source_port = reserve.getsockname()[1]
+                with tempfile.TemporaryDirectory() as directory:
+                    args = SimpleNamespace(
+                        target="127.0.0.1",
+                        port=receiver.getsockname()[1],
+                        source_port=source_port,
+                        log=Path(directory) / "first.jsonl",
+                        fps=30,
+                        mbps=100,
+                        max_age_ms=500,
+                        quality=75,
+                        min_quality=20,
+                        frames=1,
+                        start_frame_id=100,
+                    )
+                    image = Image.new("RGB", (720, 480))
+                    first = run(args, iter([image]))
+                    args.start_frame_id, args.log = 101, Path(directory) / "second.jsonl"
+                    second = run(args, iter([image]))
+            finally:
+                stopped.set()
+                thread.join(2)
+        self.assertEqual(complete, [100, 101])
+        self.assertEqual(peers[0][1], source_port)
+        self.assertEqual(first["counts"]["feedback_accepted"], 1)
+        self.assertEqual(second["counts"]["feedback_accepted"], 1)
 
     def test_log_io_failure_is_reported_at_close(self):
         """@brief Log storage failure does not crash the sender and is visible in its summary."""
@@ -272,6 +337,13 @@ class StreamSenderTests(unittest.TestCase):
         ):
             s._send(frame, b"x")
         self.assertEqual(s.counts["socket_failures"], 1)
+        self.assertEqual(len(s.pending), 0)
+        with (
+            patch("stream_sender.send_frame", side_effect=ValueError("invalid jpeg")),
+            self.assertRaises(ValueError),
+        ):
+            s._send(frame, b"x")
+        self.assertEqual(s.counts["packet_failures"], 1)
         self.assertEqual(len(s.pending), 0)
         s.pending.update(((i, i), None) for i in range(512))
         with patch("stream_sender.send_frame", return_value=(True, 40)):
@@ -378,7 +450,14 @@ class StreamSenderTests(unittest.TestCase):
 
     def test_cli_validation_and_ack_exit_status(self):
         """@brief The CLI fails without ingress confirmation and rejects invalid limits."""
-        for extra in (("--fps", "60"), ("--mbps", "nan"), ("--port", "0"), ("--max-age-ms", "0")):
+        for extra in (
+            ("--fps", "60"),
+            ("--mbps", "nan"),
+            ("--port", "0"),
+            ("--max-age-ms", "0"),
+            ("--source-port", "-1"),
+            ("--start-frame-id", "4294967296"),
+        ):
             with self.subTest(extra=extra), self.assertRaises(SystemExit):
                 main(["127.0.0.1", "--desktop", "--log", "unused", *extra])
         with patch("stream_sender.run", return_value={"counts": {}}), patch("builtins.print"):

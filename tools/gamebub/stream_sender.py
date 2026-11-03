@@ -184,11 +184,17 @@ class Session:
                 clock=lambda: time.perf_counter_ns() / 1e9,
                 pacer=self.pacer,
             )
-        except OSError:
+        except (OSError, ValueError) as error:
             with self.lock:
                 self.pending.pop(key, None)
-                self.counts["socket_failures"] += 1
+                self.counts["socket_failures" if isinstance(error, OSError) else "packet_failures"] += 1
                 self.recovery_eligible = False
+                self._event(
+                    "send_error",
+                    frame_id=frame.frame_id,
+                    capture_us=frame.capture_us,
+                    error=str(error),
+                )
             raise
         with self.lock:
             self.counts["wire_bytes"] += sent
@@ -322,6 +328,7 @@ def run(args, source=None):
         args.log.open("x", encoding="utf-8", newline="\n") as log,
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock,
     ):
+        sock.bind(("0.0.0.0", getattr(args, "source_port", 0)))
         sock.connect((args.target, args.port))
         sock.setblocking(False)
         session = Session(
@@ -344,7 +351,8 @@ def run(args, source=None):
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
                 prepared = canvas(image, Image.Resampling.BILINEAR)
-                session.pipeline.submit(Frame(slot & 0xFFFFFFFF, now, stamp_us, prepared))
+                frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
+                session.pipeline.submit(Frame(frame_id, now, stamp_us, prepared))
                 with session.lock:
                     session.counts["skipped_slots"] += skipped
                 slot += 1
@@ -366,6 +374,12 @@ def main(argv=None):
     group.add_argument("--desktop", action="store_true")
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--port", type=int, default=5533)
+    parser.add_argument(
+        "--source-port", type=int, default=0, help="Local UDP port; 0 chooses an ephemeral port"
+    )
+    parser.add_argument(
+        "--start-frame-id", type=int, default=0, help="First unsigned 32-bit frame ID"
+    )
     parser.add_argument("--frames", type=int, default=300)
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--mbps", type=float, default=20)
@@ -375,6 +389,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if (
         not 1 <= args.port <= 65535
+        or not 0 <= args.source_port <= 65535
+        or not 0 <= args.start_frame_id <= 0xFFFFFFFF
         or not 1 <= args.frames <= 108000
         or not 1 <= args.fps <= 30
         or not 1 <= args.min_quality <= args.quality <= 95
