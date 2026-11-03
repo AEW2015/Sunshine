@@ -73,4 +73,33 @@ namespace gamebub::capture_buffer {
    * @throws std::length_error If source dimension arithmetic overflows.
    */
   [[nodiscard]] rgb_frame_t bilinear_letterbox_720x480(const rgb_frame_t &source);
+
+  /**
+   * @brief Fit RGB into 720x480 using separable area averaging for reductions.
+   *
+   * Each reducing axis integrates source-pixel area coverage; an expanding
+   * axis uses pixel-center bilinear sampling. The intermediate double plane is
+   * bounded by max_rgb_bytes.
+   *
+   * @param source Owned packed RGB source image.
+   * @return Owned fixed-size 720x480 RGB canvas.
+   * @throws std::invalid_argument If source dimensions or packed pixel count disagree.
+   * @throws std::length_error If arithmetic or bounded scratch allocation fails.
+   */
+  [[nodiscard]] rgb_frame_t area_letterbox_720x480(const rgb_frame_t &source);
+
+  /**
+   * @brief Integer-weighted separable area scaler for downscaling inputs.
+   *
+   * Uses precomputed integer overlap weights and rounds once after both axes.
+   * If fitting would enlarge either source axis, delegates to the area reference
+   * path. Axis-plan and intermediate scratch allocations are each capped by
+   * max_rgb_bytes.
+   *
+   * @param source Owned packed RGB source image.
+   * @return Owned fixed-size 720x480 RGB canvas.
+   * @throws std::invalid_argument If source dimensions or packed pixel count disagree.
+   * @throws std::length_error If source, plan or scratch bounds are exceeded.
+   */
+  [[nodiscard]] rgb_frame_t optimized_area_letterbox_720x480(const rgb_frame_t &source);
 }  // namespace gamebub::capture_buffer

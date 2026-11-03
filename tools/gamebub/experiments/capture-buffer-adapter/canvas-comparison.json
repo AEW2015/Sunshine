@@ -1,0 +1,294 @@
+{
+  "study": "Synthetic RGB resampling implementation comparison",
+  "input": {
+    "size": "1280x720",
+    "patterns": [
+      "gradient",
+      "edge",
+      "checker1",
+      "stripes4"
+    ]
+  },
+  "canvas_geometry": {
+    "output": "720x480",
+    "content": "720x405",
+    "top_black_rows": 37,
+    "bottom_black_rows": 38,
+    "fit": "aspect-preserving center fit"
+  },
+  "paths": {
+    "cpp_bilinear": "isolated bilinear_letterbox_720x480; pixel-center bilinear, edge clamp, round-nearest",
+    "cpp_area_reference": "isolated area_letterbox_720x480; double-precision separable source-area coverage reference",
+    "cpp_area_optimized": "isolated optimized_area_letterbox_720x480; precomputed integer overlap weights and one final rounding",
+    "pillow": "adjacent host.canvas(PIL.Image), default LANCZOS",
+    "pyav_ffmpeg": "adjacent host.canvas(av.VideoFrame), RGB-to-RGB reformat with bilinear interpolation"
+  },
+  "comparisons": {
+    "gradient": {
+      "cpp_bilinear_vs_pillow_lanczos": {
+        "rgb_psnr_db": 67.25347952011661,
+        "mae_channel_levels": 0.012238618827160494,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.012238618827160494,
+        "mse": 0.012238618827160494
+      },
+      "cpp_bilinear_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 67.21294030483185,
+        "mae_channel_levels": 0.012353395061728395,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.012353395061728395,
+        "mse": 0.012353395061728395
+      },
+      "cpp_area_vs_pillow_lanczos": {
+        "rgb_psnr_db": 65.74856088819517,
+        "mae_channel_levels": 0.0173070987654321,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.0173070987654321,
+        "mse": 0.0173070987654321
+      },
+      "cpp_area_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 66.59718416649577,
+        "mae_channel_levels": 0.014235146604938272,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.014235146604938272,
+        "mse": 0.014235146604938272
+      },
+      "cpp_area_vs_cpp_bilinear": {
+        "rgb_psnr_db": 71.06388255217306,
+        "mae_channel_levels": 0.005089699074074074,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.005089699074074074,
+        "mse": 0.005089699074074074
+      },
+      "cpp_area_optimized_vs_reference": {
+        "rgb_psnr_db": 79.38354330593513,
+        "mae_channel_levels": 0.0007494212962962963,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.0007494212962962963,
+        "mse": 0.0007494212962962963
+      },
+      "cpp_area_optimized_vs_pillow_lanczos": {
+        "rgb_psnr_db": 65.93524737810027,
+        "mae_channel_levels": 0.016578896604938272,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.016578896604938272,
+        "mse": 0.016578896604938272
+      },
+      "cpp_area_optimized_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 66.62700632037348,
+        "mae_channel_levels": 0.014137731481481482,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.014137731481481482,
+        "mse": 0.014137731481481482
+      },
+      "pillow_vs_pyav_ffmpeg": {
+        "rgb_psnr_db": 64.79672740831397,
+        "mae_channel_levels": 0.021548032407407408,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.021548032407407408,
+        "mse": 0.021548032407407408
+      }
+    },
+    "edge": {
+      "cpp_bilinear_vs_pillow_lanczos": {
+        "rgb_psnr_db": 52.88696260590256,
+        "mae_channel_levels": 0.03567901234567901,
+        "max_abs_channel_levels": 17,
+        "changed_channel_fraction": 0.005883487654320988,
+        "mse": 0.33449074074074076
+      },
+      "cpp_bilinear_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 46.092138744037385,
+        "mae_channel_levels": 0.050979938271604935,
+        "max_abs_channel_levels": 32,
+        "changed_channel_fraction": 0.0026022376543209874,
+        "mse": 1.5990663580246913
+      },
+      "cpp_area_vs_pillow_lanczos": {
+        "rgb_psnr_db": 52.886361547868376,
+        "mae_channel_levels": 0.03572530864197531,
+        "max_abs_channel_levels": 17,
+        "changed_channel_fraction": 0.005929783950617284,
+        "mse": 0.334537037037037
+      },
+      "cpp_area_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 46.092138744037385,
+        "mae_channel_levels": 0.050979938271604935,
+        "max_abs_channel_levels": 32,
+        "changed_channel_fraction": 0.0026022376543209874,
+        "mse": 1.5990663580246913
+      },
+      "cpp_area_vs_cpp_bilinear": {
+        "rgb_psnr_db": 91.4753411201884,
+        "mae_channel_levels": 4.6296296296296294e-05,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 4.6296296296296294e-05,
+        "mse": 4.6296296296296294e-05
+      },
+      "cpp_area_optimized_vs_reference": {
+        "rgb_psnr_db": 91.4753411201884,
+        "mae_channel_levels": 4.6296296296296294e-05,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 4.6296296296296294e-05,
+        "mse": 4.6296296296296294e-05
+      },
+      "cpp_area_optimized_vs_pillow_lanczos": {
+        "rgb_psnr_db": 52.88696260590256,
+        "mae_channel_levels": 0.03567901234567901,
+        "max_abs_channel_levels": 17,
+        "changed_channel_fraction": 0.005883487654320988,
+        "mse": 0.33449074074074076
+      },
+      "cpp_area_optimized_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 46.092138744037385,
+        "mae_channel_levels": 0.050979938271604935,
+        "max_abs_channel_levels": 32,
+        "changed_channel_fraction": 0.0026022376543209874,
+        "mse": 1.5990663580246913
+      },
+      "pillow_vs_pyav_ffmpeg": {
+        "rgb_psnr_db": 50.086790268655214,
+        "mae_channel_levels": 0.04615354938271605,
+        "max_abs_channel_levels": 32,
+        "changed_channel_fraction": 0.006929012345679012,
+        "mse": 0.6373842592592592
+      }
+    },
+    "checker1": {
+      "cpp_bilinear_vs_pillow_lanczos": {
+        "rgb_psnr_db": 16.49422079620634,
+        "mae_channel_levels": 25.880729166666665,
+        "max_abs_channel_levels": 100,
+        "changed_channel_fraction": 0.6666666666666666,
+        "mse": 1457.6668634259258
+      },
+      "cpp_bilinear_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 16.456584521414193,
+        "mae_channel_levels": 26.122685185185187,
+        "max_abs_channel_levels": 100,
+        "changed_channel_fraction": 0.6675434027777778,
+        "mse": 1470.3540046296296
+      },
+      "cpp_area_vs_pillow_lanczos": {
+        "rgb_psnr_db": 49.705245678190906,
+        "mae_channel_levels": 0.6841550925925926,
+        "max_abs_channel_levels": 4,
+        "changed_channel_fraction": 0.6783333333333333,
+        "mse": 0.6959143518518518
+      },
+      "cpp_area_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 46.598885307336744,
+        "mae_channel_levels": 0.9259837962962963,
+        "max_abs_channel_levels": 6,
+        "changed_channel_fraction": 0.6776128472222223,
+        "mse": 1.4229571759259259
+      },
+      "cpp_area_vs_cpp_bilinear": {
+        "rgb_psnr_db": 16.65078566547495,
+        "mae_channel_levels": 25.22,
+        "max_abs_channel_levels": 99,
+        "changed_channel_fraction": 0.6783333333333333,
+        "mse": 1406.0533333333333
+      },
+      "cpp_area_optimized_vs_reference": {
+        "rgb_psnr_db": 67.46133571237297,
+        "mae_channel_levels": 0.011666666666666667,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.011666666666666667,
+        "mse": 0.011666666666666667
+      },
+      "cpp_area_optimized_vs_pillow_lanczos": {
+        "rgb_psnr_db": 49.77867024004603,
+        "mae_channel_levels": 0.672488425925926,
+        "max_abs_channel_levels": 4,
+        "changed_channel_fraction": 0.6666666666666666,
+        "mse": 0.6842476851851852
+      },
+      "cpp_area_optimized_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 46.63417640605453,
+        "mae_channel_levels": 0.9144675925925926,
+        "max_abs_channel_levels": 6,
+        "changed_channel_fraction": 0.6660966435185185,
+        "mse": 1.4114409722222223
+      },
+      "pillow_vs_pyav_ffmpeg": {
+        "rgb_psnr_db": 54.08852628356826,
+        "mae_channel_levels": 0.2535763888888889,
+        "max_abs_channel_levels": 2,
+        "changed_channel_fraction": 0.25354166666666667,
+        "mse": 0.25364583333333335
+      }
+    },
+    "stripes4": {
+      "cpp_bilinear_vs_pillow_lanczos": {
+        "rgb_psnr_db": 21.713452749242347,
+        "mae_channel_levels": 14.91171875,
+        "max_abs_channel_levels": 50,
+        "changed_channel_fraction": 0.6875,
+        "mse": 438.26328125
+      },
+      "cpp_bilinear_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 22.065251850952727,
+        "mae_channel_levels": 11.76328125,
+        "max_abs_channel_levels": 49,
+        "changed_channel_fraction": 0.37890625,
+        "mse": 404.16171875
+      },
+      "cpp_area_vs_pillow_lanczos": {
+        "rgb_psnr_db": 27.05886953646833,
+        "mae_channel_levels": 7.8455642361111115,
+        "max_abs_channel_levels": 27,
+        "changed_channel_fraction": 0.6887345679012346,
+        "mse": 127.99511863425926
+      },
+      "cpp_area_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 27.49229973447726,
+        "mae_channel_levels": 4.6970958719135805,
+        "max_abs_channel_levels": 31,
+        "changed_channel_fraction": 0.31306037808641973,
+        "mse": 115.8378231095679
+      },
+      "cpp_area_vs_cpp_bilinear": {
+        "rgb_psnr_db": 23.72056740931192,
+        "mae_channel_levels": 7.068623649691358,
+        "max_abs_channel_levels": 47,
+        "changed_channel_fraction": 0.18873456790123458,
+        "mse": 276.0727999614198
+      },
+      "cpp_area_optimized_vs_reference": {
+        "rgb_psnr_db": 62.44591176697589,
+        "mae_channel_levels": 0.03702449845679012,
+        "max_abs_channel_levels": 1,
+        "changed_channel_fraction": 0.03702449845679012,
+        "mse": 0.03702449845679012
+      },
+      "cpp_area_optimized_vs_pillow_lanczos": {
+        "rgb_psnr_db": 27.05825331264052,
+        "mae_channel_levels": 7.84921875,
+        "max_abs_channel_levels": 27,
+        "changed_channel_fraction": 0.6875,
+        "mse": 128.01328125
+      },
+      "cpp_area_optimized_vs_pyav_ffmpeg_bilinear": {
+        "rgb_psnr_db": 27.492136109598555,
+        "mae_channel_levels": 4.70078125,
+        "max_abs_channel_levels": 31,
+        "changed_channel_fraction": 0.31640625,
+        "mse": 115.8421875
+      },
+      "pillow_vs_pyav_ffmpeg": {
+        "rgb_psnr_db": 27.001874749708822,
+        "mae_channel_levels": 7.7953125,
+        "max_abs_channel_levels": 27,
+        "changed_channel_fraction": 0.69375,
+        "mse": 129.6859375
+      }
+    }
+  },
+  "caveats": [
+    "Synthetic patterns are controlled resampling stimuli, not gameplay footage.",
+    "PSNR and channel error summarize implementation differences only; they do not rank perceived quality.",
+    "The 1-pixel checkerboard intentionally exceeds the output Nyquist limit. Different filtering can produce aliasing, blur or different phase patterns; its large error is expected and is not an acceptance threshold.",
+    "This comparison does not measure capture, JPEG, runtime throughput, display output or receiver behavior."
+  ]
+}
