@@ -7,24 +7,28 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v9-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v9-20261103),
-paired with [Moonbub v9](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v9-20261103).
-Earlier handoffs, including v8, remain frozen snapshots. Start with the
-[v9 report](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v9-20261103/docs/custom-codec-prototype-v9-2026-11-03.md)
-and [application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v9-20261103/docs/gamebub-application-specific-codec-plan.md).
+[`handoff/gamebub-app-codec-v10-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v10-20261103),
+paired with [Moonbub v10](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v10-20261103).
+Earlier handoffs remain frozen. Start with the
+[v10 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v10-20261103/docs/custom-codec-prototype-v10-2026-11-03.md)
+and [application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v10-20261103/docs/gamebub-application-specific-codec-plan.md).
 
-V9 connects the actual GM01 codec to GF02 chunks and serialized GA01 feedback in
-a finite software pipeline. Its short diagnostic windows reach27–28 presented
-IDs/s with measured Python decoding. It fixes a reproduced v8 GF01 logical
-read-pin release on conflicting traffic and adds epoch/frame/body-CRC feedback
-binding. All26 new tests pass. The separate HP01/GH01 UI experiment is exact in
-RGB565; all36 broad-region main packets fail48 KiB, while two favorable flat
-low-color probes fit17.9–20.0 kB. GH01 is not wired into the finite GM01 pipeline.
+V10 implements selective lossless565 UI admission with exact GM01 fallback and
+separate adaptive HR01 row-run patches. Compact packets on16 real captures shrink
+40.0→31.2kB mean with row coding; all fit48KiB. This row wrapper is not yet combined
+with selective admission or the finite GF02/GM01 transport model. Charged BOX and
+transport CPU services retain27–28 diagnostic presented IDs/s in short replay.
 
-These are Python design experiments. Capture/scale and transport CPU service,
-physical target memory/display and hardware30 fps remain unqualified. No custom
-Sunshine output mode, peer negotiation, ESP32 firmware or FPGA decoder is added
-by this documentation change. The installed Windows Sunshine service is untouched.
+Same-source HEVC/AV1 native CPU references, using common GM color arithmetic,
+show a substantial remaining coding gap. At selected short-sample points native
+codecs use10–24times fewer coded bits with higher active/ROI PSNR; this is not a
+universal ratio or target decoder-fit result. Next work is bounded block motion/
+skip/reference decisions plus actual selective HR01 transport integration.
+
+These are Python design experiments. Live capture, shared target CPU/memory/
+display and sustained hardware30fps remain unqualified. This update adds no
+Sunshine output mode, peer negotiation, ESP32 firmware or FPGA decoder. It does
+not modify the installed Windows Sunshine service.
 
 This performance-study work is published on
 [`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
