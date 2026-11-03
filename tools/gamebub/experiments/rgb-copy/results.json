@@ -1,0 +1,53 @@
+{
+  "scope": "Linux offline paired scale+strict JPEG encode; no capture/network/ESP32/FPGA",
+  "source": "5 checked-in 720x480 synthetic fixtures cropped to 720x405 then upscaled to 1920x1080 before timing; not real 1080p gameplay",
+  "fixture_sha256": {
+    "frame-00000000.png": "c99b921fdd7a08706ef932df093080970e7ec613a9f2afd97f9f473e382ae6f6",
+    "frame-00000001.png": "fa442267b39c89833b8ea3a491cf455bef34c347c31d9fcabae3325e83f565aa",
+    "frame-00000029.png": "36888fbefada386e2fc0f95efe8f20ba95c31c99212c2ba757279532b6221da9",
+    "frame-00000030.png": "3b37dfb135d7f96c49751063d2031ccad5338eba157f68229dadb9fa90616a75",
+    "frame-00000255.png": "2f7942371d9f9edc03a2604c2bb6e1a1f9920d895df504ca94204d9564e47adc"
+  },
+  "pillow": "13.0.0",
+  "jpeg_library": "6.2",
+  "python": "3.14.4",
+  "cpu": "AMD Ryzen 7 H 255 w/ Radeon 780M Graphics",
+  "rows": [
+    {
+      "filter": "BILINEAR",
+      "iterations_per_variant": 120,
+      "stock_ms_p50": 10.455573000000001,
+      "stock_ms_p95": 10.597216,
+      "candidate_ms_p50": 9.847396499999999,
+      "candidate_ms_p95": 10.047287,
+      "paired_ratio_candidate_over_stock_median": 0.9421615650955422,
+      "paired_candidate_faster_count": 118,
+      "outputs_byte_identical": true,
+      "jpeg_sha256": [
+        "e12492b5475771d05dedb60a0fa7f2779bce9930d668c7d3a4ee5d618e7e6fe5",
+        "41d7b10975cb37bec043e6356cb85a6c846e25cfa91f866efe9948166a3a1dbc",
+        "107cb5c2906b8cab1e70e75ba993a83a27565f6438497f6d181aebc949728793",
+        "c01d57da09d2e25099cdaa4a574bcee0c2cb831689559c3e82f8687ff20ea801",
+        "e39d9fd5f215fda6776ddeb9dd2ff2fcdedec29e9b53ada5d2c58d48d6f9ae4c"
+      ]
+    },
+    {
+      "filter": "BOX",
+      "iterations_per_variant": 120,
+      "stock_ms_p50": 7.3971195000000005,
+      "stock_ms_p95": 7.531247,
+      "candidate_ms_p50": 6.769992500000001,
+      "candidate_ms_p95": 6.869973,
+      "paired_ratio_candidate_over_stock_median": 0.9131268351606749,
+      "paired_candidate_faster_count": 120,
+      "outputs_byte_identical": true,
+      "jpeg_sha256": [
+        "c8c4365dc9d6d32c4023e5fbde5a06608d665a80f57f2c85c95d8521f62361fb",
+        "00bc036268306027851016a95243210c05afccdd421df7486aeefdf637652b5f",
+        "a68f8d45da23c4b8859e4ec34e17f8a781f03022b789611827a22a31f669441d",
+        "c8ee4d02863177bd7a3cab37081d4a3790a1b87c176100adb52fb2aaffba1388",
+        "5d5dfde0ba4b8601ab2627cd51695f345bfa9a140e83d667421c1fa1f16d0c67"
+      ]
+    }
+  ]
+}
