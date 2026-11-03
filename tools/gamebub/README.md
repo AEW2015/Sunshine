@@ -27,6 +27,14 @@ helper in Moonbub, not a new `stream_sender.py` option. The linked
 uses recorded JPEG sizes to compare storage scenarios; neither model proves
 real Windows capture, ESP32 forwarding, physical memory service or display FPS.
 
+The [custom-codec follow-up report](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/custom-codec-prototype-progress-2026-11-03.md)
+adds MED and fixed-Q14 transform comparisons, bounded sample stripes and a
+finite-slot/framebuffer delivery model. The tested custom formats still lose
+to receiver JPEG on rate/quality. Conditional steady model rates near30 fps
+do not remove its phase-dependent count/latency failures or qualify hardware.
+These research helpers do not change the installed Sunshine service or add a
+new sender option.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
