@@ -7,6 +7,9 @@ add_library(capture_buffer_adapter capture_buffer.cpp)
 target_compile_features(capture_buffer_adapter PUBLIC cxx_std_20)
 target_include_directories(capture_buffer_adapter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+add_executable(bench_capture_buffer bench_capture_buffer.cpp)
+target_link_libraries(bench_capture_buffer PRIVATE capture_buffer_adapter)
+
 if(BUILD_TESTING)
     add_executable(test_capture_buffer_adapter test_capture_buffer.cpp)
     target_link_libraries(test_capture_buffer_adapter PRIVATE capture_buffer_adapter)
