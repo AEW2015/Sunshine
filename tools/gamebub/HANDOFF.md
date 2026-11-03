@@ -40,8 +40,11 @@ and 4:4:4/no restart, all encoder quality 75. The receiver team reports that
 frame 0 of 4:2:0 and 4:4:4 passed its RTL test; 4:2:2/restart is unsupported.
 `msv1.py` currently accepts the conservative 4:2:0/no-restart subset only.
 
-The single-frame `msv1.py` test sender implements the receiver prototype's
-unauthenticated video-only transport. No Sunshine JPEG mode is enabled. There are no physical receiver or
+The single-frame `msv1.py` and continuous `stream_sender.py` test senders implement
+the receiver prototype's unauthenticated video-only transport. The continuous
+sender passed localhost reassembly with the pinned receiver Python reference;
+please run it against the actual hardware when ready and report ingress, FPGA
+decode, and display results separately. No Sunshine JPEG mode is enabled. There are no physical receiver or
 moving-game-footage results yet. Big Buck Bunny is an animation baseline, not
 game footage. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.

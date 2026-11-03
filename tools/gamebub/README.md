@@ -1,8 +1,9 @@
 # Game Bub host laboratory
 
 This is an experimental host laboratory, pending receiver testing. `msv1.py`
-sends one video fixture over the receiver's video-only UDP test protocol; it is
-not an integrated Sunshine JPEG mode or a receiver playback claim.
+sends one fixture, while `stream_sender.py` streams a clip or desktop using the
+receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
+mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
@@ -65,6 +66,7 @@ py -3.11 -m uv run --locked ruff format --check .
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append host.py --output artifacts/coverage-entry --frames 1 --link-mbps 1000'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append make_assets.py --output artifacts/coverage-fixtures'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append msv1.py 127.0.0.1 --jpeg fixtures/receiver-pattern-720x480-420-q65.jpg --deadline-ms 0.001 || test $? -eq 2'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append stream_sender.py --help'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage report --fail-under=100'
 ```
 
@@ -73,7 +75,35 @@ The appended coverage commands exercise CLI entry points under instrumentation;
 do not use that run for performance measurements. Regression tests use controlled
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
-`make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, and `pipeline.py`.
+`make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
+and `stream_sender.py`.
+
+## Continuous video test sender
+
+On the intended trusted test LAN, after the receiver team enables Test MJPEG
+and supplies its address, replace the example address and input path:
+
+```powershell
+py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --clip C:\clips\game.mp4 --log artifacts\game-run.jsonl --frames 900
+py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --desktop --log artifacts\desktop-run.jsonl --frames 300
+```
+
+Use a new log filename each run. The default is 30 fps, 20 Mbps of MSV1
+datagrams, 200 ms maximum host age and adaptive JPEG quality 20..75. Lower
+network-layer overhead is not included. It captures or reads frames, scales to
+the 720x480 canvas, uses one latest raw and encoded slot, and logs encoded sizes,
+quality, encode time, frame/queue age, sends and matching feedback. Summary FPS
+and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
+least one matching accepted ingress response, 2 means none; either result can
+include drops and does not establish FPGA decode or display. Inspect the log and
+receiver output. The test receiver's restart/session rules apply to frame IDs.
+
+The socket is nonblocking. Failures and partial frames are counted, later SOF
+recovers per receiver protocol, and busy/drop feedback lowers JPEG quality. This
+prototype does not yet enforce a missing-feedback timeout, authenticate the
+peer, stream audio, inject buttons, or provide a Sunshine mode. Use only an
+isolated trusted network. A [localhost receiver-reference run](measurements/stream-reference-loopback.md)
+is not a hardware measurement.
 
 ## Send a single receiver test frame
 

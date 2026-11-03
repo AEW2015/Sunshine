@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, Mock, patch
 from host import Profile, canvas, encode, pattern
 from msv1 import (
     FEEDBACK,
+    Pacer,
     frame_datagrams,
     gamebub_buttons,
     main,
@@ -222,6 +223,22 @@ class ReceiverProtocolTests(unittest.TestCase):
         self.assertTrue(done)
         for (started, length), (following, _) in pairwise(sends):
             self.assertGreaterEqual(following - started + 1e-12, length / 100000)
+
+    def test_pacing_is_preserved_across_frame_boundaries(self):
+        """@brief The next frame cannot burst immediately after the prior final packet."""
+        now, sends = [0.0], []
+        sock = Mock()
+        sock.send.side_effect = lambda packet: sends.append((now[0], len(packet))) or len(packet)
+        pacer = Pacer()
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        for frame_id in (1, 2):
+            self.assertTrue(
+                send_frame(
+                    sock, self.jpeg, frame_id, 2, 100000, 10, lambda: now[0], sleeper, pacer
+                )[0]
+            )
+        for (started, size), (following, _) in pairwise(sends):
+            self.assertGreaterEqual(following - started + 1e-12, size / 100000)
 
     def test_localhost_udp_datagrams_match_receiver_fixture(self):
         """@brief Send real loopback UDP packets and compare receiver-side bytes."""

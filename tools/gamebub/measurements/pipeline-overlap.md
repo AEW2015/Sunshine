@@ -27,6 +27,8 @@ from pipeline import Frame, VideoPipeline
 
 start = time.monotonic_ns()
 sizes, ages = [], []
+
+
 def send(frame, jpeg):
     delay = len(jpeg) * 8 / 20_000_000
     if time.monotonic_ns() + int(delay * 1e9) > frame.captured_ns + 66_700_000:
@@ -36,8 +38,9 @@ def send(frame, jpeg):
     ages.append((time.monotonic_ns() - frame.captured_ns) / 1e6)
     return True
 
+
 p = VideoPipeline(lambda img: encode(img, 75, Profile())[0], send, 66_700_000, 262144)
-frames = clip_frames(Path('artifacts/media/BigBuckBunny-1080p30-30s.mp4'), 30)
+frames = clip_frames(Path("artifacts/media/BigBuckBunny-1080p30-30s.mp4"), 30)
 for i in range(300):
     delay = (start + i * 1_000_000_000 // 30 - time.monotonic_ns()) / 1e9
     if delay > 0:
@@ -48,8 +51,13 @@ for i in range(300):
 frames.close()
 p.close()
 duration = (time.monotonic_ns() - start) / 1e9
-print(p.snapshot(), 'duration', duration, 'completed fps', len(sizes) / duration)
-print('payload Mbps', sum(sizes) * 8 / duration / 1e6,
-      'mean bytes', sum(sizes) / len(sizes),
-      'p95 host age ms', sorted(ages)[int(.95 * (len(ages) - 1))])
+print(p.snapshot(), "duration", duration, "completed fps", len(sizes) / duration)
+print(
+    "payload Mbps",
+    sum(sizes) * 8 / duration / 1e6,
+    "mean bytes",
+    sum(sizes) / len(sizes),
+    "p95 host age ms",
+    sorted(ages)[int(0.95 * (len(ages) - 1))],
+)
 ```

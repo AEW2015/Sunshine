@@ -118,6 +118,13 @@ class Feedback:
     capture_us: int
 
 
+@dataclass
+class Pacer:
+    """@brief Preserve the next transmission time across consecutive frames."""
+
+    next_due: float | None = None
+
+
 def parse_feedback(data: bytes) -> Feedback:
     """@brief Parse a complete MSF1 feedback packet from the already connected peer.
 
@@ -155,6 +162,7 @@ def send_frame(
     deadline,
     clock=time.perf_counter,
     sleeper=time.sleep,
+    pacer=None,
 ):
     """@brief Pace one frame on a connected datagram socket, aborting when stale.
 
@@ -166,11 +174,12 @@ def send_frame(
     @param deadline Absolute host monotonic deadline for this frame.
     @param clock Injectable monotonic seconds clock.
     @param sleeper Injectable wait function.
+    @param pacer Optional sender-owned Pacer shared across consecutive frames.
     @return Pair of (completed, bytes sent); incomplete frames recover on newer SOF.
     """
     if not math.isfinite(bytes_per_second) or bytes_per_second <= 0 or not math.isfinite(deadline):
         raise ValueError("Rate and deadline must be finite; rate must be positive")
-    next_due, sent = None, 0
+    next_due, sent = pacer.next_due if pacer is not None else None, 0
     for packet in frame_datagrams(jpeg, frame_id, capture_us):
         now = clock()
         due = max(next_due, now) if next_due is not None else now
@@ -188,6 +197,8 @@ def send_frame(
             raise OSError("Partial UDP datagram send")
         sent += count
         next_due = now + duration
+        if pacer is not None:
+            pacer.next_due = next_due
     return True, sent
 
 

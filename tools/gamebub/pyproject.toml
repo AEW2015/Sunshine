@@ -13,7 +13,7 @@ line-length = 100
 
 [tool.coverage.run]
 branch = true
-source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline"]
+source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline", "stream_sender"]
 
 [tool.coverage.report]
 show_missing = true

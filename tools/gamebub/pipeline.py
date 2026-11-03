@@ -5,7 +5,7 @@ Callbacks must return in bounded time; shutdown cannot interrupt a blocked callb
 """
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from threading import Condition, Thread
 from time import monotonic_ns
 
@@ -22,6 +22,7 @@ class Frame:
     captured_ns: int
     capture_us: int
     image: Image.Image
+    encoded_ns: int = 0
 
 
 class VideoPipeline:
@@ -119,7 +120,7 @@ class VideoPipeline:
                 self.counts["encoded"] += 1
                 if self.encoded is not None:
                     self.counts["encoded_replaced"] += 1
-                self.encoded = (frame, payload)
+                self.encoded = (replace(frame, encoded_ns=self.clock()), payload)
                 self.condition.notify_all()
 
     def _send_loop(self):
