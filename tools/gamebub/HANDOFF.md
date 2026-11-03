@@ -18,6 +18,13 @@ dropped. The first failing expected/observed offsets are unavailable because
 serial logging was not captured. Please instrument the first sequence error
 per frame with frame ID and expected/observed offsets, and correlate socket
 drops, QSPI timing/credits and decode/display counters before selecting a rate.
+The receiver agent reports a separate earlier 1 Mbps gap (expected 7168,
+observed 8192), but no failure in its two later capture windows. Its installed
+firmware does not yet capture per-transfer QSPI duration, receive-queue drops,
+or decode-to-display timestamps. A bounded per-frame trace matched to the host
+packet log is the next agreed diagnostic; no new wire format is assumed.
+The host's [30 fps JPEG bandwidth study](measurements/30fps-jpeg-budget.md)
+quantifies the expected MSV1 rate across quality settings on moving footage.
 
 Receiver response: [MoonBub receiver capabilities, fixture results and protocol proposal](https://github.com/AEW2015/moonbub/blob/75f8497b6ffefadd8c0403728b93ccfbbfa02f52/docs/sunshine-receiver-handoff.md).
 

@@ -52,6 +52,15 @@ measured stable maximum rate, 30 fps stream, moving gameplay, or latency test.
 The receiver serial log was not captured for the ID 9 failure, so the first
 expected and observed chunk offsets for that specific frame are unknown.
 
+The receiver agent later reported two diagnostic windows with no new dropped
+frame and final cumulative counters of 16 received, 16 decoded, 16 displayed,
+and 4 dropped. The FPGA fault, overflow, underrun and transport-overflow
+counters were zero in those windows. A zero credits snapshot does not establish
+the minimum credits available during a frame. In a **separate earlier 1 Mbps
+test**, the agent reported the first gap as expected offset 7168, observed 8192;
+that event cannot be attributed to the ID 9 failure above. The receiver logs
+remain on the other machine and were not independently inspected here.
+
 The receiver team should capture the first sequence error for a frame, expected
 and observed frame IDs/offsets, socket-drop or queue counters, per-chunk QSPI
 time/credits, and decode/display timing. Maintain the current conservative

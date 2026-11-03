@@ -48,3 +48,49 @@ dropped log records. These sequential runs used whatever was on the live
 desktop, not identical prerecorded content; they do not establish a reliable
 filter speedup or equivalence. They include the sender and localhost peer, not
 DXcam, Wi-Fi or physical playback. Both leave substantial work to reach 30 fps.
+
+A separate November 2026 exploratory probe used PyAV 18.1.0's FFmpeg
+`ddagrab` filter, D3D11 readback as BGRA, the existing `canvas()` libswscale
+path, and `encode_receiver_jpeg()` at quality 75 (including its JPEG
+validation). With the active desktop at 1280x720, it produced 301 frames in
+10.022 seconds (30.03 fps), with median scaling plus encoding of 16.52 ms,
+maximum 40.91 ms, and mean JPEG size 29,863 bytes. The source was the live
+desktop, not controlled footage; `dup_frames=1` permits repeated frames, and
+this does not establish 30 fresh game frames per second. No packetization,
+Wi-Fi, receiver or display was involved. The pipeline is a probe, not a
+supported sender backend. Device loss, game capture behavior, and sustained
+performance need testing. The separate attempt to use `scale_d3d11` at 720x405
+failed to create its output texture; the reason was not established.
+
+Reproduce from `tools/gamebub`: save the following as `artifacts/dxgi-probe.py`,
+then run `C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c
+'py.exe -3.11 -m uv run --locked python artifacts/dxgi-probe.py'`. This captures
+the desktop but does not save the images or send them to a receiver.
+
+```python
+import statistics
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path.cwd()))
+import av
+from host import canvas
+from msv1 import encode_receiver_jpeg
+
+source = "ddagrab=framerate=30:dup_frames=1:draw_mouse=0,hwdownload,format=bgra"
+with av.open(source, format="lavfi") as capture:
+    start = time.perf_counter()
+    work_ms, sizes = [], []
+    for frame in capture.decode(video=0):
+        before = time.perf_counter()
+        jpeg = encode_receiver_jpeg(canvas(frame), 75)
+        work_ms.append((time.perf_counter() - before) * 1000)
+        sizes.append(len(jpeg))
+        if time.perf_counter() - start >= 10:
+            break
+    elapsed = time.perf_counter() - start
+    print(f"frames={len(work_ms)} seconds={elapsed:.3f} fps={len(work_ms) / elapsed:.2f}")
+    print(f"work_ms_median={statistics.median(work_ms):.2f} max={max(work_ms):.2f}")
+    print(f"jpeg_mean_bytes={statistics.mean(sizes):.0f}")
+```

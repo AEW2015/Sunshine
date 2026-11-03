@@ -1,0 +1,132 @@
+{
+  "scope": "offline host JPEG comparison; no network or playback",
+  "source_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "samples": 300,
+  "requested_samples": 300,
+  "source_exhausted": false,
+  "skip": 300,
+  "target_fps": 30,
+  "resolution": [
+    720,
+    480
+  ],
+  "elapsed_s": 14.065880800131708,
+  "end_to_end_verified": false,
+  "qualities": {
+    "1": {
+      "jpeg_bytes": {
+        "mean": 7531.87,
+        "p50": 7365.0,
+        "p95": 8481,
+        "max": 8739
+      },
+      "msv1_bytes": {
+        "mean": 7849.736666666667,
+        "p50": 7685.0,
+        "p95": 8841,
+        "max": 9099
+      },
+      "mean_msv1_mbps_at_target": 1.8839368,
+      "p95_frame_msv1_mbps_at_target": 2.12184,
+      "rgb_content_psnr_db": {
+        "mean": 21.86803122900673,
+        "p50": 21.826482203816127,
+        "p95": 23.007646279473843,
+        "max": 23.6274960071517
+      },
+      "identical_frames": 0
+    },
+    "5": {
+      "jpeg_bytes": {
+        "mean": 9175.663333333334,
+        "p50": 8864.0,
+        "p95": 10915,
+        "max": 11452
+      },
+      "msv1_bytes": {
+        "mean": 9555.263333333334,
+        "p50": 9224.0,
+        "p95": 11355,
+        "max": 11932
+      },
+      "mean_msv1_mbps_at_target": 2.2932632,
+      "p95_frame_msv1_mbps_at_target": 2.7252,
+      "rgb_content_psnr_db": {
+        "mean": 24.139615842358765,
+        "p50": 24.115710622312452,
+        "p95": 25.202509171584666,
+        "max": 25.694493143272776
+      },
+      "identical_frames": 0
+    },
+    "10": {
+      "jpeg_bytes": {
+        "mean": 12353.406666666666,
+        "p50": 11827.5,
+        "p95": 15709,
+        "max": 16705
+      },
+      "msv1_bytes": {
+        "mean": 12855.14,
+        "p50": 12307.5,
+        "p95": 16349,
+        "max": 17385
+      },
+      "mean_msv1_mbps_at_target": 3.0852335999999996,
+      "p95_frame_msv1_mbps_at_target": 3.92376,
+      "rgb_content_psnr_db": {
+        "mean": 27.54182224891384,
+        "p50": 27.638778333221925,
+        "p95": 28.392654470271243,
+        "max": 28.94895715610835
+      },
+      "identical_frames": 0
+    },
+    "15": {
+      "jpeg_bytes": {
+        "mean": 15121.993333333334,
+        "p50": 14489.5,
+        "p95": 19689,
+        "max": 21074
+      },
+      "msv1_bytes": {
+        "mean": 15733.06,
+        "p50": 15089.5,
+        "p95": 20489,
+        "max": 21914
+      },
+      "mean_msv1_mbps_at_target": 3.7759343999999997,
+      "p95_frame_msv1_mbps_at_target": 4.91736,
+      "rgb_content_psnr_db": {
+        "mean": 29.483193525460223,
+        "p50": 29.506931500098222,
+        "p95": 30.572569826531858,
+        "max": 31.176310471909076
+      },
+      "identical_frames": 0
+    },
+    "20": {
+      "jpeg_bytes": {
+        "mean": 17505.9,
+        "p50": 16724.5,
+        "p95": 22937,
+        "max": 24907
+      },
+      "msv1_bytes": {
+        "mean": 18209.766666666666,
+        "p50": 17404.5,
+        "p95": 23857,
+        "max": 25907
+      },
+      "mean_msv1_mbps_at_target": 4.370344,
+      "p95_frame_msv1_mbps_at_target": 5.72568,
+      "rgb_content_psnr_db": {
+        "mean": 30.628755338794637,
+        "p50": 30.67071890050029,
+        "p95": 31.731438532230474,
+        "max": 32.365254738086485
+      },
+      "identical_frames": 0
+    }
+  }
+}
