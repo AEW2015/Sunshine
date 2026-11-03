@@ -7,28 +7,31 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v10-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v10-20261103),
-paired with [Moonbub v10](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v10-20261103).
-Earlier handoffs remain frozen. Start with the
-[v10 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v10-20261103/docs/custom-codec-prototype-v10-2026-11-03.md)
-and [application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v10-20261103/docs/gamebub-application-specific-codec-plan.md).
+[`handoff/gamebub-app-codec-v11-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v11-20261103),
+paired with [Moonbub v11](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v11-20261103).
+Earlier handoffs remain frozen. Read the
+[v11 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v11-20261103/docs/custom-codec-prototype-v11-2026-11-03.md)
+and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v11-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
 
-V10 implements selective lossless565 UI admission with exact GM01 fallback and
-separate adaptive HR01 row-run patches. Compact packets on16 real captures shrink
-40.0→31.2kB mean with row coding; all fit48KiB. This row wrapper is not yet combined
-with selective admission or the finite GF02/GM01 transport model. Charged BOX and
-transport CPU services retain27–28 diagnostic presented IDs/s in short replay.
+V11 integrates actual HP01/HR01 temporal UI selection with complete HG01/GM01
+bodies through finite GF02 and outer-content-bound GA01 software replay. Compact
+temporal row patches save34.44% complete bytes versus HP01 at identical exact
+area. BM01 bounded block prediction is a separate format with mixed real results
+and paid search/vector overhead; it is not a universal replacement.
 
-Same-source HEVC/AV1 native CPU references, using common GM color arithmetic,
-show a substantial remaining coding gap. At selected short-sample points native
-codecs use10–24times fewer coded bits with higher active/ROI PSNR; this is not a
-universal ratio or target decoder-fit result. Next work is bounded block motion/
-skip/reference decisions plus actual selective HR01 transport integration.
+The next coded software target is512×28830fps, with20fps as secondary. Short
+measured-call replay reaches30 diagnostic IDs/s for512 base,29 for periodic-refresh
+UI and20 at a20fps UI target. A separate initial-key-only UI probe reaches30
+inside its diagnostic window, while missing startup/strict frames. None qualifies
+sustained hardware30fps or a default refresh policy. Native display scaling and
+fixed scanout still need implementation/service validation.
 
-These are Python design experiments. Live capture, shared target CPU/memory/
-display and sustained hardware30fps remain unqualified. This update adds no
-Sunshine output mode, peer negotiation, ESP32 firmware or FPGA decoder. It does
-not modify the installed Windows Sunshine service.
+The FPGA study separates constrained conformant HEVC, full AV1 porting and custom
+inspired codecs. Existing public full AV1 builds exceed this Artix-7 unchanged;
+lower resolution does not proportionally shrink fixed RTL/tool/state logic.
+There are57 passing component/audit tests. These changes add no installed
+Sunshine output mode, target firmware or bitstream and leave the installed
+Windows Sunshine service untouched.
 
 This performance-study work is published on
 [`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
