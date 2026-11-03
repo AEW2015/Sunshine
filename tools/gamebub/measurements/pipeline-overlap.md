@@ -17,7 +17,10 @@ than previous adaptive-quality measurements, so their FPS values are not a
 controlled comparison. It does not establish hardware playback or latency.
 
 Reproduce from `tools/gamebub` after the lab setup and Big Buck Bunny download
-in the README, with a fresh working directory and minimal background load:
+in the README, with a fresh working directory and minimal background load.
+The original measurement used the coarser Windows `monotonic_ns()` clock; the
+current snippet uses `perf_counter_ns()` to match the pipeline, so the rerun
+is not an exact reproduction of that earlier timing environment:
 
 ```python
 import time
@@ -25,32 +28,32 @@ from pathlib import Path
 from host import Profile, canvas, clip_frames, encode
 from pipeline import Frame, VideoPipeline
 
-start = time.monotonic_ns()
+start = time.perf_counter_ns()
 sizes, ages = [], []
 
 
 def send(frame, jpeg):
     delay = len(jpeg) * 8 / 20_000_000
-    if time.monotonic_ns() + int(delay * 1e9) > frame.captured_ns + 66_700_000:
+    if time.perf_counter_ns() + int(delay * 1e9) > frame.captured_ns + 66_700_000:
         return False
     time.sleep(delay)
     sizes.append(len(jpeg))
-    ages.append((time.monotonic_ns() - frame.captured_ns) / 1e6)
+    ages.append((time.perf_counter_ns() - frame.captured_ns) / 1e6)
     return True
 
 
 p = VideoPipeline(lambda img: encode(img, 75, Profile())[0], send, 66_700_000, 262144)
 frames = clip_frames(Path("artifacts/media/BigBuckBunny-1080p30-30s.mp4"), 30)
 for i in range(300):
-    delay = (start + i * 1_000_000_000 // 30 - time.monotonic_ns()) / 1e9
+    delay = (start + i * 1_000_000_000 // 30 - time.perf_counter_ns()) / 1e9
     if delay > 0:
         time.sleep(delay)
-    captured = time.monotonic_ns()
+    captured = time.perf_counter_ns()
     frame = next(frames)
     p.submit(Frame(i, captured, time.time_ns() // 1000, canvas(frame)))
 frames.close()
 p.close()
-duration = (time.monotonic_ns() - start) / 1e9
+duration = (time.perf_counter_ns() - start) / 1e9
 print(p.snapshot(), "duration", duration, "completed fps", len(sizes) / duration)
 print(
     "payload Mbps",

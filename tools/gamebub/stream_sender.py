@@ -110,7 +110,7 @@ class Session:
         self.counts = Counter()
         self.stop = threading.Event()
         self.pacer = Pacer()
-        self.start_ns = time.monotonic_ns()
+        self.start_ns = time.perf_counter_ns()
         self.gate = FeedbackGate(self.start_ns)
         self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
@@ -125,7 +125,7 @@ class Session:
         """@brief Encode a frame and slowly adapt quality to the per-frame wire budget."""
         with self.lock:
             quality = self.quality.value
-        started = time.monotonic_ns()
+        started = time.perf_counter_ns()
         try:
             jpeg, _ = encode(image, quality, Profile(huffman_sha256=None))
         except (OverflowError, OSError, ValueError) as error:
@@ -141,24 +141,24 @@ class Session:
             recent_feedback = (
                 self.recovery_eligible
                 and not self.gate.probing
-                and time.monotonic_ns() - self.gate.last_feedback <= self.gate.timeout_ns
+                and time.perf_counter_ns() - self.gate.last_feedback <= self.gate.timeout_ns
             )
             self.quality.observe(wire, budget, recent_feedback)
             self._event(
                 "encode",
                 quality=quality,
                 bytes=len(jpeg),
-                encode_ms=(time.monotonic_ns() - started) / 1e6,
+                encode_ms=(time.perf_counter_ns() - started) / 1e6,
             )
         return jpeg
 
     def _send(self, frame, jpeg):
         """@brief Send a paced frame and track only a bounded set of potential ACKs."""
         key = (frame.frame_id, frame.capture_us)
-        queue_age_ms = (time.monotonic_ns() - frame.encoded_ns) / 1e6
+        queue_age_ms = (time.perf_counter_ns() - frame.encoded_ns) / 1e6
         with self.lock:
             was_probing = self.gate.probing
-            allowed, clear_pending = self.gate.offer(key, time.monotonic_ns())
+            allowed, clear_pending = self.gate.offer(key, time.perf_counter_ns())
             if not was_probing and self.gate.probing:
                 self.recovery_eligible = False
                 self._event("feedback_timeout")
@@ -181,7 +181,7 @@ class Session:
                 frame.capture_us,
                 self.rate,
                 (frame.captured_ns + self.age_ns) / 1e9,
-                clock=lambda: time.monotonic_ns() / 1e9,
+                clock=lambda: time.perf_counter_ns() / 1e9,
                 pacer=self.pacer,
             )
         except OSError:
@@ -204,7 +204,7 @@ class Session:
                 wire_bytes=sent,
                 complete=done,
                 queue_age_ms=queue_age_ms,
-                age_ms=(time.monotonic_ns() - frame.captured_ns) / 1e6,
+                age_ms=(time.perf_counter_ns() - frame.captured_ns) / 1e6,
             )
         return done
 
@@ -212,7 +212,7 @@ class Session:
         """@brief Poll the connected peer without blocking the video sender."""
         while not self.stop.is_set():
             with self.lock:
-                if self.controller.expire(time.monotonic_ns()) is not None:
+                if self.controller.expire(time.perf_counter_ns()) is not None:
                     self.counts["controller_timeout_releases"] += 1
                     self._event("controller", gamepad_flags=0, reason="timeout")
             try:
@@ -236,7 +236,7 @@ class Session:
                 continue
             key = (feedback.frame_id, feedback.capture_us)
             with self.lock:
-                now = time.monotonic_ns()
+                now = time.perf_counter_ns()
                 if self.gate.expire(now):
                     self.recovery_eligible = False
                     self.counts["feedback_abandoned"] += len(self.pending)
@@ -285,7 +285,7 @@ class Session:
         self.stop.wait(0.3)
         self.stop.set()
         self.feedback_thread.join()
-        duration = (time.monotonic_ns() - self.start_ns) / 1e9
+        duration = (time.perf_counter_ns() - self.start_ns) / 1e9
         with self.lock:
             if self.controller.disconnect() is not None:
                 self._event("controller", gamepad_flags=0, reason="shutdown")
@@ -327,13 +327,13 @@ def run(args, source=None):
         session = Session(
             sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality
         )
-        started = time.monotonic_ns()
+        started = time.perf_counter_ns()
         slot = 0
         try:
             while slot < args.frames:
                 due = started + slot * 1_000_000_000 // args.fps
-                time.sleep(max(0, (due - time.monotonic_ns()) / 1e9))
-                now = time.monotonic_ns()
+                time.sleep(max(0, (due - time.perf_counter_ns()) / 1e9))
+                now = time.perf_counter_ns()
                 actual = min(args.frames - 1, (now - started) * args.fps // 1_000_000_000)
                 skipped = max(0, actual - slot)
                 if frames is not None:

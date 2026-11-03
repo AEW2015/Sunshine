@@ -7,7 +7,7 @@ Callbacks must return in bounded time; shutdown cannot interrupt a blocked callb
 from collections import Counter
 from dataclasses import dataclass, replace
 from threading import Condition, Thread
-from time import monotonic_ns
+from time import perf_counter_ns
 
 from PIL import Image
 
@@ -16,7 +16,11 @@ from host import HEIGHT, WIDTH
 
 @dataclass(frozen=True)
 class Frame:
-    """@brief An owned RGB canvas and its local capture metadata."""
+    """@brief An owned RGB canvas and its local capture metadata.
+
+    captured_ns and encoded_ns use the pipeline's monotonic clock. With the
+    default clock, supply timestamps from time.perf_counter_ns().
+    """
 
     frame_id: int
     captured_ns: int
@@ -32,7 +36,7 @@ class VideoPipeline:
     run concurrently. Callbacks must not retain or mutate frame data after returning.
     """
 
-    def __init__(self, encode, send, max_age_ns, max_encoded_bytes, clock=monotonic_ns):
+    def __init__(self, encode, send, max_age_ns, max_encoded_bytes, clock=perf_counter_ns):
         """@brief Start workers with bounded queues and injectable callbacks/clock.
 
         @param encode Callable accepting an RGB canvas and returning JPEG bytes.

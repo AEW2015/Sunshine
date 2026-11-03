@@ -72,7 +72,7 @@ class StreamSenderTests(unittest.TestCase):
         s.gate = FeedbackGate(0, timeout_ns=10, probe_ns=20)
         frame = Frame(2, 1, 2, Image.new("RGB", (720, 480)))
         with (
-            patch("stream_sender.time.monotonic_ns", return_value=11),
+            patch("stream_sender.time.perf_counter_ns", return_value=11),
             patch("stream_sender.send_frame", return_value=(True, 40)) as send,
         ):
             self.assertTrue(s._send(frame, b"x"))
@@ -246,7 +246,7 @@ class StreamSenderTests(unittest.TestCase):
         s.recovery_eligible = True
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
-        s.gate = FeedbackGate(time.monotonic_ns())
+        s.gate = FeedbackGate(time.perf_counter_ns())
         with patch("stream_sender.encode", return_value=(b"x" * 100, {})):
             s._encode(None)
         self.assertEqual(s.quality.value, 70)
@@ -287,7 +287,7 @@ class StreamSenderTests(unittest.TestCase):
         s.quality.congested()
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
         with (
-            patch("stream_sender.time.monotonic_ns", return_value=11),
+            patch("stream_sender.time.perf_counter_ns", return_value=11),
             patch("stream_sender.encode", return_value=(b"x", {})),
         ):
             s._encode(None)
@@ -298,7 +298,7 @@ class StreamSenderTests(unittest.TestCase):
         s = Session.__new__(Session)
         s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
-        s.gate = FeedbackGate(time.monotonic_ns())
+        s.gate = FeedbackGate(time.perf_counter_ns())
         s.controller = ControllerTracker()
         s.quality = QualityController(75, 20)
         s.recovery_eligible = False
@@ -329,7 +329,7 @@ class StreamSenderTests(unittest.TestCase):
         ack = FEEDBACK.pack(b"MSF1", 1, 0, 0, 4, 0, 0, 0, 10)
         late = FEEDBACK.pack(b"MSF1", 1, 0, 0, 5, 0, 0, 0, 11)
         s.sock.recv.side_effect = [ack, ack, late, OSError("closed")]
-        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 1, 2, 2, 20, 20]):
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[0, 1, 1, 2, 2, 20, 20]):
             s._feedback_loop()
         self.assertEqual(s.counts["feedback_accepted"], 1)
         self.assertEqual(s.counts["feedback_heartbeats"], 1)
@@ -348,7 +348,7 @@ class StreamSenderTests(unittest.TestCase):
         s.sock = Mock()
         pressed = FEEDBACK.pack(b"MSF1", 1, 0, 1 << 11, 4, 0, 0, 0, 10)
         s.sock.recv.side_effect = [pressed, BlockingIOError(), pressed, OSError("closed")]
-        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 12, 13, 14, 15]):
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[0, 1, 12, 13, 14, 15]):
             s._feedback_loop()
         events = [json.loads(line) for line in s.log.getvalue().splitlines()]
         controller_events = [event for event in events if event["event"] == "controller"]
@@ -369,7 +369,7 @@ class StreamSenderTests(unittest.TestCase):
             FEEDBACK.pack(b"MSF1", 1, 0, 1 << 12, 5, 0, 0, 0, 11),
             OSError("closed"),
         ]
-        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 2, 3, 4]):
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[0, 1, 2, 3, 4]):
             s._feedback_loop()
         events = [json.loads(line) for line in s.log.getvalue().splitlines()]
         self.assertEqual(s.counts["invalid_buttons"], 1)

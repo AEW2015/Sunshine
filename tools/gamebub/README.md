@@ -31,6 +31,9 @@ provide receiver-conforming encoding and a deadline-aware sender, handle feedbac
 and ensure callbacks return promptly: `close()` drains and joins both workers but
 cannot interrupt a blocked callback. It does not itself send network traffic,
 adapt quality, connect to Sunshine, or establish receiver playback.
+Capture timestamps supplied to the default pipeline must come from
+`time.perf_counter_ns()`, the same high-resolution monotonic clock used by its
+workers and packet pacing; Unix timestamps remain separate protocol metadata.
 
 ## Windows setup and verification
 
@@ -128,6 +131,10 @@ It does not authenticate the peer, stream audio, inject buttons, or provide a
 Sunshine mode. Use only an isolated trusted network. A
 [localhost receiver-reference run](measurements/stream-reference-loopback.md)
 is not a hardware measurement.
+
+For a moving-game input, the [Xonotic recording and localhost measurements](measurements/xonotic-loopback.md)
+include a source URL, license, and hash. The reference receiver is a host-process
+test, not evidence of ESP32/FPGA playback.
 
 ## Send a single receiver test frame
 
