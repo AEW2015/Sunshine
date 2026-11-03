@@ -6,6 +6,35 @@ receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
 mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+## Sender log analysis
+
+`analyze_sender_log.py` streams a sender JSONL log and reports event counts,
+complete and incomplete sends, total encoded JPEG bytes, encoded quality counts,
+receiver counter events and values, and the sender's final `summary` event when
+present. It reads no pixel data. Logs are limited to 64 MiB and records to 1
+MiB. An invalid unterminated final record is reported as a tolerated truncated
+tail; malformed newline-terminated records are errors.
+
+Run it from `tools\gamebub`:
+
+```powershell
+C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked python analyze_sender_log.py artifacts/my-run.jsonl'
+```
+
+Timing p50/p95 use nearest-rank quantiles over a reproducible, uniform reservoir
+sample (100,000 observations per metric by default). The output gives population
+and sample counts. `population_max` is exact; `sample_max` is the maximum of the
+retained sample. Set `--max-samples` from 1 to 100,000 to choose the bound and
+`--seed` to change the sampling sequence. Timing is grouped by complete versus
+incomplete sends. `host_assigned_timestamp_to_send_age_ms` comes from the
+sender's `age_ms`; its host-assigned timestamp is taken after frame acquisition
+and can exclude earlier source capture or waiting delay. `encoded_queue_age_ms`
+comes from `queue_age_ms`. Neither measure is receiver decode or display latency.
+Receiver cumulative counters are reported as their last observed snapshot;
+sender-reported deltas alone are summed. Baseline and reset events limit the
+meaning of those totals. `sender_log_summary_status` distinguishes a missing
+summary from one possibly lost to a truncated tail.
+
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
 and hardware measurements each item needs.

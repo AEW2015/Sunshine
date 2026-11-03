@@ -13,7 +13,7 @@ line-length = 100
 
 [tool.coverage.run]
 branch = true
-source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline", "stream_sender", "controller", "quality", "event_log", "reference_loopback", "quality_budget"]
+source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline", "stream_sender", "controller", "quality", "event_log", "reference_loopback", "quality_budget", "analyze_sender_log"]
 
 [tool.coverage.report]
 show_missing = true
