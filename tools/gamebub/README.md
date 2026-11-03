@@ -8,7 +8,7 @@ The installed Sunshine service and original checkout remain unchanged.
 The target product is one dedicated 720×480/30 fps video, audio and simple
 button mode, rather than a general Moonlight feature set. Its exact codec and
 audio profile await the receiver agent; see the
-[current protocol draft](protocol/0.3.0-draft.md). The wider options below are
+[current protocol draft](protocol/0.4.0-draft.md). The wider options below are
 laboratory controls for experiments, not proposed end-user modes.
 
 `realtime.py` contains a latest-video slot, bounded audio queue, logical
@@ -60,7 +60,36 @@ The appended coverage commands exercise CLI entry points under instrumentation;
 do not use that run for performance measurements. Regression tests use controlled
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
-`make_assets.py`, and `realtime.py`.
+`make_assets.py`, `realtime.py`, and `seed_pairing.py`.
+
+## Preparing a known client without a PIN prompt
+
+If the receiver agent confirms the ESP32 client implements Sunshine's existing
+certificate-based control protocol, prepare a new state file from that device's
+**public** certificate. This is optional preparation for that specific protocol;
+the custom Game Bub transport and its identity mechanism are still undecided.
+Do not use Sunshine's public test certificate as a device identity.
+
+From `tools\gamebub`, with a real device public certificate and an existing,
+separate output directory:
+
+```powershell
+py -3.11 -m uv run --locked python seed_pairing.py --client-cert C:\path\gamebub-public.pem --output artifacts\gamebub-candidate-state.json
+```
+
+The output must not already exist. It contains a generated Sunshine ID and one
+enabled client certificate in the state format used by this Sunshine revision.
+The command validates the certificate's X.509 syntax, prints its public SHA-256
+fingerprint, rejects extra private-key material, and never overwrites a file.
+The actual candidate must be explicitly configured to use that separate state;
+this tool does not modify configuration or launch Sunshine. The paired device
+must hold the corresponding private key. No real device certificate or handshake
+has been tested, and this preparation does not implement a custom transport.
+
+The stock Web UI password is separate from client pairing. This state file does
+not disable the Web UI, remove its password flow, or implement passwordless
+dedicated mode. An unconfigured stock Web UI can expose its setup flow. A slim
+candidate needs explicit listener/UI changes and testing after receiver agreement.
 
 ## Capture and experiments
 
@@ -159,7 +188,7 @@ absent. The installed `SunshineService` was running from `C:\Program Files\Sunsh
 No native Sunshine build, installation, service restart, or Moonlight session
 was attempted. `src/` and stock protocol behavior are unchanged.
 
-After the standalone receiver gate in the [protocol draft](protocol/0.3.0-draft.md)
+After the standalone receiver gate in the [protocol draft](protocol/0.4.0-draft.md)
 passes, use a separately built candidate with its own configuration/state and
 ports. `src/nvhttp.cpp` advertises stock codec capabilities, `src/rtsp.cpp` parses
 video format/launch configuration, and `src/video.cpp`/`src/stream.cpp` connect
@@ -175,7 +204,7 @@ and submodule revisions with build results. No MSYS2 packages were installed by
 this milestone. From the candidate root, the required command forms are:
 
 ```powershell
-& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake -S . -B cmake-build-gamebub -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON -DBUILD_DOCS=ON'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake -S . -B cmake-build-gamebub -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON -DBUILD_DOCS=ON -DSUNSHINE_ENABLE_TRAY=OFF'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake --build cmake-build-gamebub --parallel 4'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c './cmake-build-gamebub/tests/test_sunshine.exe'
 ```
@@ -186,6 +215,18 @@ native code changes, run `uv run --locked lb-update-clang-format` from the root
 and inspect the diff. Add GoogleTest coverage through `tests/tests_common.h`,
 following AGENTS.md include groups. Never run an installer, install a service,
 reuse the installed configuration, or stop the working instance for these tests.
+
+After the test build passes, configure a separate slim release candidate without
+the tray, test binaries, or generated documentation:
+
+```powershell
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake -S . -B cmake-build-gamebub-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_DOCS=OFF -DSUNSHINE_ENABLE_TRAY=OFF'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake --build cmake-build-gamebub-release --parallel 4'
+```
+
+This existing tray option skips Sunshine's tray/Qt dependency path. It does not
+remove the web server, stock codecs, or pairing protocol. The release build and
+its size have not yet been measured; no candidate has been installed.
 
 Required compatibility matrix before integration is delivered:
 

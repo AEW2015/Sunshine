@@ -4,10 +4,10 @@ The Windows work is isolated in `C:\ai\sunshine-gamebub`, branch `gamebub/host`,
 based on upstream `3d6e1d60`. Nothing changes the installed Sunshine service.
 Hosted branch: https://github.com/AEW2015/Sunshine/tree/gamebub/host.
 The current shared protocol draft is
-[`protocol/0.3.0-draft.md`](protocol/0.3.0-draft.md); it still awaits
+[`protocol/0.4.0-draft.md`](protocol/0.4.0-draft.md); it still awaits
 receiver-agent agreement. It defines one dedicated video/audio/button mode.
 
-Please review [protocol/0.3.0-draft.md](protocol/0.3.0-draft.md) and return:
+Please review [protocol/0.4.0-draft.md](protocol/0.4.0-draft.md) and return:
 
 1. FPGA decoder name/HDL revision, JPEG vs H.264 decision, and an accepted encoded
    sample. For JPEG: sampling, DHT/DQT, restart intervals, permitted markers,
@@ -21,6 +21,9 @@ Please review [protocol/0.3.0-draft.md](protocol/0.3.0-draft.md) and return:
 5. Audio output hardware, decoder, sample rate/channels, buffer capacity,
    and acceptable block duration. Confirm the documented 12-button mapping,
    how the streaming core exposes those states, and their update rate.
+6. Whether the client can use a pre-provisioned per-device public certificate
+   with Sunshine's existing control path, or needs a separate fixed-identity
+   handshake. The intended operation has no password or interactive pairing.
 
 Read or clone the hosted branch, or transfer the `tools/gamebub` directory
 (omit `.venv`, `artifacts`, `.coverage`,
@@ -40,6 +43,8 @@ game footage. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.
 The transport-independent `realtime.py` provides bounded media buffers and
 button-state bookkeeping only; it does not capture audio or inject input.
+`seed_pairing.py` prepares an isolated certificate state file; it does not
+disable the Web UI or demonstrate ESP32 interoperability.
 
 After agreement: implement exact framing/feedback, pass receiver tests, then add
 the opt-in Sunshine extension. Preserve pairing, application launch, input, and
