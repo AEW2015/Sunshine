@@ -245,9 +245,12 @@ estimate or guarantee actual Wi-Fi throughput.
 The socket is nonblocking. Failures and partial frames are counted, later SOF
 recovers per receiver protocol, and busy/drop feedback lowers JPEG quality.
 After 750 ms without matching feedback or a current-frame heartbeat, the sender
-offers at most one recovery frame per second. Only feedback matching a new probe
-restores normal sending. This timeout is an experimental host policy based on
-the receiver's documented 250 ms heartbeat and needs physical-network testing.
+normally offers at most one recovery frame per second. An in-flight frame can
+receive one bounded extension per feedback epoch, limited by its send deadline
+plus 750 ms and an absolute three-second silence bound. Recovery probes also
+have a three-second transmission bound. Only timely feedback matching a new
+probe restores normal sending. These are experimental host policies, subject
+to OS scheduling, and need physical-network testing.
 It does not authenticate the peer, stream audio, inject buttons, or provide a
 Sunshine mode. Use only an isolated trusted network. A
 [localhost receiver-reference run](measurements/stream-reference-loopback.md)

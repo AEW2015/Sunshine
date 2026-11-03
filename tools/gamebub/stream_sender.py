@@ -47,6 +47,10 @@ def frame_key_is_newer_or_same(current, previous):
     return frame_delta < 0x80000000
 
 
+class _FeedbackSilenceStop(OSError):
+    """@brief Stop a paced send when the feedback silence limit is reached."""
+
+
 class FeedbackGate:
     """@brief Limit sends during feedback silence while retaining recovery probes.
 
@@ -55,33 +59,56 @@ class FeedbackGate:
     resume normal sending; old ACKs and heartbeats cannot revive the session.
     """
 
-    def __init__(self, now_ns, timeout_ns=750_000_000, probe_ns=1_000_000_000):
+    def __init__(
+        self,
+        now_ns,
+        timeout_ns=750_000_000,
+        probe_ns=1_000_000_000,
+        max_silence_ns=3_000_000_000,
+    ):
         """@brief Set fixed monotonic durations; None defers the initial grace period.
 
         @param now_ns Initial grace timestamp, or None to defer it until traffic is sent.
         @param timeout_ns Maximum feedback silence before probing.
         @param probe_ns Minimum interval between recovery probes.
+        @param max_silence_ns Absolute per-feedback-epoch silence bound.
         """
-        if timeout_ns <= 0 or probe_ns <= 0:
+        if timeout_ns <= 0 or probe_ns <= 0 or max_silence_ns < timeout_ns:
             raise ValueError("Feedback timing must be positive")
         self.last_feedback = now_ns
         self.timeout_ns, self.probe_ns = timeout_ns, probe_ns
+        self.max_silence_ns = max_silence_ns
         self.probing = False
         self.next_probe = now_ns
         self.probe_key = None
+        self.probe_started_ns = None
         self.heartbeat_key = None
+        self.candidate = None
+        self.extension_deadline = None
 
     def expire(self, now_ns):
         """@brief Enter probing once and indicate when old pending ACKs must be cleared."""
-        if (
-            self.last_feedback is not None
-            and not self.probing
-            and now_ns - self.last_feedback > self.timeout_ns
-        ):
+        if self.last_feedback is None or self.probing:
+            return False
+        deadline = self.last_feedback + self.timeout_ns
+        if now_ns > deadline and self.candidate is not None and self.extension_deadline is None:
+            self.extension_deadline = max(
+                deadline,
+                min(
+                    self.candidate[1] + self.timeout_ns,
+                    self.last_feedback + self.max_silence_ns,
+                ),
+            )
+        if self.extension_deadline is not None:
+            deadline = self.extension_deadline
+        if now_ns > deadline:
             self.probing = True
             self.next_probe = now_ns
             self.probe_key = None
+            self.probe_started_ns = None
             self.heartbeat_key = None
+            self.candidate = None
+            self.extension_deadline = None
             return True
         return False
 
@@ -94,6 +121,7 @@ class FeedbackGate:
             return False, expired
         self.next_probe = now_ns + self.probe_ns
         self.probe_key = key
+        self.probe_started_ns = None
         return True, True
 
     def sent(self, now_ns):
@@ -104,16 +132,65 @@ class FeedbackGate:
         if self.last_feedback is None:
             self.last_feedback = now_ns
 
+    def packet_sent(self, key, frame_deadline_ns, now_ns):
+        """@brief Record a successful datagram as eligible for bounded in-flight grace.
+
+        @param key Frame ID and capture timestamp.
+        @param frame_deadline_ns Absolute monotonic capture-age deadline.
+        @param now_ns Monotonic time after the successful datagram send.
+        """
+        self.sent(now_ns)
+        if self.probing and self.probe_key == key and self.probe_started_ns is None:
+            self.probe_started_ns = now_ns
+        if not self.probing and self.extension_deadline is None:
+            self.candidate = (key, frame_deadline_ns)
+
+    def permit_packet(self, key, now_ns):
+        """@brief Bound one recovery probe as well as the established feedback epoch.
+
+        @param key Frame ID and capture timestamp.
+        @param now_ns Current monotonic time.
+        @return False for a stale or overlong recovery probe.
+        """
+        if not self.probing:
+            return True
+        if key != self.probe_key:
+            return False
+        if (
+            self.probe_started_ns is not None
+            and now_ns - self.probe_started_ns > self.max_silence_ns
+        ):
+            self.probe_key = None
+            self.probe_started_ns = None
+            return False
+        return True
+
+    def send_finished(self, key, now_ns):
+        """@brief End a candidate's transmission and bound its remaining ACK grace.
+
+        @param key Frame ID and capture timestamp.
+        @param now_ns Monotonic time after the send completes or aborts.
+        """
+        if self.candidate is None or self.candidate[0] != key:
+            return
+        self.candidate = (key, min(self.candidate[1], now_ns))
+        if self.extension_deadline is not None:
+            self.extension_deadline = min(self.extension_deadline, now_ns + self.timeout_ns)
+
     def feedback(self, key, matched, now_ns):
         """@brief Process a matching ACK or current heartbeat and report liveness."""
         if self.probing:
-            if not matched or key != self.probe_key:
+            if not matched or key != self.probe_key or not self.permit_packet(key, now_ns):
                 return False
             self.probing = False
             self.probe_key = None
+            self.probe_started_ns = None
         elif not matched and key != self.heartbeat_key:
             return False
         self.last_feedback = now_ns
+        if self.candidate is not None and self.candidate[0] == key:
+            self.candidate = None
+        self.extension_deadline = None
         if self.heartbeat_key is None or frame_key_is_newer_or_same(key, self.heartbeat_key):
             self.heartbeat_key = key
         return True
@@ -281,6 +358,42 @@ class Session:
                 self.pending.popitem(last=False)
                 self.counts["feedback_evicted"] += 1
         records = []
+        frame_deadline_ns = frame.captured_ns + self.age_ns
+
+        def expire_and_check(now):
+            """@brief Check the liveness epoch while holding the session lock."""
+            if self.gate.expire(now):
+                self.recovery_eligible = False
+                self.counts["feedback_abandoned"] += len(self.pending)
+                self.pending.clear()
+                self._event("feedback_timeout")
+            if not self.gate.permit_packet(key, now):
+                raise _FeedbackSilenceStop("Feedback silence limit reached")
+
+        class GuardedSocket:
+            """@brief Atomically check silence and record successful nonblocking sends."""
+
+            sent_bytes = 0
+
+            def send(_, packet):
+                """@brief Send one datagram unless its liveness epoch has expired."""
+                with self.lock:
+                    now = time.perf_counter_ns()
+                    expire_and_check(now)
+                    count = self.sock.send(packet)
+                    if count == len(packet):
+                        _.sent_bytes += count
+                        self.gate.packet_sent(key, frame_deadline_ns, time.perf_counter_ns())
+                    return count
+
+        guarded_socket = GuardedSocket()
+
+        def guarded_sleep(seconds):
+            """@brief Break long pacing waits to observe feedback silence promptly."""
+            time.sleep(min(seconds, 0.05))
+            if seconds > 0.05:
+                with self.lock:
+                    expire_and_check(time.perf_counter_ns())
 
         def record(packet, sent_at):
             """@brief Retain only sent offsets and host times, bounded by frame size."""
@@ -289,13 +402,14 @@ class Session:
 
         try:
             done, sent = send_frame(
-                self.sock,
+                guarded_socket,
                 jpeg,
                 frame.frame_id,
                 frame.capture_us,
                 self.rate,
-                (frame.captured_ns + self.age_ns) / 1e9,
+                frame_deadline_ns / 1e9,
                 clock=lambda: time.perf_counter_ns() / 1e9,
+                sleeper=guarded_sleep,
                 pacer=self.pacer,
                 on_packet=record if getattr(self, "packet_timing", False) else None,
             )
@@ -306,6 +420,35 @@ class Session:
                     self.counts["wire_bytes"] += error.sent_bytes
                     if error.sent_bytes:
                         self.gate.sent(time.perf_counter_ns())
+                cause = error.original_error if isinstance(error, PartialSendError) else error
+                if isinstance(cause, _FeedbackSilenceStop):
+                    wire_bytes = (
+                        error.sent_bytes
+                        if isinstance(error, PartialSendError)
+                        else guarded_socket.sent_bytes
+                    )
+                    if not isinstance(error, PartialSendError):
+                        self.counts["wire_bytes"] += wire_bytes
+                    self.counts["feedback_suppressed"] += 1
+                    self.recovery_eligible = False
+                    self._event(
+                        "send",
+                        frame_id=frame.frame_id,
+                        capture_us=frame.capture_us,
+                        jpeg_bytes=len(jpeg),
+                        wire_bytes=wire_bytes,
+                        complete=False,
+                        queue_age_ms=queue_age_ms,
+                        age_ms=(time.perf_counter_ns() - frame.captured_ns) / 1e6,
+                    )
+                    self._event(
+                        "send_suppressed",
+                        frame_id=frame.frame_id,
+                        capture_us=frame.capture_us,
+                        reason="feedback_silence",
+                        wire_bytes=wire_bytes,
+                    )
+                    return False
                 self.counts[
                     "socket_failures" if isinstance(error, OSError) else "packet_failures"
                 ] += 1
@@ -319,15 +462,15 @@ class Session:
                 )
             raise
         finally:
-            if records:
-                with self.lock:
-                    if not self._event(
-                        "packet_timing",
-                        frame_id=frame.frame_id,
-                        capture_us=frame.capture_us,
-                        packets=records,
-                    ):
-                        self.counts["packet_timing_enqueue_dropped"] += 1
+            with self.lock:
+                self.gate.send_finished(key, time.perf_counter_ns())
+                if records and not self._event(
+                    "packet_timing",
+                    frame_id=frame.frame_id,
+                    capture_us=frame.capture_us,
+                    packets=records,
+                ):
+                    self.counts["packet_timing_enqueue_dropped"] += 1
         with self.lock:
             self.counts["wire_bytes"] += sent
             if sent:

@@ -204,7 +204,8 @@ class ReferenceLoopbackTests(unittest.TestCase):
                 """@brief Return the receiver's original feedback bytes after the delay."""
                 if not self.delayed:
                     self.delayed = True
-                    time.sleep(1.05)
+                    # Exceed the normal silence timeout plus one bounded ACK grace.
+                    time.sleep(2.5)
                 return original.FEEDBACK.pack(*args)
 
         delayed = SimpleNamespace(Reassembler=original.Reassembler, FEEDBACK=DelayedFeedback())
@@ -218,11 +219,11 @@ class ReferenceLoopbackTests(unittest.TestCase):
                 max_age_ms=500,
                 quality=75,
                 min_quality=20,
-                frames=25,
+                frames=50,
             )
             image = Image.new("RGB", (720, 480), "red")
             with patch("reference_loopback.load_reference", return_value=delayed):
-                result = reference.run_reference(args, iter([image] * 25))
+                result = reference.run_reference(args, iter([image] * args.frames))
             events = [json.loads(line) for line in args.log.read_text().splitlines()]
         kinds = [event["event"] for event in events]
         self.assertIn("feedback_timeout", kinds)

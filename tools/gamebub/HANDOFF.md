@@ -36,9 +36,10 @@ passes the receiver's pinned packet fixture and Rust parser tests. Please review
    capture ingress, decode, and displayed-frame evidence separately.
 2. Measure concurrent Wi-Fi/QSPI throughput, display rate, frame age, drops,
    and input response using detailed moving gameplay.
-   Please also evaluate the host's experimental 750 ms feedback timeout and
-   one-frame-per-second recovery probes against the receiver's 250 ms heartbeat
-   and reconnect behavior; these are host policies, not a new wire format.
+   Please also evaluate the host's experimental 750 ms feedback timeout, bounded
+   in-flight grace (at most three seconds of silence), and one-frame-per-second
+   recovery probes against the receiver's 250 ms heartbeat and reconnect
+   behavior; these are host policies, not a new wire format.
    The pinned firmware locks its peer to the first UDP source IP and port for
    the session. Please confirm intended peer reset/rebind rules and frame-ID
    handling on host restart. The host now has `--source-port` and

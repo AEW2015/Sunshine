@@ -19,6 +19,7 @@ from PIL import Image
 from controller import ControllerTracker
 from host import canvas as reference_canvas
 from msv1 import FEEDBACK, VIDEO, Pacer, PartialSendError, encode_receiver_jpeg
+from msv1 import send_frame as paced_send_frame
 from pipeline import Frame
 from quality import QualityController
 from stream_sender import (
@@ -264,6 +265,269 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(gate.feedback((5, 5), True, 42))
         self.assertFalse(gate.probing)
         self.assertEqual(gate.offer((6, 6), 43), (True, False))
+
+    def test_inflight_extension_is_latched_and_has_absolute_silence_bound(self):
+        """@brief Continuing frame sends cannot extend a silent epoch indefinitely."""
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        gate.packet_sent((1, 1), 100, 1)
+        self.assertFalse(gate.expire(10))
+        self.assertFalse(gate.expire(11))
+        self.assertEqual(gate.extension_deadline, 40)
+        gate.packet_sent((2, 2), 1000, 12)
+        self.assertEqual(gate.extension_deadline, 40)
+        self.assertFalse(gate.expire(40))
+        self.assertTrue(gate.expire(41))
+        self.assertTrue(gate.probing)
+        self.assertFalse(gate.feedback((1, 1), True, 42))
+        self.assertEqual(gate.offer((3, 3), 42), (True, True))
+        self.assertTrue(gate.feedback((3, 3), True, 43))
+        self.assertFalse(gate.probing)
+
+    def test_inflight_completion_shortens_grace_and_feedback_starts_new_epoch(self):
+        """@brief Completion bounds ACK grace and valid feedback resets extension credit."""
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        gate.packet_sent((1, 1), 100, 1)
+        self.assertFalse(gate.expire(11))
+        gate.send_finished((1, 1), 12)
+        self.assertEqual(gate.extension_deadline, 22)
+        self.assertTrue(gate.feedback((1, 1), True, 13))
+        self.assertIsNone(gate.candidate)
+        self.assertIsNone(gate.extension_deadline)
+        gate.packet_sent((2, 2), 100, 14)
+        self.assertFalse(gate.expire(24))
+        self.assertEqual(gate.extension_deadline, 53)
+        self.assertTrue(gate.expire(54))
+
+    def test_initial_first_packet_arms_bounded_grace_but_no_traffic_does_not(self):
+        """@brief Initial silence remains unarmed until actual transmission."""
+        gate = FeedbackGate(None, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        self.assertEqual(gate.offer((1, 1), 100), (True, False))
+        self.assertFalse(gate.expire(10_000))
+        gate.packet_sent((1, 1), 20_000, 10_000)
+        self.assertFalse(gate.expire(10_040))
+        self.assertTrue(gate.expire(10_041))
+        with self.assertRaises(ValueError):
+            FeedbackGate(0, timeout_ns=10, max_silence_ns=9)
+
+    def test_recovery_probe_itself_cannot_run_beyond_silence_cap(self):
+        """@brief An overlong probe is abandoned and its later ACK cannot restore video."""
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        self.assertTrue(gate.expire(11))
+        self.assertEqual(gate.offer((1, 1), 11), (True, True))
+        self.assertFalse(gate.permit_packet((2, 2), 12))
+        self.assertTrue(gate.permit_packet((1, 1), 12))
+        gate.packet_sent((1, 1), 1000, 12)
+        self.assertTrue(gate.permit_packet((1, 1), 52))
+        self.assertFalse(gate.permit_packet((1, 1), 53))
+        self.assertFalse(gate.feedback((1, 1), True, 54))
+        self.assertEqual(gate.offer((2, 2), 54), (True, True))
+        self.assertTrue(gate.feedback((2, 2), True, 55))
+
+    def test_probe_ack_is_bounded_even_without_an_intervening_packet_check(self):
+        """@brief An overdue matching ACK cannot revive a still-active long probe."""
+        on_time = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        self.assertTrue(on_time.expire(11))
+        self.assertEqual(on_time.offer((1, 1), 11), (True, True))
+        on_time.packet_sent((1, 1), 1000, 12)
+        self.assertTrue(on_time.feedback((1, 1), True, 52))
+        self.assertFalse(on_time.probing)
+
+        late = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        self.assertTrue(late.expire(11))
+        self.assertEqual(late.offer((1, 1), 11), (True, True))
+        late.packet_sent((1, 1), 1000, 12)
+        self.assertFalse(late.feedback((1, 1), True, 53))
+        self.assertTrue(late.probing)
+        self.assertIsNone(late.probe_key)
+        self.assertEqual(late.offer((2, 2), 54), (True, True))
+        self.assertTrue(late.feedback((2, 2), True, 55))
+
+    def test_inflight_frame_stops_after_absolute_silence_limit(self):
+        """@brief Continuous datagrams cannot continue after the fixed silence bound."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = (
+            QualityController(75, 20),
+            1_000_000_000,
+            1_000_000_000,
+            Pacer(),
+        )
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(
+            None, timeout_ns=750_000, probe_ns=1_000_000, max_silence_ns=3_000_000
+        )
+        elapsed = [0]
+
+        def send(packet):
+            """@brief Advance time on each successful socket send."""
+            elapsed[0] += 1_000_000
+            return len(packet)
+
+        def fake_sleep(seconds):
+            """@brief Advance fake monotonic time rather than blocking on a frozen clock."""
+            elapsed[0] += max(1, int(seconds * 1_000_000_000))
+
+        def paced(*args, **kwargs):
+            """@brief Run actual packetization and pacing with deterministic waiting."""
+            kwargs["sleeper"] = fake_sleep
+            return paced_send_frame(*args, **kwargs)
+
+        s.sock.send.side_effect = send
+        jpeg = (Path(__file__).parent / "fixtures/frame-00000000-420-r0.jpg").read_bytes()
+        frame = Frame(2, 0, 20, Image.new("RGB", (720, 480)), 0)
+        with (
+            patch("stream_sender.time.perf_counter_ns", side_effect=lambda: elapsed[0]),
+            patch("stream_sender.send_frame", side_effect=paced),
+        ):
+            self.assertFalse(s._send(frame, jpeg))
+        self.assertTrue(s.gate.probing)
+        self.assertGreater(s.counts["wire_bytes"], 0)
+        self.assertLess(s.counts["wire_bytes"], len(jpeg))
+        self.assertEqual(s.counts["feedback_suppressed"], 1)
+        events = [json.loads(line) for line in s.log.getvalue().splitlines()]
+        self.assertTrue(any(event["event"] == "feedback_timeout" for event in events))
+        sent = next(event for event in events if event["event"] == "send")
+        self.assertFalse(sent["complete"])
+        self.assertEqual(sent["wire_bytes"], s.counts["wire_bytes"])
+
+    def test_silence_between_offer_and_first_datagram_cannot_send_untracked_frame(self):
+        """@brief A timeout racing preflight suppresses output before the socket call."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(0, timeout_ns=10, probe_ns=20, max_silence_ns=40)
+        elapsed = [0]
+
+        def racing_send(sock, *args, **kwargs):
+            """@brief Advance time to after expiry before attempting the first datagram."""
+            elapsed[0] = 11
+            return sock.send(b"one packet")
+
+        frame = Frame(2, 0, 20, Image.new("RGB", (720, 480)), 0)
+        with (
+            patch("stream_sender.time.perf_counter_ns", side_effect=lambda: elapsed[0]),
+            patch("stream_sender.send_frame", side_effect=racing_send),
+        ):
+            self.assertFalse(s._send(frame, b"jpeg"))
+        s.sock.send.assert_not_called()
+        self.assertEqual(s.counts["wire_bytes"], 0)
+        self.assertEqual(len(s.pending), 0)
+        self.assertTrue(s.gate.probing)
+
+    def test_long_pacing_wait_is_interrupted_by_feedback_silence(self):
+        """@brief Silence stops an in-flight sender without waiting for the next packet due."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = (
+            QualityController(75, 20),
+            100_000_000_000,
+            1000,
+            Pacer(),
+        )
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(
+            None, timeout_ns=10_000_000, probe_ns=20_000_000, max_silence_ns=100_000_000
+        )
+        s.sock.send.side_effect = lambda packet: len(packet)
+        elapsed = [0]
+
+        def sleep(seconds):
+            """@brief Advance the monotonic test clock by the requested delay."""
+            elapsed[0] += int(seconds * 1_000_000_000)
+
+        jpeg = (Path(__file__).parent / "fixtures/frame-00000000-420-r0.jpg").read_bytes()
+        frame = Frame(2, 0, 20, Image.new("RGB", (720, 480)), 0)
+        with (
+            patch("stream_sender.time.perf_counter_ns", side_effect=lambda: elapsed[0]),
+            patch("stream_sender.time.sleep", side_effect=sleep),
+        ):
+            self.assertFalse(s._send(frame, jpeg))
+        self.assertEqual(s.sock.send.call_count, 1)
+        self.assertEqual(s.counts["wire_bytes"], VIDEO.size + 1024)
+        self.assertGreater(elapsed[0], 100_000_000)
+        self.assertLessEqual(elapsed[0], 150_000_000)
+        self.assertTrue(s.gate.probing)
+
+    def test_partial_first_datagram_does_not_arm_feedback_grace(self):
+        """@brief An invalid short socket send is not recorded as a successful packet."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = (
+            QualityController(75, 20),
+            1_000_000_000,
+            1_000_000_000,
+            Pacer(),
+        )
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(None)
+        s.sock.send.return_value = 0
+        jpeg = (Path(__file__).parent / "fixtures/frame-00000000-420-r0.jpg").read_bytes()
+        now = time.perf_counter_ns()
+        frame = Frame(2, now, 20, Image.new("RGB", (720, 480)), now)
+        with self.assertRaisesRegex(OSError, "Partial UDP datagram send"):
+            s._send(frame, jpeg)
+        self.assertIsNone(s.gate.last_feedback)
+        self.assertEqual(s.counts["socket_failures"], 1)
+        self.assertEqual(s.counts["wire_bytes"], 0)
+
+    def test_loopback_long_subsequent_frame_receives_ack_before_grace(self):
+        """@brief A paced frame longer than 750 ms can complete and receive feedback."""
+        stop = threading.Event()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+            receiver.bind(("127.0.0.1", 0))
+            receiver.settimeout(0.05)
+
+            def peer():
+                """@brief Acknowledge a complete, sequential, CRC-checked JPEG."""
+                current = bytearray()
+                while not stop.is_set():
+                    try:
+                        packet, address = receiver.recvfrom(2048)
+                    except TimeoutError:
+                        continue
+                    fields = VIDEO.unpack(packet[: VIDEO.size])
+                    if fields[8] != len(current):
+                        return
+                    current.extend(packet[VIDEO.size :])
+                    if fields[3] & 2:
+                        if zlib.crc32(current) != fields[11]:
+                            return
+                        receiver.sendto(
+                            FEEDBACK.pack(b"MSF1", 1, 0, 0, fields[4], 0, 1, 0, fields[12]),
+                            address,
+                        )
+                        return
+
+            thread = threading.Thread(target=peer)
+            thread.start()
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                    sock.connect(receiver.getsockname())
+                    sock.setblocking(False)
+                    session = Session(sock, io.StringIO(), 1, 0.5, 3000, 75, 20)
+                    try:
+                        with session.lock:
+                            session.gate.feedback((1, 1), True, time.perf_counter_ns())
+                        jpeg = (
+                            Path(__file__).parent / "fixtures/frame-00000000-420-r0.jpg"
+                        ).read_bytes()
+                        started = time.perf_counter_ns()
+                        frame = Frame(2, started, 20, Image.new("RGB", (720, 480)), started)
+                        self.assertTrue(session._send(frame, jpeg))
+                        self.assertGreater(time.perf_counter_ns() - started, 750_000_000)
+                    finally:
+                        summary = session.close()
+            finally:
+                stop.set()
+                thread.join(2)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(summary["counts"]["feedback_accepted"], 1)
+        self.assertEqual(summary["counts"].get("feedback_suppressed", 0), 0)
 
     def test_late_matched_ack_does_not_regress_current_heartbeat(self):
         """@brief Older ACKs confirm liveness without displacing the newest heartbeat key."""
@@ -753,7 +1017,7 @@ class StreamSenderTests(unittest.TestCase):
                     fields = VIDEO.unpack(packet[: VIDEO.size])
                     if fields[3] & 1:
                         starts.append(fields[4])
-                    if fields[3] & 2 and time.monotonic() - started > 1.2:
+                    if fields[3] & 2 and time.monotonic() - started > 2.2:
                         receiver.sendto(
                             FEEDBACK.pack(b"MSF1", 1, 0, 0, fields[4], 0, 0, 0, fields[12]),
                             address,
@@ -772,7 +1036,7 @@ class StreamSenderTests(unittest.TestCase):
                         max_age_ms=500,
                         quality=75,
                         min_quality=20,
-                        frames=50,
+                        frames=70,
                     )
                     image = Image.new("RGB", (720, 480), "red")
                     result = run(args, iter([image] * args.frames))
