@@ -16,8 +16,8 @@ a reliable unit-test assertion on shared machines.
 1. **Overlap capture, encode and send** with independent workers and bounded
    handoffs. Test: controlled worker gates show capture continues during send,
    only the latest waiting frame survives, and shutdown joins every worker.
-   `pipeline.py` now provides and tests an experimental two-worker primitive;
-   capture and network integration remain to be built and measured.
+   `pipeline.py` is connected to clip/desktop capture and MSV1 in the standalone
+   test sender; Sunshine integration and physical-network measurement remain.
 2. **Drop stale video before encoding.** Test: inject a fake clock and expired
    frames, assert no encoder call and correct drop count, including boundary age.
 3. **Drop expired encoded frames before sending.** Test: a slow fake encoder
