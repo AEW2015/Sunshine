@@ -32,7 +32,10 @@ behavioral QSPI-to-display model, at 29.981 presentations per second across
 299 intervals, with a 37.507 ms maximum modeled arrival-to-swap age. The
 inputs contain 299 distinct images because source resampling repeated one.
 This roughly ten-second run used precompressed footage and assumed complete
-compressed frames were already available at the receiver. It did not measure
+compressed frames were already available at the receiver. A second strict
+10-second run presented 300 distinct source-derived images, sampled at 29 Hz
+and replayed at 30 Hz (about 3.45% source-time acceleration). It is likewise
+only a behavioral receiver simulation, not a live host or hardware test. It did not measure
 capture or encode on this Windows host, live Sunshine, real Wi-Fi, target CPU,
 or the physical display. See [the receiver study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/gameplay-study/README.md).
 
