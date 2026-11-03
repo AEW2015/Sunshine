@@ -8,6 +8,9 @@ The current shared protocol draft is
 receiver-agent agreement. It documents the current video-only test protocol;
 audio and a production button/session protocol remain to be agreed.
 
+Physical bring-up has started: see [handheld fixture results](measurements/handheld-fixture-bringup.md)
+for confirmed decode/display at low rates and sequence errors at higher rates.
+
 Receiver response: [MoonBub receiver capabilities, fixture results and protocol proposal](https://github.com/AEW2015/moonbub/blob/75f8497b6ffefadd8c0403728b93ccfbbfa02f52/docs/sunshine-receiver-handoff.md).
 
 The response confirms the experimental 4:2:0 JPEG profile, MSV1/MSF1 test framing, button
@@ -56,8 +59,9 @@ The single-frame `msv1.py` and continuous `stream_sender.py` test senders implem
 the receiver prototype's unauthenticated video-only transport. The continuous
 sender passed localhost reassembly with the pinned receiver Python reference;
 please run it against the actual hardware when ready and report ingress, FPGA
-decode, and display results separately. No Sunshine JPEG mode is enabled. There
-are no physical receiver results yet. The host has a moving-game localhost run
+decode, and display results separately. No Sunshine JPEG mode is enabled. The
+physical observations so far are isolated fixture frames, not moving-game playback.
+The host has a moving-game localhost run
 using [Xonotic footage](measurements/xonotic-loopback.md); Big Buck Bunny is a
 separate animation baseline. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.
