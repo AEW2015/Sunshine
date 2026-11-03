@@ -50,6 +50,14 @@ class ImageTests(unittest.TestCase):
             host.canvas(Image.new("RGB", (10000, 1), "white")).getbbox(), (0, 239, 720, 240)
         )
 
+    def test_video_frame_retains_color_and_letterbox(self):
+        """@brief Video scaling keeps the fitted viewport and its source color."""
+        source = av.VideoFrame.from_image(Image.new("RGB", (1280, 720), (240, 64, 32)))
+        image = host.canvas(source)
+        self.assertEqual(image.size, (720, 480))
+        self.assertEqual(image.getbbox(), (0, 37, 720, 442))
+        self.assertEqual(image.getpixel((360, 240)), (240, 64, 32))
+
     def test_alternate_resize_filters_keep_canvas_geometry(self):
         """@brief Desktop filters preserve letterbox geometry while changing interpolation."""
         source = host.pattern(2)

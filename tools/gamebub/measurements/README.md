@@ -53,6 +53,24 @@ modeled completions. A later sender needs bounded overlap and real receiver
 credits. The desktop source also requires a faster capture path, such as the
 existing Sunshine DXGI path, before its latency is suitable.
 
+An additional 30.04-second clip run using explicit bilinear video scaling is
+recorded in [bbb-bilinear.json](bbb-bilinear.json). It encoded 738 frames at
+24.57 fps and completed 732 at 24.37 fps in the same zero-overhead 20 Mbps
+link model, with 162 skipped slots and 6 stale drops. Quality started at 75
+and adapted between 20 and 75; encoded payload averaged 6.35 Mbps. Median and
+95th-percentile host completion age were 38.49 and 56.69 ms. This is neither
+Wi-Fi throughput nor receiver or display latency. The earlier fast-scan run
+used the same source and settings, but ran separately and produced 23.95
+modeled completions per second; scheduling and adaptive quality differ between
+runs, so the difference is not a controlled throughput comparison.
+
+In a separate sequential stage profile, 110 decoded clip frames (after 10
+warm-up frames) were each converted from 1080p to 720x405 RGB using the PyAV
+default, explicit bilinear, and fast-bilinear modes in that order. Mean times
+were 13.86, 3.08, and 9.00 ms respectively. This excludes clip decoding and
+the rest of the pipeline. Bilinear changes the resampled pixels and visual
+quality has not yet been assessed on detailed moving gameplay or the display.
+
 Big Buck Bunny is an animation baseline with opening/title material, not detailed
 moving gameplay. Its input hash, pinned mirror URL, license, and attribution
 are in [bbb-source.json](bbb-source.json); reproduction commands are in

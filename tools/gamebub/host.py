@@ -21,6 +21,7 @@ from functools import cache
 from pathlib import Path
 
 import av
+from av.video.reformatter import Interpolation
 from PIL import Image, ImageDraw, ImageGrab, features
 
 WIDTH, HEIGHT = 720, 480
@@ -58,14 +59,16 @@ def canvas(
     """@brief Fit a source without distortion inside a centered 720x405 viewport.
 
     @param image Source RGB-compatible image with square pixels.
-    @param resampling Pillow resize filter for image sources; video uses libswscale.
+    @param resampling Pillow resize filter for image sources; video uses bilinear libswscale.
     @return A 720x480 RGB canvas; 16:9 input has 37 top and 38 bottom black rows.
     """
     scale = min(WIDTH / image.width, CONTENT_HEIGHT / image.height)
     size = (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
     if isinstance(image, av.VideoFrame):
         # Scale only the selected decoded frame, before allocating a full-size RGB image.
-        image = image.reformat(width=size[0], height=size[1], format="rgb24").to_image()
+        image = image.reformat(
+            width=size[0], height=size[1], format="rgb24", interpolation=Interpolation.BILINEAR
+        ).to_image()
     else:
         image = image.convert("RGB").resize(size, resampling)
     result = Image.new("RGB", (WIDTH, HEIGHT))

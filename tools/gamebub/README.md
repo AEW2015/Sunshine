@@ -142,6 +142,9 @@ py -3.11 -m uv run --locked python host.py --desktop --desktop-filter bilinear -
 py -3.11 -m uv run --locked python host.py --clip C:\clips\game.mp4 --output artifacts\game --frames 1800 --fps 30 --quality 75 --link-mbps 20 --save-jpeg
 ```
 
+Clip frames use libswscale bilinear conversion to the fitted viewport; this is
+faster in the recorded host experiment but changes resampled detail. The
+deterministic image fixtures retain their existing Pillow scaling path.
 Desktop capture uses Pillow `ImageGrab` on the primary display, in the interactive
 user session. This is a software test path rather than Sunshine's DXGI capture.
 Clips must have square pixels and strictly increasing PTS; normalize rotated or
