@@ -24,7 +24,7 @@ selecting a sustained rate. No new wire format is assumed by the telemetry.
 The host's [30 fps JPEG bandwidth study](measurements/30fps-jpeg-budget.md)
 quantifies the expected MSV1 rate across quality settings on moving footage.
 
-The receiver's separate [30 fps simulation study](https://github.com/AEW2015/moonbub/tree/7c885a9450aca00f6aa32d7d5584d4715e5637fb)
+The receiver's separate [30 fps simulation study](https://github.com/AEW2015/moonbub/tree/28bcd7d23b22e91dec454efe1a4dc2d638f49d0a)
 contains experimental burst-memory and packet-recovery work. A later
 gameplay-derived model reports 300 presentations over roughly ten simulated
 seconds, with 299 distinct source JPEGs and abstract input and queue
@@ -39,6 +39,8 @@ Its later strict 1,800-frame modeled run failed: the last frame missed the
 capture window, and 370 frames exceeded 33.33 ms modeled arrival-to-presentation
 age, despite all eventually being presented. The proposed two-bank storage
 is an isolated experiment and is not the deployed receiver protocol.
+Its later hypothetical 60 Hz panel-clock simulations require a new clock
+configuration and do not establish routed timing or physical panel support.
 The study also clarifies that FPGA register `0x0c` is remaining frame bytes,
 not free FIFO capacity. Treat MSF1 free bytes as advisory until a credit contract
 is explicitly agreed; the experimental credit register is not production.
