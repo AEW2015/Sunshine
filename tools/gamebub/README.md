@@ -48,6 +48,14 @@ an immutable-anchor overlap profile. It records conditional rate improvements,
 cap/quality failures and Python service costs slower than real time. No
 installed Sunshine mode, receiver support or physical30 fps is established.
 
+[Iteration5](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/custom-codec-prototype-v5-2026-11-03.md)
+adds actual byte-identical faster host preparation, a reference-only background
+anchor protocol and causal quality restoration. Immutable-anchor P preparation
+has23–25 ms medians on the Python host; unchanged key means remain78–111 ms.
+The short conditional rate gains and synthetic recovery-quality result do not
+establish sustained30 fps or add a Sunshine/ESP32/FPGA mode. Per-kind native
+service, physical reference memory and integration remain implementation gates.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
