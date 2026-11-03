@@ -13,6 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+import av
 from PIL import Image
 
 import reference_loopback as reference
@@ -71,12 +72,34 @@ class ReferenceLoopbackTests(unittest.TestCase):
         args = ["--reference-repo", "unused", "--clip", "unused", "--log", "unused"]
         with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit):
             reference.main([*args, "--frames", "0"])
+        for invalid in (
+            [*args, "--desktop-backend", "ddagrab"],
+            ["--reference-repo", "unused", "--desktop", "--log", "unused", "--loop"],
+        ):
+            with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit):
+                reference.main(invalid)
         with (
             patch("reference_loopback.run_reference", side_effect=ValueError("bad")),
             patch("sys.stderr", new_callable=io.StringIO),
             self.assertRaises(SystemExit),
         ):
             reference.main(args)
+        with (
+            patch("reference_loopback.run_reference", side_effect=av.FFmpegError(5, "capture")),
+            patch("sys.stderr", new_callable=io.StringIO),
+            self.assertRaises(SystemExit),
+        ):
+            reference.main(
+                [
+                    "--reference-repo",
+                    "unused",
+                    "--desktop",
+                    "--desktop-backend",
+                    "ddagrab",
+                    "--log",
+                    "unused",
+                ]
+            )
         with (
             patch("reference_loopback.run_reference", return_value={"receiver": {"complete": 0}}),
             patch("builtins.print"),
@@ -302,6 +325,30 @@ class ReferenceLoopbackTests(unittest.TestCase):
             reference.run_reference(args)
         loop.assert_called_once_with(args.clip, args.fps)
         self.assertIs(send.call_args.args[1], source)
+        peer.close.assert_called_once()
+
+    def test_desktop_backend_is_passed_to_sender(self):
+        """@brief The reference peer can exercise the selected desktop capture backend."""
+        peer = Mock(port=1234)
+        args = SimpleNamespace(
+            reference_repo=Path("unused"),
+            log=Path("unused"),
+            clip=None,
+            fps=30,
+            mbps=20,
+            max_age_ms=200,
+            quality=75,
+            min_quality=20,
+            frames=1,
+            desktop_backend="ddagrab",
+        )
+        with (
+            patch("reference_loopback.load_reference"),
+            patch("reference_loopback.ReferencePeer", return_value=peer),
+            patch("reference_loopback.run", return_value={}) as send,
+        ):
+            reference.run_reference(args)
+        self.assertEqual(send.call_args.args[0].desktop_backend, "ddagrab")
         peer.close.assert_called_once()
 
 

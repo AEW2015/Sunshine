@@ -11,8 +11,9 @@ import zlib
 from collections import Counter, OrderedDict
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
+import av
 from PIL import Image
 
 from controller import ControllerTracker
@@ -20,7 +21,7 @@ from host import canvas as reference_canvas
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
 from quality import QualityController
-from stream_sender import FeedbackGate, Session, main, run
+from stream_sender import FeedbackGate, Session, desktop_duplication_frames, main, run
 
 
 class MemoryEvents:
@@ -41,6 +42,31 @@ class MemoryEvents:
 
 class StreamSenderTests(unittest.TestCase):
     """@brief Exercise capture, JPEG, packetization and ingress feedback on loopback."""
+
+    def test_desktop_duplication_opens_and_closes_filter_graph(self):
+        """@brief The optional graph yields decoded frames and releases its device on close."""
+        capture = MagicMock()
+        capture.__enter__ = Mock(return_value=capture)
+        capture.__exit__ = Mock(return_value=False)
+        capture.decode.return_value = iter(["frame"])
+        with patch("stream_sender.av.open", return_value=capture) as open_graph:
+            frames = desktop_duplication_frames(30)
+            self.assertEqual(next(frames), "frame")
+            frames.close()
+        open_graph.assert_called_once_with(
+            "ddagrab=framerate=30:dup_frames=1:draw_mouse=0,hwdownload,format=bgra",
+            format="lavfi",
+        )
+        capture.decode.assert_called_once_with(video=0)
+        capture.__exit__.assert_called_once()
+
+    def test_desktop_duplication_open_error_propagates(self):
+        """@brief Initialization errors reach the caller instead of silently changing backends."""
+        with (
+            patch("stream_sender.av.open", side_effect=OSError("device unavailable")),
+            self.assertRaisesRegex(OSError, "device unavailable"),
+        ):
+            next(desktop_duplication_frames(30))
 
     def test_feedback_gate_timeout_heartbeat_and_probe_recovery(self):
         """@brief Silence limits traffic; only a fresh probe can restore regular sending."""
@@ -467,6 +493,18 @@ class StreamSenderTests(unittest.TestCase):
         ):
             with self.subTest(extra=extra), self.assertRaises(SystemExit):
                 main(["127.0.0.1", "--desktop", "--log", "unused", *extra])
+        with self.assertRaises(SystemExit):
+            main(
+                [
+                    "127.0.0.1",
+                    "--clip",
+                    "clip.mp4",
+                    "--desktop-backend",
+                    "ddagrab",
+                    "--log",
+                    "unused",
+                ]
+            )
         with patch("stream_sender.run", return_value={"counts": {}}), patch("builtins.print"):
             self.assertEqual(main(["127.0.0.1", "--desktop", "--log", "unused"]), 2)
         with (
@@ -476,6 +514,11 @@ class StreamSenderTests(unittest.TestCase):
             self.assertEqual(main(["127.0.0.1", "--desktop", "--log", "unused"]), 0)
         with (
             patch("stream_sender.run", side_effect=OSError("closed")),
+            self.assertRaises(SystemExit),
+        ):
+            main(["127.0.0.1", "--desktop", "--log", "unused"])
+        with (
+            patch("stream_sender.run", side_effect=av.FFmpegError(5, "capture failed")),
             self.assertRaises(SystemExit),
         ):
             main(["127.0.0.1", "--desktop", "--log", "unused"])
@@ -516,6 +559,33 @@ class StreamSenderTests(unittest.TestCase):
                 self.assertEqual(resize.call_args.args[1], Image.Resampling.BOX)
                 config = json.loads(args.log.read_text().splitlines()[0])
                 self.assertEqual((config["source"], config["desktop_filter"]), ("desktop", "box"))
+                args.log = Path(directory) / "ddagrab.jsonl"
+                args.desktop_backend = "ddagrab"
+                source = MagicMock()
+                source.__next__ = Mock(return_value=Image.new("RGB", (720, 480)))
+                source.close = Mock()
+                with patch(
+                    "stream_sender.desktop_duplication_frames", return_value=source
+                ) as capture:
+                    result = run(args)
+                self.assertEqual(result["pipeline"]["counts"]["submitted"], 1)
+                capture.assert_called_once_with(30)
+                source.close.assert_called_once()
+                config = json.loads(args.log.read_text().splitlines()[0])
+                self.assertEqual(
+                    (config["source"], config["desktop_filter"]), ("desktop_ddagrab", None)
+                )
+                args.log = Path(directory) / "failed-capture.jsonl"
+                source = MagicMock()
+                source.__next__.side_effect = av.FFmpegError(5, "capture failed")
+                with (
+                    patch("stream_sender.desktop_duplication_frames", return_value=source),
+                    self.assertRaises(av.FFmpegError),
+                ):
+                    run(args)
+                source.close.assert_called_once()
+                events = [json.loads(line)["event"] for line in args.log.read_text().splitlines()]
+                self.assertIn("summary", events)
 
 
 if __name__ == "__main__":

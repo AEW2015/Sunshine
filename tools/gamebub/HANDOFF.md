@@ -90,3 +90,7 @@ current MSV1 receiver does not implement the control protocol needed to use it.
 After agreement: complete authenticated framing/feedback, pass receiver tests, then add
 the opt-in Sunshine extension. Preserve pairing, application launch, input, and
 stock codec identifiers. Video-only must remain usable without Moonlight audio.
+
+The later [16-slot fixture trials](measurements/handheld-16slot-fixture-trials.md)
+include 20-frame runs at 1 Mbps and a consumer-priority comparison. They are
+individual-frame ingress tests, not a sustained 30 fps stream.

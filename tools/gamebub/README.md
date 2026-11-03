@@ -106,6 +106,15 @@ py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --clip C:\clips
 py -3.11 -m uv run --locked python stream_sender.py 192.168.1.50 --desktop --log artifacts\desktop-run.jsonl --frames 300
 ```
 
+On Windows, `--desktop --desktop-backend ddagrab` opts into the experimental
+FFmpeg Desktop Duplication capture path. It uses the primary output, downloads
+BGRA frames and applies bilinear libswscale scaling; `--desktop-filter` only
+affects the default ImageGrab backend. The graph may repeat unchanged frames,
+and the sender cannot distinguish those from fresh updates. GPU/device loss,
+fullscreen games and sustained 30 fps have not been validated. Capture errors
+stop the sender rather than silently switching backends; start a new run after
+resolving the error and follow the session rules below.
+
 The optional `--desktop-filter box` uses a faster resize filter in one static
 desktop microbenchmark, but its visual quality on moving games is unverified.
 The default stays bilinear; see [DXGI probe results](measurements/dxgi-desktop-probe.md).

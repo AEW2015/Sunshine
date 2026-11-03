@@ -14,6 +14,8 @@ import types
 from pathlib import Path
 from types import SimpleNamespace
 
+import av
+
 from host import clip_frames
 from stream_sender import run
 
@@ -135,6 +137,7 @@ def run_reference(args, source=None):
         start_frame_id=0,
         log=args.log,
         clip=args.clip,
+        desktop_backend=getattr(args, "desktop_backend", "imagegrab"),
         fps=args.fps,
         mbps=args.mbps,
         max_age_ms=args.max_age_ms,
@@ -159,7 +162,10 @@ def main(argv=None):
     """@brief Run an explicitly requested local reference benchmark."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference-repo", type=Path, required=True)
-    parser.add_argument("--clip", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--clip", type=Path)
+    source.add_argument("--desktop", action="store_true")
+    parser.add_argument("--desktop-backend", choices=("imagegrab", "ddagrab"), default="imagegrab")
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--frames", type=int, default=900)
     parser.add_argument(
@@ -171,11 +177,13 @@ def main(argv=None):
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
     args = parser.parse_args(argv)
+    if (args.loop and not args.clip) or (args.desktop_backend != "imagegrab" and not args.desktop):
+        parser.error("--loop requires --clip; --desktop-backend requires --desktop")
     if not 1 <= args.frames <= 108000:
         parser.error("Frame count must be 1..108000")
     try:
         result = run_reference(args)
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, av.FFmpegError, subprocess.SubprocessError) as error:
         parser.error(str(error))
     print(json.dumps(result, indent=2))
     return 0 if result["receiver"]["complete"] else 2

@@ -12,6 +12,7 @@ import time
 from collections import Counter, OrderedDict
 from pathlib import Path
 
+import av
 from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
@@ -326,6 +327,17 @@ class Session:
         return result
 
 
+def desktop_duplication_frames(fps):
+    """@brief Yield Desktop Duplication frames, releasing the device on close.
+
+    @param fps Maximum desktop output rate; unchanged frames may be repeated.
+    @return Iterator of software BGRA video frames.
+    """
+    graph = f"ddagrab=framerate={fps}:dup_frames=1:draw_mouse=0,hwdownload,format=bgra"
+    with av.open(graph, format="lavfi") as capture:
+        yield from capture.decode(video=0)
+
+
 def run(args, source=None):
     """@brief Capture a paced clip or desktop and write bounded-queue telemetry.
 
@@ -333,8 +345,21 @@ def run(args, source=None):
     @param source Optional iterator of images for tests; None uses clip or desktop.
     @return Run summary without any claim of receiver decode or display.
     """
+    dxgi = (
+        source is None
+        and not args.clip
+        and getattr(args, "desktop_backend", "imagegrab") == "ddagrab"
+    )
     frames = (
-        source if source is not None else (clip_frames(args.clip, args.fps) if args.clip else None)
+        source
+        if source is not None
+        else (
+            clip_frames(args.clip, args.fps)
+            if args.clip
+            else desktop_duplication_frames(args.fps)
+            if dxgi
+            else None
+        )
     )
     with (
         args.log.open("x", encoding="utf-8", newline="\n") as log,
@@ -350,7 +375,11 @@ def run(args, source=None):
         with session.lock:
             session._event(
                 "capture_config",
-                source="desktop" if frames is None else "clip_or_test_source",
+                source="desktop_ddagrab"
+                if dxgi
+                else "desktop"
+                if frames is None
+                else "clip_or_test_source",
                 desktop_filter=filter_name if frames is None else None,
             )
         started = time.perf_counter_ns()
@@ -363,10 +392,11 @@ def run(args, source=None):
                 actual = min(args.frames - 1, (now - started) * args.fps // 1_000_000_000)
                 skipped = max(0, actual - slot)
                 if frames is not None:
-                    for _ in range(skipped + 1):
+                    for _ in range(1 if dxgi else skipped + 1):
                         image = next(frames)
                 else:
                     image = ImageGrab.grab()
+                now = time.perf_counter_ns()
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
                 prepared = canvas(image, Image.Resampling[filter_name.upper()])
@@ -378,9 +408,11 @@ def run(args, source=None):
         except StopIteration:
             pass
         finally:
-            if hasattr(frames, "close"):
-                frames.close()
-            result = session.close()
+            try:
+                if hasattr(frames, "close"):
+                    frames.close()
+            finally:
+                result = session.close()
     return result
 
 
@@ -391,6 +423,12 @@ def main(argv=None):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--clip", type=Path)
     group.add_argument("--desktop", action="store_true")
+    parser.add_argument(
+        "--desktop-backend",
+        choices=("imagegrab", "ddagrab"),
+        default="imagegrab",
+        help="Experimental Windows Desktop Duplication via FFmpeg; may repeat unchanged frames",
+    )
     parser.add_argument(
         "--desktop-filter",
         choices=("bilinear", "box"),
@@ -412,6 +450,8 @@ def main(argv=None):
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
     args = parser.parse_args(argv)
+    if args.desktop_backend != "imagegrab" and not args.desktop:
+        parser.error("--desktop-backend requires --desktop")
     if (
         not 1 <= args.port <= 65535
         or not 0 <= args.source_port <= 65535
@@ -425,7 +465,7 @@ def main(argv=None):
     try:
         result = run(args)
         print(json.dumps(result, indent=2))
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, av.FFmpegError) as error:
         parser.error(str(error))
     return 0 if result["counts"].get("feedback_accepted", 0) else 2
 

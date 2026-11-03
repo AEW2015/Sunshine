@@ -94,3 +94,20 @@ with av.open(source, format="lavfi") as capture:
     print(f"work_ms_median={statistics.median(work_ms):.2f} max={max(work_ms):.2f}")
     print(f"jpeg_mean_bytes={statistics.mean(sizes):.0f}")
 ```
+
+The experimental `--desktop-backend ddagrab` is now available in the standalone
+sender. In a subsequent run of the actual sender and pinned localhost reference
+receiver, 293 of 300 target slots were submitted, encoded, sent, and reassembled;
+seven capture slots were skipped and the reference reported no invalid datagrams.
+The sender duration was 10.318 seconds including final feedback grace, and its
+reported send rate was 28.40 fps, 6.96 Mbps of MSV1 traffic, with quality 75
+throughout. The desktop content was uncontrolled and `ddagrab` may repeat
+unchanged frames. This result exercises host capture, encoding, packetization,
+and localhost ingress only, not the physical Wi-Fi, QSPI, FPGA, or display.
+Capture-device loss exits with an error; automatic reinitialization remains work.
+
+Reproduce with a pinned MoonBub reference clone and a new log filename:
+
+```powershell
+C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked python reference_loopback.py --reference-repo /c/ai/moonbub-reference --desktop --desktop-backend ddagrab --frames 300 --fps 30 --mbps 20 --max-age-ms 200 --quality 75 --min-quality 20 --log artifacts/ddagrab-reference-new.jsonl'
+```
