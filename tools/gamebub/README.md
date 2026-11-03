@@ -7,11 +7,33 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v11-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v11-20261103),
-paired with [Moonbub v11](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v11-20261103).
+[`handoff/gamebub-app-codec-v12-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v12-20261103),
+paired with [Moonbub v12](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v12-20261103).
 Earlier handoffs remain frozen. Read the
-[v11 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v11-20261103/docs/custom-codec-prototype-v11-2026-11-03.md)
-and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v11-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+[v12 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v12-20261103/docs/custom-codec-prototype-v12-2026-11-03.md)
+and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v12-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+
+V12 keeps the primary 720×480 / 30 fps requirement. Measured exact zero/DC bypass
+plus cached tables cuts full Python GM01/HG01 receive by approximately 8–11% with
+identical pixels and reference planes. Exact last-source reuse produces identical
+full GM01 packets: preparation improves 24.73→13.95 ms with 26 hits in the combat
+sample, but changes 24.89→25.25 ms with no hits in the second sample. This PC cache
+is not yet integrated into the finite candidate/commit controller. Blindly trying
+both actual motion candidates roughly triples preparation for zero or small real
+bit savings; do not enable that policy as a default.
+
+Controlled 720×480 refresh scenarios remove a mid-window key and gain two strict
+deliveries per 60-ID native window, without any 60/60 strict pass. The declared
+service table remains separate from measured call wall times and target timing.
+The new scheduler also rejects late ACKs after requested expiry while retaining
+read ownership through drain. Older scheduler evidence stays frozen. Native
+decoder porting, proper host-cache admission, a causal motion gate and versioned
+reference-state work are next; sustained physical 30 fps remains unproved.
+
+All new Python implementations and retained results live in the paired Moonbub
+branch, including `experiments/verify_prototype_v12.py` and its provenance manifest.
+This Sunshine branch carries the host handoff documentation, not an integrated
+Sunshine codec mode or binary. The installed Windows service is unchanged.
 
 V11 integrates actual HP01/HR01 temporal UI selection with complete HG01/GM01
 bodies through finite GF02 and outer-content-bound GA01 software replay. Compact
@@ -21,7 +43,7 @@ and paid search/vector overhead; it is not a universal replacement.
 
 The primary product target remains **720×480 coded video at30fps**, preserving
 720×405 active16:9 game content. The512×288/20fps cases are diagnostic comparisons.
-The [updated plan](https://github.com/AEW2015/moonbub/blob/plan/gamebub-720x480-20261103/docs/gamebub-application-specific-codec-plan.md)
+The [updated plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v12-20261103/docs/gamebub-application-specific-codec-plan.md)
 prioritizes compression, native decoder service and key/ACK/refresh scheduling
 at the primary resolution. Current high-resolution replay remains below target;
 no hardware30fps result or default refresh policy is qualified. The original
