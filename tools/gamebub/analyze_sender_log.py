@@ -17,6 +17,38 @@ class LogFormatError(ValueError):
     """@brief Identify an invalid sender-log record or oversized input."""
 
 
+class _NonFiniteJSONNumber(ValueError):
+    """@brief Identify a non-standard JSON non-finite numeric constant."""
+
+
+def _reject_nonfinite_constant(constant):
+    """@brief Reject NaN and Infinity tokens accepted by Python's JSON decoder.
+
+    @param constant Non-standard numeric token found in a JSON record.
+    @return Never returns.
+    @throws _NonFiniteJSONNumber For every non-finite constant token.
+    """
+    raise _NonFiniteJSONNumber(constant)
+
+
+def _validate_finite_numbers(record, line_number):
+    """@brief Reject finite-syntax JSON numbers that overflow to infinity.
+
+    @param record Decoded JSON value, including nested arrays and objects.
+    @param line_number One-based input line for the error message.
+    @throws LogFormatError If any decoded float is not finite.
+    """
+    pending = [record]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, float) and not math.isfinite(value):
+            raise LogFormatError(f"Non-finite JSON number on line {line_number}")
+        if isinstance(value, dict):
+            pending.extend(value.values())
+        elif isinstance(value, list):
+            pending.extend(value)
+
+
 class Reservoir:
     """@brief Keep a reproducible, uniformly sampled bounded set of values."""
 
@@ -102,12 +134,17 @@ def _read_records(path):
             if len(raw) > MAX_RECORD_BYTES:
                 raise LogFormatError(f"Line {line_number} exceeds record size limit")
             try:
-                record = json.loads(raw)
+                record = json.loads(raw, parse_constant=_reject_nonfinite_constant)
+            except _NonFiniteJSONNumber as error:
+                raise LogFormatError(
+                    f"Non-finite JSON number on line {line_number}: {error}"
+                ) from error
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
                 if not raw.endswith(b"\n") and stream.peek(1) == b"":
                     yield line_number, None
                     return
                 raise LogFormatError(f"Invalid JSON on line {line_number}: {error}") from error
+            _validate_finite_numbers(record, line_number)
             if not isinstance(record, dict):
                 raise LogFormatError(f"Line {line_number} must contain a JSON object")
             yield line_number, record

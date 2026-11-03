@@ -6,7 +6,7 @@ import random
 import runpy
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -102,6 +102,22 @@ class SenderLogAnalysisTests(unittest.TestCase):
                     self.assertRaisesRegex(LogFormatError, "Invalid JSON"),
                 ):
                     analyze_log(path)
+
+    def test_nonfinite_numbers_are_rejected_anywhere_in_a_record(self):
+        """@brief Reject non-standard constants and exponent overflow, including tails."""
+        tokens = (b"NaN", b"Infinity", b"-Infinity", b"1e999")
+        with tempfile.TemporaryDirectory() as directory:
+            for token in tokens:
+                content = b'{"event":"x","nested":[{"value":' + token + b"}]}\n"
+                path = self._write(directory, content)
+                with (
+                    self.subTest(token=token),
+                    self.assertRaisesRegex(LogFormatError, "Non-finite JSON number on line 1"),
+                ):
+                    analyze_log(path)
+            path = self._write(directory, b'{"event":"x","value":NaN}')
+            with self.assertRaisesRegex(LogFormatError, "Non-finite JSON number"):
+                analyze_log(path)
 
     def test_limits_and_record_shape_are_validated(self):
         """@brief Enforce bounded samples and require object records with event names."""
@@ -207,6 +223,16 @@ class SenderLogAnalysisTests(unittest.TestCase):
             with self.assertRaises(SystemExit) as error:
                 analyze_sender_log.main([str(Path(directory) / "absent.jsonl")])
             self.assertEqual(error.exception.code, 2)
+
+    def test_cli_reports_nonfinite_json_as_a_parser_error(self):
+        """@brief Keep invalid numeric tokens from failing later during output."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write(directory, b'{"event":"summary","nested":{"value":1e999}}\n')
+            errors = io.StringIO()
+            with redirect_stderr(errors), self.assertRaises(SystemExit) as error:
+                analyze_sender_log.main([str(path)])
+        self.assertEqual(error.exception.code, 2)
+        self.assertIn("Non-finite JSON number on line 1", errors.getvalue())
 
     def test_module_entry_point_exits_successfully(self):
         """@brief Exercise the script guard and successful process exit path."""
