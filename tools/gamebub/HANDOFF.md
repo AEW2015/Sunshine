@@ -10,6 +10,8 @@ audio and a production button/session protocol remain to be agreed.
 
 Physical bring-up has started: see [handheld fixture results](measurements/handheld-fixture-bringup.md)
 for confirmed decode/display at low rates and sequence errors at higher rates.
+The operator also confirmed visible updates in a [short live game-video diagnostic](measurements/handheld-live-game-test-01.md)
+at a 1 fps target and 0.5 Mbps cap; audio and input were not tested.
 Most recently, cumulative handheld counters were 7 received/7 decoded/7
 displayed/4 dropped; a 0.5 Mbps fixture displayed and a 0.7 Mbps fixture was
 dropped. The first failing expected/observed offsets are unavailable because
@@ -66,8 +68,8 @@ the receiver prototype's unauthenticated video-only transport. The continuous
 sender passed localhost reassembly with the pinned receiver Python reference;
 please run it against the actual hardware when ready and report ingress, FPGA
 decode, and display results separately. No Sunshine JPEG mode is enabled. The
-physical observations so far are isolated fixture frames, not moving-game playback.
-The host has a moving-game localhost run
+physical observations so far include fixture frames and a short, low-rate live
+game-video diagnostic, not sustained gameplay. The host also has a moving-game localhost run
 using [Xonotic footage](measurements/xonotic-loopback.md); Big Buck Bunny is a
 separate animation baseline. Host timing and simulated transmission are
 explicitly labeled in `measurements/` and must not be reported as playback.
