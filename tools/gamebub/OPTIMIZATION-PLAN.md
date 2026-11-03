@@ -125,6 +125,8 @@ a reliable unit-test assertion on shared machines.
 32. **Release on disconnect, timeout or session change.** Test: held inputs
     become neutral exactly once and old packets cannot reassert them. A timeout
     must match the receiver heartbeat so an idle held button is not released.
+    The laboratory logs a neutral state after 500 ms silence and rejects a
+    same-frame snapshot after timeout; this does not inject or solve reordering.
 33. **Create one Windows virtual controller.** Test: inject a fake Sunshine
     gamepad backend and assert allocation, updates, neutralization and cleanup;
     separately check actual Windows game visibility with a real driver.

@@ -15,6 +15,7 @@ from unittest.mock import Mock, patch
 
 from PIL import Image
 
+from controller import ControllerTracker
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
 from stream_sender import FeedbackGate, Session, main, run
@@ -155,7 +156,9 @@ class StreamSenderTests(unittest.TestCase):
                         else:
                             completed.append(frame)
                             receiver.sendto(
-                                FEEDBACK.pack(b"MSF1", 1, 0, 0, frame, 0, len(completed), 0, stamp),
+                                FEEDBACK.pack(
+                                    b"MSF1", 1, 0, 1 << 11, frame, 0, len(completed), 0, stamp
+                                ),
                                 address,
                             )
 
@@ -187,6 +190,14 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(result["pipeline"]["counts"]["sent"], 4)
         self.assertFalse(result["end_to_end_verified"])
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
+        self.assertEqual(
+            [
+                (event["gamepad_flags"], event["reason"])
+                for event in events
+                if event["event"] == "controller"
+            ],
+            [(0x1000, "feedback"), (0, "shutdown")],
+        )
         self.assertEqual(events[-1]["event"], "summary")
 
     def test_adaptation_and_network_errors(self):
@@ -235,6 +246,7 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
         s.gate = FeedbackGate(time.monotonic_ns())
+        s.controller = ControllerTracker()
         s.quality, s.min_quality = 75, 20
         s.sock = Mock()
         s.sock.recv.side_effect = [
@@ -256,18 +268,56 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
         s.pending = OrderedDict({(4, 10): None, (5, 11): None})
         s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=10, probe_ns=20)
+        s.controller = ControllerTracker()
         s.quality, s.min_quality = 75, 20
         s.sock = Mock()
         ack = FEEDBACK.pack(b"MSF1", 1, 0, 0, 4, 0, 0, 0, 10)
         late = FEEDBACK.pack(b"MSF1", 1, 0, 0, 5, 0, 0, 0, 11)
         s.sock.recv.side_effect = [ack, ack, late, OSError("closed")]
-        with patch("stream_sender.time.monotonic_ns", side_effect=[1, 2, 20]):
+        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 1, 2, 2, 20, 20]):
             s._feedback_loop()
         self.assertEqual(s.counts["feedback_accepted"], 1)
         self.assertEqual(s.counts["feedback_heartbeats"], 1)
         self.assertEqual(s.counts["feedback_abandoned"], 1)
         self.assertEqual(s.counts["unmatched_feedback"], 1)
         self.assertTrue(s.gate.probing)
+
+    def test_button_logging_timeout_and_late_heartbeat(self):
+        """@brief Accepted snapshots are logged; silence emits a neutral state."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
+        s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(10)
+        s.quality, s.min_quality = 75, 20
+        s.sock = Mock()
+        pressed = FEEDBACK.pack(b"MSF1", 1, 0, 1 << 11, 4, 0, 0, 0, 10)
+        s.sock.recv.side_effect = [pressed, BlockingIOError(), pressed, OSError("closed")]
+        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 12, 13, 14, 15]):
+            s._feedback_loop()
+        events = [json.loads(line) for line in s.log.getvalue().splitlines()]
+        controller_events = [event for event in events if event["event"] == "controller"]
+        self.assertEqual([event["gamepad_flags"] for event in controller_events], [0x1000, 0])
+        self.assertEqual(controller_events[-1]["reason"], "timeout")
+
+    def test_bad_button_mask_and_socket_error_release(self):
+        """@brief Reject reserved button bits and neutralize held state on socket error."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
+        s.pending, s.counts = OrderedDict({(4, 10): None, (5, 11): None}), Counter()
+        s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(1000)
+        s.quality, s.min_quality = 75, 20
+        s.sock = Mock()
+        s.sock.recv.side_effect = [
+            FEEDBACK.pack(b"MSF1", 1, 0, 1 << 11, 4, 0, 0, 0, 10),
+            FEEDBACK.pack(b"MSF1", 1, 0, 1 << 12, 5, 0, 0, 0, 11),
+            OSError("closed"),
+        ]
+        with patch("stream_sender.time.monotonic_ns", side_effect=[0, 1, 2, 3, 4]):
+            s._feedback_loop()
+        events = [json.loads(line) for line in s.log.getvalue().splitlines()]
+        self.assertEqual(s.counts["invalid_buttons"], 1)
+        self.assertEqual(events[-1]["reason"], "socket_error")
+        self.assertEqual(events[-1]["gamepad_flags"], 0)
 
     def test_cli_validation_and_ack_exit_status(self):
         """@brief The CLI fails without ingress confirmation and rejects invalid limits."""

@@ -14,6 +14,7 @@ from pathlib import Path
 
 from PIL import Image, ImageGrab
 
+from controller import ControllerTracker
 from host import Profile, canvas, clip_frames, encode
 from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
@@ -108,6 +109,7 @@ class Session:
         self.pacer = Pacer()
         self.start_ns = time.monotonic_ns()
         self.gate = FeedbackGate(self.start_ns)
+        self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
         self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, MAX_FRAME)
@@ -201,6 +203,10 @@ class Session:
     def _feedback_loop(self):
         """@brief Poll the connected peer without blocking the video sender."""
         while not self.stop.is_set():
+            with self.lock:
+                if self.controller.expire(time.monotonic_ns()) is not None:
+                    self.counts["controller_timeout_releases"] += 1
+                    self._event("controller", gamepad_flags=0, reason="timeout")
             try:
                 data = self.sock.recv(FEEDBACK.size + 1)
             except BlockingIOError:
@@ -210,6 +216,8 @@ class Session:
                 with self.lock:
                     self.counts["feedback_socket_failures"] += 1
                     self._event("feedback_error", error=str(error))
+                    if self.controller.disconnect() is not None:
+                        self._event("controller", gamepad_flags=0, reason="socket_error")
                 return
             try:
                 feedback = parse_feedback(data)
@@ -231,6 +239,15 @@ class Session:
                     continue
                 if was_probing:
                     self._event("feedback_restored", frame_id=feedback.frame_id)
+                try:
+                    buttons = self.controller.accept(
+                        feedback.frame_id, feedback.capture_us, feedback.buttons, now
+                    )
+                except ValueError:
+                    self.counts["invalid_buttons"] += 1
+                else:
+                    if buttons is not None:
+                        self._event("controller", gamepad_flags=buttons, reason="feedback")
                 if not matched:
                     self.counts["feedback_heartbeats"] += 1
                     continue
@@ -257,6 +274,8 @@ class Session:
         self.feedback_thread.join()
         duration = (time.monotonic_ns() - self.start_ns) / 1e9
         with self.lock:
+            if self.controller.disconnect() is not None:
+                self._event("controller", gamepad_flags=0, reason="shutdown")
             result = {
                 "scope": "MSV1 video test; feedback is ingress only",
                 "end_to_end_verified": False,

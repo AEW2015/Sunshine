@@ -76,7 +76,15 @@ do not use that run for performance measurements. Regression tests use controlle
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
 `make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
-and `stream_sender.py`.
+`stream_sender.py`, and `controller.py`.
+
+`controller.py` tracks the 12-bit feedback snapshots and logs translated
+Windows-style gamepad flags. It rejects old video-frame identities, emits a
+neutral state after 500 ms without accepted input feedback, and requires a
+newer frame after timeout. It does not create a Windows controller or inject
+input. MSF1 has no input sequence number, so reordered button snapshots sharing
+one video frame cannot be distinguished; an ordered, authenticated input
+session must be agreed and tested before using these states to drive games.
 
 ## Continuous video test sender
 

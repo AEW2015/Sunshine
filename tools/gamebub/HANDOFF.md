@@ -28,7 +28,11 @@ passes the receiver's pinned packet fixture and Rust parser tests. Please review
    passwordless operation; the current test receiver has no TLS or pairing.
 5. Confirm the streaming core's access to the documented button states and its
    mapping. Enable host gamepad injection only after the session and failure
-   behavior are agreed and verified.
+   behavior are agreed and verified. MSF1 can send multiple input changes with
+   the same video frame ID but has no input sequence; please propose an ordered
+   input snapshot counter and session/reconnect rules, including heartbeat,
+   timeout, neutralization, and authentication. The host currently logs mapped
+   snapshots only and does not inject Windows input.
 
 Read or clone the hosted branch, or transfer the `tools/gamebub` directory
 (omit `.venv`, `artifacts`, `.coverage`,
