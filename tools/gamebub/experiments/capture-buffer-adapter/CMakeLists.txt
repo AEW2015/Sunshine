@@ -13,6 +13,9 @@ target_link_libraries(bench_capture_buffer PRIVATE capture_buffer_adapter)
 add_executable(dump_canvas_pattern dump_canvas_pattern.cpp)
 target_link_libraries(dump_canvas_pattern PRIVATE capture_buffer_adapter)
 
+add_executable(scale_raw_rgb scale_raw_rgb.cpp)
+target_link_libraries(scale_raw_rgb PRIVATE capture_buffer_adapter)
+
 if(BUILD_TESTING)
     add_executable(test_capture_buffer_adapter test_capture_buffer.cpp)
     target_link_libraries(test_capture_buffer_adapter PRIVATE capture_buffer_adapter)

@@ -150,3 +150,71 @@ These checks compare two implementations of the same area-coverage definition;
 they do not measure perceived quality, arbitrary image fidelity, game capture,
 real-time deadline performance or hardware behavior. The seeded cases are broad
 directed/randomized coverage, not exhaustive over the input space.
+
+## Sampled Mass Effect clip comparison
+
+`compare_gameplay_clip.py` samples 24 evenly spaced decoded frames from the
+local `/home/lori/gamebub-streaming-prototype/media/mass-effect-2600.mp4`
+clip. The 1280×720 H.264 file is 1,849,992 bytes with SHA-256
+`cf79e7bef47b242005eff912c9da40404aadcd3fb4154c7fd1a84ab95ecfd311`.
+PyAV reports 448 frames, but a full sequential decode produced 360; the sample
+indices are selected over those 360 actual decoded frames and retained in
+`gameplay-scaler-comparison.json`. This metadata disagreement is recorded rather
+than using the container count as the sample range.
+
+For each selected frame, the study compares the C++ optimized integer-area
+canvas with the existing `host.canvas(PIL.Image)` LANCZOS path and
+`host.canvas(av.VideoFrame)` FFmpeg bilinear path. It records the aggregate
+absolute-channel-error histogram, PSNR/MSE/MAE, changed-channel fraction,
+nearest-rank error percentiles and per-frame errors. Every result is checked
+for 720×480 output and the 720×405 centered content geometry. The compact
+report is [gameplay-scaler-comparison.md](gameplay-scaler-comparison.md); JSON
+contains full per-frame records, source/environment provenance and histogram.
+
+In this sample, optimized area vs Pillow LANCZOS measured 45.000 dB RGB PSNR,
+0.220 mean absolute channel levels, p95 error 1 and maximum 45. Against the
+PyAV/FFmpeg bilinear canvas it measured 42.726 dB, 0.950 mean absolute levels,
+p95 2 and maximum 52. These are pixel differences between resampling paths,
+not perceptual scores or evidence that one output is preferable.
+
+The recorded single-host function timings were:
+
+| Path | p50 | p95 | Max |
+|---|---:|---:|---:|
+| C++ optimized area kernel | 9.942 ms | 12.452 ms | 13.229 ms |
+| Pillow LANCZOS canvas | 11.568 ms | 13.135 ms | 16.180 ms |
+| PyAV/FFmpeg bilinear canvas | 3.351 ms | 4.372 ms | 4.428 ms |
+
+These timing boundaries differ: C++ measures only the scaler call, excluding
+helper process startup and raw-RGB pipe transfer; Pillow includes canvas
+conversion/resize/composition; FFmpeg includes RGB pixel-format conversion and
+composition. Decode and source RGB preparation are outside the Pillow and C++
+timers. Treat these as local CPU costs for the stated code paths, not apples-to-
+apples full-pipeline or target-hardware throughput.
+
+Reproduce in the `radiant-xrdp` container (host repo mounted at `/mnt/main_os`),
+then run the clip comparison from the prototype root. CMake's commands clear
+the container's incompatible inherited `LD_LIBRARY_PATH`:
+
+```sh
+docker exec radiant-xrdp env -u LD_LIBRARY_PATH cmake -S \
+  /mnt/main_os/gamebub-streaming-prototype/repos/sunshine-30fps-study/tools/gamebub/experiments/capture-buffer-adapter \
+  -B /tmp/gamebub-capture-buffer-gameplay -DCMAKE_BUILD_TYPE=Release \
+  '-DCMAKE_CXX_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion'
+docker exec radiant-xrdp env -u LD_LIBRARY_PATH cmake --build \
+  /tmp/gamebub-capture-buffer-gameplay --parallel 2
+docker exec radiant-xrdp env -u LD_LIBRARY_PATH ctest \
+  --test-dir /tmp/gamebub-capture-buffer-gameplay --output-on-failure
+/home/lori/gamebub-streaming-prototype/.venv/bin/python \
+  repos/sunshine-30fps-study/tools/gamebub/experiments/capture-buffer-adapter/compare_gameplay_clip.py \
+  --clip /home/lori/gamebub-streaming-prototype/media/mass-effect-2600.mp4 \
+  --samples 24 \
+  --scale-command 'docker exec -i radiant-xrdp env -u LD_LIBRARY_PATH /tmp/gamebub-capture-buffer-gameplay/scale_raw_rgb' \
+  --output repos/sunshine-30fps-study/tools/gamebub/experiments/capture-buffer-adapter/gameplay-scaler-comparison.json
+```
+
+The source video is not copied into this repository; the JSON/Markdown output
+stores its path, size and digest only. One prerecorded clip, 24 samples and one
+host do not represent all game content. No visual acceptance, live capture,
+JPEG, transmission, receiver, display, end-to-end rate or hardware result is
+measured.
