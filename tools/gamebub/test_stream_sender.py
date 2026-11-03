@@ -2,6 +2,7 @@
 
 import io
 import json
+import random
 import socket
 import tempfile
 import threading
@@ -17,7 +18,7 @@ from PIL import Image
 
 from controller import ControllerTracker
 from host import canvas as reference_canvas
-from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer
+from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, encode_receiver_jpeg
 from pipeline import Frame, VideoPipeline
 from quality import QualityController
 from stream_sender import FeedbackGate, Session, main, run
@@ -427,6 +428,60 @@ class StreamSenderTests(unittest.TestCase):
         for bad in (-1, True, 95):
             with self.assertRaises(ValueError):
                 Session(None, None, 30, 20, 200, 75, 20, 49152, bad)
+
+    def test_retry_sends_complete_valid_jpeg_to_loopback(self):
+        """The real encoder retry sends a whole capped JPEG with a matching wire CRC."""
+        rng = random.Random(5)
+        image = Image.new('RGB', (720, 480))
+        image.paste(Image.frombytes('RGB', (256, 256), rng.randbytes(256 * 256 * 3)), (32, 32))
+        size80 = len(encode_receiver_jpeg(image, 80))
+        size90 = len(encode_receiver_jpeg(image, 90))
+        self.assertLess(size80, size90)
+        cap = (size80 + size90) // 2
+        received, errors = [], []
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as peer:
+            peer.bind(('127.0.0.1', 0))
+            peer.settimeout(2)
+
+            def collect():
+                data = bytearray()
+                try:
+                    while True:
+                        packet, _ = peer.recvfrom(2048)
+                        fields = VIDEO.unpack(packet[:VIDEO.size])
+                        flags, total, offset, count, crc = fields[3], fields[7], fields[8], fields[9], fields[11]
+                        if offset != len(data) or count != len(packet) - VIDEO.size:
+                            raise ValueError('packet offset or size mismatch')
+                        data.extend(packet[VIDEO.size:])
+                        if flags & 2:
+                            if len(data) != total or zlib.crc32(data) != crc:
+                                raise ValueError('complete frame CRC mismatch')
+                            received.append(bytes(data))
+                            return
+                except (OSError, ValueError) as error:
+                    errors.append(str(error))
+
+            thread = threading.Thread(target=collect)
+            thread.start()
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                    sock.connect(peer.getsockname())
+                    sock.setblocking(False)
+                    session = Session(sock, io.StringIO(), 30, 100, 1000, 90, 20, cap, 10)
+                    now = time.perf_counter_ns()
+                    session.pipeline.submit(Frame(7, now, 1234, image))
+                    summary = session.close()
+            finally:
+                thread.join(3)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(errors, [])
+        self.assertEqual(len(received), 1)
+        self.assertLessEqual(len(received[0]), cap)
+        with Image.open(io.BytesIO(received[0])) as decoded:
+            decoded.load()
+            self.assertEqual(decoded.size, (720, 480))
+        self.assertEqual(summary['counts']['jpeg_retries'], 1)
+        self.assertEqual(summary['counts'].get('oversize_dropped', 0), 0)
 
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
