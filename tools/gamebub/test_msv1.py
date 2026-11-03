@@ -21,6 +21,7 @@ from msv1 import (
     send_frame,
     validate_receiver_jpeg,
 )
+from realtime import gamepad_buttons
 
 
 class ReceiverProtocolTests(unittest.TestCase):
@@ -127,6 +128,26 @@ class ReceiverProtocolTests(unittest.TestCase):
         for mask in (-1, 4096, True):
             with self.assertRaises(ValueError):
                 gamebub_buttons(mask)
+
+    def test_each_receiver_button_maps_to_expected_sunshine_flag(self):
+        """@brief Exercise each hardware bit through to the intended gamepad flag."""
+        expected = (
+            0x0020,
+            0x0010,
+            0x0200,
+            0x0100,
+            0x0008,
+            0x0004,
+            0x0002,
+            0x0001,
+            0x8000,
+            0x4000,
+            0x2000,
+            0x1000,
+        )
+        for bit, flag in enumerate(expected):
+            with self.subTest(bit=bit):
+                self.assertEqual(gamepad_buttons(gamebub_buttons(1 << bit)), flag)
 
     def test_paced_send_and_expiry(self):
         """@brief Pace actual datagrams and stop a stale partial frame before its deadline."""

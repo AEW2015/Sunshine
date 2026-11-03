@@ -89,7 +89,8 @@ To additionally compile and test the receiver's exact Rust parser on the host,
 install the MSYS2 `mingw-w64-ucrt-x86_64-rust` package and clone the receiver
 repository. The test reads the pinned `75f8497` revision directly through Git;
 it checks the source hash, valid-frame acceptance, CRC rejection, recovery on a
-new frame, and frame-ID wrap. It uses temporary files and no physical receiver.
+new frame, missing/duplicate packets, invalid start flags, and frame-ID wrap.
+It uses temporary files and no physical receiver.
 
 ```powershell
 git clone --no-checkout https://github.com/AEW2015/moonbub.git C:\ai\moonbub-reference

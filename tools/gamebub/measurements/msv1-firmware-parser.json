@@ -9,5 +9,8 @@
   "newer_sof_recovery": true,
   "frame_id_wrap": true,
   "feedback_roundtrip": true,
-  "physical_playback_verified": false
+  "physical_playback_verified": false,
+  "missing_packet_rejected": true,
+  "duplicate_packet_rejected": true,
+  "invalid_start_flag_rejected": true
 }
