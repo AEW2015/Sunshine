@@ -7,10 +7,24 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v8-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v8-20261103),
-paired with [Moonbub v8](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v8-20261103).
-It contains the combined software codec, controller, guards and golden vectors;
-the v6 and v7 handoffs remain unchanged snapshots.
+[`handoff/gamebub-app-codec-v9-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v9-20261103),
+paired with [Moonbub v9](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v9-20261103).
+Earlier handoffs, including v8, remain frozen snapshots. Start with the
+[v9 report](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v9-20261103/docs/custom-codec-prototype-v9-2026-11-03.md)
+and [application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v9-20261103/docs/gamebub-application-specific-codec-plan.md).
+
+V9 connects the actual GM01 codec to GF02 chunks and serialized GA01 feedback in
+a finite software pipeline. Its short diagnostic windows reach27–28 presented
+IDs/s with measured Python decoding. It fixes a reproduced v8 GF01 logical
+read-pin release on conflicting traffic and adds epoch/frame/body-CRC feedback
+binding. All26 new tests pass. The separate HP01/GH01 UI experiment is exact in
+RGB565; all36 broad-region main packets fail48 KiB, while two favorable flat
+low-color probes fit17.9–20.0 kB. GH01 is not wired into the finite GM01 pipeline.
+
+These are Python design experiments. Capture/scale and transport CPU service,
+physical target memory/display and hardware30 fps remain unqualified. No custom
+Sunshine output mode, peer negotiation, ESP32 firmware or FPGA decoder is added
+by this documentation change. The installed Windows Sunshine service is untouched.
 
 This performance-study work is published on
 [`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
