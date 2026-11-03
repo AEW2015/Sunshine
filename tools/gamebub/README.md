@@ -147,6 +147,16 @@ records started, completed, failed, interrupted, and not-run stages. Failures
 are recorded and the next cap runs; Ctrl+C marks the active cap interrupted and
 remaining caps not-run. Logs are retained for review.
 
+A stage is healthy only when the reference reports at least one complete frame
+and sender pipeline, peer, and logging summaries contain no internal errors.
+Zero complete frames and capture, encode, feedback/socket, peer-reply, or log
+errors fail that stage. Stale-frame and send-failure counts remain visible in
+the result but are treated as overload measurements, not internal errors. The
+final CLI exit code is nonzero if any stage is unhealthy (130 on interruption).
+An interruption or I/O failure while writing the results file can leave its last
+record incomplete; the tool cannot guarantee a clean report if output writing
+itself is interrupted or fails repeatedly.
+
 Every sweep setting is required. The per-stage and total-frame bounds prevent an
 accidental unbounded run; six-hour runs should use explicit frame counts and
 rates chosen to match the intended duration.

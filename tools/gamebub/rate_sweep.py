@@ -110,6 +110,80 @@ def _write_record(output, record):
     output.flush()
 
 
+def _stage_health(result, log_path):
+    """@brief Classify receiver completion and internal sender, peer, or log errors.
+
+    @param result Reference runner result mapping.
+    @param log_path Stage event log path.
+    @return A health mapping with a boolean and specific error reasons.
+
+    Stale-frame and send-failure counts are intentionally excluded: those are
+    expected overload signals. A stage with no complete receiver frames is unhealthy.
+    """
+    errors = []
+    if not isinstance(result, dict):
+        return {"healthy": False, "errors": ["invalid_runner_result"]}
+    receiver = result.get("receiver")
+    sender = result.get("sender")
+    if not isinstance(receiver, dict) or not isinstance(sender, dict):
+        return {"healthy": False, "errors": ["missing_receiver_or_sender_summary"]}
+
+    if type(receiver.get("complete")) is not int or receiver["complete"] <= 0:
+        errors.append("no_complete_receiver_frames")
+    if receiver.get("invalid_datagrams", 0):
+        errors.append("receiver_invalid_datagrams")
+    if receiver.get("reply_errors", 0):
+        errors.append("receiver_reply_errors")
+
+    pipeline = sender.get("pipeline")
+    if not isinstance(pipeline, dict):
+        errors.append("missing_pipeline_summary")
+    else:
+        if pipeline.get("last_error"):
+            errors.append("pipeline_error")
+        pipeline_counts = pipeline.get("counts", {})
+        if not isinstance(pipeline_counts, dict):
+            errors.append("invalid_pipeline_counts")
+        elif pipeline_counts.get("encode_failures", 0):
+            errors.append("pipeline_encode_failures")
+
+    logging = sender.get("logging")
+    if not isinstance(logging, dict):
+        errors.append("missing_logging_summary")
+    else:
+        if logging.get("error"):
+            errors.append("logging_error")
+        if logging.get("dropped", 0):
+            errors.append("logging_dropped_events")
+
+    counts = sender.get("counts", {})
+    if not isinstance(counts, dict):
+        errors.append("invalid_sender_counts")
+    else:
+        if counts.get("socket_failures", 0):
+            errors.append("sender_socket_failures")
+        if counts.get("packet_failures", 0):
+            errors.append("sender_packet_failures")
+
+    try:
+        with log_path.open(encoding="utf-8") as stage_log:
+            for line in stage_log:
+                event = json.loads(line)
+                if not isinstance(event, dict):
+                    raise TypeError("event is not an object")
+                if event.get("event") in {
+                    "capture_error",
+                    "encode_error",
+                    "send_error",
+                    "feedback_error",
+                }:
+                    errors.append(f"event_{event['event']}")
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError):
+        errors.append("stage_log_unreadable_or_invalid")
+
+    return {"healthy": not errors, "errors": sorted(set(errors))}
+
+
 def run_sweep(args, runner=None):
     """@brief Sequentially run each cap against the pinned reference on localhost.
 
@@ -158,7 +232,6 @@ def run_sweep(args, runner=None):
                 "rate_mbps": rate,
                 "log": str(log_path),
             }
-            _write_record(output, {**stage, "status": "running"})
             run_args = SimpleNamespace(
                 reference_repo=reference_repo,
                 clip=clip,
@@ -172,6 +245,7 @@ def run_sweep(args, runner=None):
                 loop=True,
             )
             try:
+                _write_record(output, {**stage, "status": "running"})
                 result = runner(run_args)
             except KeyboardInterrupt:
                 interrupted = True
@@ -193,11 +267,18 @@ def run_sweep(args, runner=None):
                 record = {
                     **stage,
                     "status": "failed",
+                    "health": {"healthy": False, "errors": ["stage_exception"]},
                     "error_type": type(error).__name__,
                     "error": str(error),
                 }
             else:
-                record = {**stage, "status": "completed", "result": result}
+                health = _stage_health(result, log_path)
+                record = {
+                    **stage,
+                    "status": "completed" if health["healthy"] else "failed",
+                    "health": health,
+                    "result": result,
+                }
             records.append(record)
             _write_record(output, record)
 
@@ -206,7 +287,7 @@ def run_sweep(args, runner=None):
         not_run = sum(record["status"] == "not_run" for record in records)
         summary = {
             "event": "sweep_summary",
-            "status": "interrupted" if interrupted else "finished",
+            "status": "interrupted" if interrupted else "failed" if failed else "finished",
             "completed": completed,
             "failed": failed,
             "not_run": not_run,

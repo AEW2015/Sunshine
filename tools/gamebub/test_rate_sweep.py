@@ -16,6 +16,114 @@ import rate_sweep
 class RateSweepTests(unittest.TestCase):
     """@brief Verify explicit inputs, output isolation, and truthful stage records."""
 
+    @staticmethod
+    def healthy_result(complete=1):
+        """@brief Return a no-error local sender/receiver summary."""
+        return {
+            "receiver": {"complete": complete, "invalid_datagrams": 0, "reply_errors": 0},
+            "sender": {
+                "pipeline": {"counts": {"encoded": 1, "sent": 1}, "last_error": None},
+                "logging": {"dropped": 0, "error": None},
+                "counts": {"send_failures": 0, "socket_failures": 0, "packet_failures": 0},
+            },
+            "hardware_playback_verified": False,
+        }
+
+    def test_stage_health_reports_peer_pipeline_and_logging_errors(self):
+        """@brief Expose health reasons for each internal summary and log failure."""
+        with tempfile.TemporaryDirectory() as temporary:
+            log_path = Path(temporary) / "stage.jsonl"
+            log_path.write_text("", encoding="utf-8")
+            self.assertEqual(
+                rate_sweep._stage_health(self.healthy_result(), log_path),
+                {"healthy": True, "errors": []},
+            )
+            self.assertEqual(
+                rate_sweep._stage_health(None, log_path)["errors"], ["invalid_runner_result"]
+            )
+            self.assertEqual(
+                rate_sweep._stage_health({"receiver": {}}, log_path)["errors"],
+                ["missing_receiver_or_sender_summary"],
+            )
+
+            result = self.healthy_result(complete=0)
+            result["receiver"].update(invalid_datagrams=1, reply_errors=1)
+            result["sender"].update(
+                pipeline={"last_error": "worker", "counts": {"encode_failures": 1}},
+                logging={"error": "disk", "dropped": 1},
+                counts={"socket_failures": 1, "packet_failures": 1},
+            )
+            errors = rate_sweep._stage_health(result, log_path)["errors"]
+            self.assertEqual(
+                errors,
+                [
+                    "logging_dropped_events",
+                    "logging_error",
+                    "no_complete_receiver_frames",
+                    "pipeline_encode_failures",
+                    "pipeline_error",
+                    "receiver_invalid_datagrams",
+                    "receiver_reply_errors",
+                    "sender_packet_failures",
+                    "sender_socket_failures",
+                ],
+            )
+
+            for result, expected in (
+                (
+                    {"receiver": {"complete": 1}, "sender": {"pipeline": None}},
+                    {"missing_pipeline_summary", "missing_logging_summary"},
+                ),
+                (
+                    {
+                        "receiver": {"complete": 1},
+                        "sender": {
+                            "pipeline": {"counts": []},
+                            "logging": {"dropped": 0},
+                            "counts": [],
+                        },
+                    },
+                    {"invalid_pipeline_counts", "invalid_sender_counts"},
+                ),
+                (
+                    {
+                        "receiver": {"complete": 1},
+                        "sender": {
+                            "pipeline": {"counts": {"encode_failures": 0}},
+                            "logging": {"error": None, "dropped": 0},
+                            "counts": {},
+                        },
+                    },
+                    set(),
+                ),
+            ):
+                self.assertEqual(
+                    set(rate_sweep._stage_health(result, log_path)["errors"]), expected
+                )
+
+            for content in (
+                (
+                    '{"event":"capture_error"}\n'
+                    '{"event":"encode_error"}\n'
+                    '{"event":"send_error"}\n'
+                    '{"event":"feedback_error"}\n'
+                ),
+                "not-json\n",
+                "[]\n",
+            ):
+                log_path.write_text(content, encoding="utf-8")
+                health = rate_sweep._stage_health(self.healthy_result(), log_path)
+                if content.startswith("{"):
+                    self.assertFalse(health["healthy"])
+                    self.assertTrue(any(error.startswith("event_") for error in health["errors"]))
+                else:
+                    self.assertIn("stage_log_unreadable_or_invalid", health["errors"])
+            log_path.unlink()
+            self.assertIn(
+                "stage_log_unreadable_or_invalid",
+                rate_sweep._stage_health(self.healthy_result(), log_path)["errors"],
+            )
+
     def make_args(self, root, rates=(1.0, 2.0, 5.0), output_name="sweep"):
         """@brief Create explicit valid options under a temporary parent directory."""
         clip = root / "clip.mp4"
@@ -55,10 +163,10 @@ class RateSweepTests(unittest.TestCase):
                 calls.append(stage_args)
                 self.assertFalse(stage_args.log.exists())
                 with stage_args.log.open("x", encoding="utf-8") as log:
-                    log.write("mock stage log\n")
+                    log.write('{"event":"summary"}\n')
                 if stage_args.mbps == 2.0:
                     raise OSError("simulated local capture failure")
-                return {"receiver": {"complete": 1}, "hardware_playback_verified": False}
+                return self.healthy_result()
 
             summary = rate_sweep.run_sweep(args, runner)
             self.assertEqual([call.mbps for call in calls], [1.0, 2.0, 5.0])
@@ -89,6 +197,7 @@ class RateSweepTests(unittest.TestCase):
             )
             self.assertEqual(outcomes[1]["error_type"], "OSError")
             self.assertEqual(outcomes[1]["error"], "simulated local capture failure")
+            self.assertTrue(outcomes[0]["health"]["healthy"])
             self.assertEqual(records[-1]["event"], "sweep_summary")
             self.assertFalse(records[-1]["hardware_playback_verified"])
 
@@ -118,7 +227,9 @@ class RateSweepTests(unittest.TestCase):
                 calls.append(stage_args.mbps)
                 if len(calls) == 2:
                     raise KeyboardInterrupt
-                return {"receiver": {"complete": 1}}
+                with stage_args.log.open("x", encoding="utf-8") as log:
+                    log.write('{"event":"summary"}\n')
+                return self.healthy_result()
 
             summary = rate_sweep.run_sweep(args, runner)
             self.assertEqual(calls, [1.0, 2.0])
@@ -136,6 +247,85 @@ class RateSweepTests(unittest.TestCase):
                 if record["event"] == "stage" and record["status"] != "running"
             ]
             self.assertEqual(outcomes, ["completed", "interrupted", "not_run"])
+
+    def test_interruption_between_stages_is_recorded_at_next_boundary(self):
+        """@brief Capture Ctrl+C during next-stage setup and label later caps not run."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args = self.make_args(root)
+            calls = []
+            writer = rate_sweep._write_record
+
+            def interrupt_before_second_stage(output, record):
+                """@brief Inject one interrupt while writing the next running marker."""
+                if record.get("status") == "running" and record.get("index") == 2:
+                    raise KeyboardInterrupt
+                return writer(output, record)
+
+            def runner(stage_args):
+                """@brief Complete the initial stage only."""
+                calls.append(stage_args.mbps)
+                with stage_args.log.open("x", encoding="utf-8") as log:
+                    log.write('{"event":"summary"}\n')
+                return self.healthy_result()
+
+            with patch("rate_sweep._write_record", side_effect=interrupt_before_second_stage):
+                summary = rate_sweep.run_sweep(args, runner)
+            self.assertEqual(calls, [1.0])
+            self.assertTrue(summary["interrupted"])
+            records = [
+                json.loads(line)
+                for line in (args.output_dir / "results.jsonl").read_text().splitlines()
+            ]
+            outcomes = [
+                record["status"]
+                for record in records
+                if record.get("event") == "stage" and record["status"] != "running"
+            ]
+            self.assertEqual(outcomes, ["completed", "interrupted", "not_run"])
+
+    def test_stage_health_separates_zero_frames_and_internal_errors_from_overload(self):
+        """@brief Fail empty/error stages but preserve healthy overloaded ingress as healthy."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args = self.make_args(root, rates=(1.0, 2.0, 5.0))
+            outcomes = {
+                1.0: self.healthy_result(complete=0),
+                2.0: self.healthy_result(),
+                5.0: self.healthy_result(),
+            }
+
+            def runner(stage_args):
+                """@brief Supply distinct no-frame, overload, and internal-error stages."""
+                result = outcomes[stage_args.mbps]
+                with stage_args.log.open("x", encoding="utf-8") as log:
+                    if stage_args.mbps == 5.0:
+                        log.write('{"event":"encode_error","error":"bad frame"}\n')
+                    else:
+                        log.write('{"event":"send","complete":false}\n')
+                if stage_args.mbps == 2.0:
+                    result["receiver"]["complete"] = 1
+                    result["sender"]["pipeline"]["counts"].update(
+                        stale_before_send=4, send_failures=3
+                    )
+                    result["sender"]["counts"]["send_failures"] = 3
+                return result
+
+            summary = rate_sweep.run_sweep(args, runner)
+            self.assertEqual((summary["completed"], summary["failed"]), (1, 2))
+            records = [
+                json.loads(line)
+                for line in (args.output_dir / "results.jsonl").read_text().splitlines()
+            ]
+            stages = [record for record in records if record.get("event") == "stage"]
+            final = [record for record in stages if record["status"] != "running"]
+            self.assertEqual(
+                [record["status"] for record in final], ["failed", "completed", "failed"]
+            )
+            self.assertIn("no_complete_receiver_frames", final[0]["health"]["errors"])
+            self.assertTrue(final[1]["health"]["healthy"])
+            self.assertIn("event_encode_error", final[2]["health"]["errors"])
+            self.assertEqual(summary["status"], "failed")
 
     def test_validation_happens_before_output_creation(self):
         """@brief Invalid long-run inputs cannot leave a partial output directory."""
