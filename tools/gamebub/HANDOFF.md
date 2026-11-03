@@ -114,3 +114,12 @@ codec-advertisement, RTSP, capture, and packetizer boundaries to protect.
 The later [16-slot fixture trials](measurements/handheld-16slot-fixture-trials.md)
 include 20-frame runs at 1 Mbps and a consumer-priority comparison. They are
 individual-frame ingress tests, not a sustained 30 fps stream.
+
+Recent host-only results include a [30-minute-per-cap sweep](measurements/xonotic-rate-sweep-30m.md),
+a [one-hour moving-game soak](measurements/xonotic-latest-soak-1h.md), and a
+[synthetic missing-chunk recovery run](measurements/xonotic-fault-soak-10m.md).
+The one-hour reference run reassembled 107,482 frames at 29.85 fps; it does not
+establish physical Wi-Fi, FPGA decode or display performance. For the next
+coordinated hardware run, use optional `--packet-timing` and correlate frame IDs
+with receiver ingress, QSPI, decode and presentation logs. The frame-size limit,
+bank ownership, audio and presentation-feedback contracts remain to be agreed.
