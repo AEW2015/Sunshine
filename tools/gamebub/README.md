@@ -118,6 +118,9 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+Matched feedback events include the receiver's cumulative received and dropped
+counts. A status-0 heartbeat may occur before a frame finishes; check counter
+changes and the handheld's independent decode/display counters.
 The pinned firmware locks onto the first sender's IP **and UDP source port**
 for its test session. Restarting the sender with a new ephemeral port will be
 ignored until the receiver test session is restarted. For a coordinated host

@@ -268,6 +268,14 @@ class Session:
                         self._event("controller", gamepad_flags=buttons, reason="feedback")
                 if not matched:
                     self.counts["feedback_heartbeats"] += 1
+                    self._event(
+                        "heartbeat",
+                        frame_id=feedback.frame_id,
+                        capture_us=feedback.capture_us,
+                        status=feedback.status,
+                        received_frames=feedback.received_frames,
+                        dropped_frames=feedback.dropped_frames,
+                    )
                     continue
                 del self.pending[key]
                 self.counts[
@@ -285,6 +293,8 @@ class Session:
                     status=feedback.status,
                     buttons=feedback.buttons,
                     free_bytes=feedback.free_bytes,
+                    received_frames=feedback.received_frames,
+                    dropped_frames=feedback.dropped_frames,
                 )
 
     def close(self):

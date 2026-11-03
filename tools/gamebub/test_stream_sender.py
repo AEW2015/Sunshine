@@ -215,6 +215,9 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(result["counts"]["feedback_accepted"], 4)
         self.assertEqual(result["pipeline"]["counts"]["sent"], 4)
         self.assertFalse(result["end_to_end_verified"])
+        feedback = [event for event in events if event["event"] == "feedback"]
+        self.assertEqual(feedback[-1]["received_frames"], 4)
+        self.assertEqual(feedback[-1]["dropped_frames"], 0)
         self.assertEqual(result["logging"]["dropped"], 0)
         self.assertIsNone(result["logging"]["error"])
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
@@ -406,6 +409,9 @@ class StreamSenderTests(unittest.TestCase):
             s._feedback_loop()
         self.assertEqual(s.counts["feedback_accepted"], 1)
         self.assertEqual(s.counts["feedback_heartbeats"], 1)
+        events = [json.loads(line) for line in s.log.getvalue().splitlines()]
+        heartbeat = next(event for event in events if event["event"] == "heartbeat")
+        self.assertEqual((heartbeat["received_frames"], heartbeat["dropped_frames"]), (0, 0))
         self.assertEqual(s.counts["feedback_abandoned"], 1)
         self.assertEqual(s.counts["unmatched_feedback"], 1)
         self.assertTrue(s.gate.probing)
