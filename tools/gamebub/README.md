@@ -166,6 +166,10 @@ The sender validates the restricted JPEG profile and reports success only after
 matching ingress feedback; that does not establish decode or presentation.
 Use `--source-port` to keep a fixed sender port when the receiver pins its peer;
 restart the receiver session if a previous sender used a different source port.
+Optionally pass `--packet-log artifacts\packets.json` to record each datagram's
+frame offset, payload size and host monotonic send time. The file must not
+already exist. Records are collected in memory and written after transmission;
+they do not prove delivery or share a clock with the receiver.
 
 ```powershell
 py -3.11 -m uv run --locked python msv1.py 192.168.1.50 --jpeg fixtures\frame-00000000-420-r0.jpg --frame-id 1

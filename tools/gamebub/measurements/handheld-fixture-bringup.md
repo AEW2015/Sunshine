@@ -20,6 +20,8 @@ incrementing frame IDs within the same receiver session.
 | 0.5 Mbps | 5 | status 0 | 4 / 3 |
 | 0.5 Mbps | 6 | status 0 | 5 / 3 |
 | 0.5 Mbps | 7 | status 0 | 6 / 3 |
+| 0.5 Mbps | 8 | status 0 | 7 / 3 |
+| 0.7 Mbps | 9 | dropped | 7 / 4 |
 
 The operator independently reported cumulative handheld counters of 1
 received/1 decoded/1 displayed/1 dropped after the first 0.3 Mbps success,
@@ -28,8 +30,18 @@ camera showed the expected color bars and patterned lower half. Thus the first
 three successful frames, including the first 0.5 Mbps frame, were physically
 decoded and displayed. After IDs 5–7 the operator reported cumulative counters
 of **6 received, 6 decoded, 6 displayed, and 3 dropped**, confirming those three
-frames too. MSF1 status 0 can also be a heartbeat; matching feedback alone is
-not proof of display.
+frames too. After IDs 8 and 9, the operator reported cumulative counters of
+**7 received, 7 decoded, 7 displayed, and 4 dropped**; this confirms ID 8 was
+displayed and ID 9 dropped. MSF1 status 0 can also be a heartbeat; matching
+feedback alone is not proof of display.
+
+The host recorded actual send times for all 70 datagrams of IDs 8 and 9.
+At 0.5 Mbps, inter-datagram gaps were minimum 17.004 ms, median 17.266 ms,
+p95 17.987 ms and maximum 18.146 ms. At 0.7 Mbps they were minimum 12.080 ms,
+median 12.885 ms, p95 13.161 ms and maximum 13.236 ms. These are sender-side
+`perf_counter` timestamps taken after socket sends; they cannot show Wi-Fi
+delivery timing, receiver queueing or the location of a missing chunk. The
+individual logs remain in ignored local artifacts and contain no frame pixels.
 
 After the 0.7 Mbps trial the operator reported status text
 `Invalid/lost frame: Sequence` and 79 errors. Error count is separate from
@@ -37,6 +49,8 @@ the dropped-frame count; one failed frame can produce subsequent errors. This
 does not identify whether loss/reordering occurred on Wi-Fi, in the UDP receive
 queue, or elsewhere in the ESP32/QSPI path. These are isolated samples, not a
 measured stable maximum rate, 30 fps stream, moving gameplay, or latency test.
+The receiver serial log was not captured for the ID 9 failure, so the first
+expected and observed chunk offsets for that specific frame are unknown.
 
 The receiver team should capture the first sequence error for a frame, expected
 and observed frame IDs/offsets, socket-drop or queue counters, per-chunk QSPI

@@ -10,6 +10,12 @@ audio and a production button/session protocol remain to be agreed.
 
 Physical bring-up has started: see [handheld fixture results](measurements/handheld-fixture-bringup.md)
 for confirmed decode/display at low rates and sequence errors at higher rates.
+Most recently, cumulative handheld counters were 7 received/7 decoded/7
+displayed/4 dropped; a 0.5 Mbps fixture displayed and a 0.7 Mbps fixture was
+dropped. The first failing expected/observed offsets are unavailable because
+serial logging was not captured. Please instrument the first sequence error
+per frame with frame ID and expected/observed offsets, and correlate socket
+drops, QSPI timing/credits and decode/display counters before selecting a rate.
 
 Receiver response: [MoonBub receiver capabilities, fixture results and protocol proposal](https://github.com/AEW2015/moonbub/blob/75f8497b6ffefadd8c0403728b93ccfbbfa02f52/docs/sunshine-receiver-handoff.md).
 

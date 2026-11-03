@@ -11,6 +11,7 @@ import socket
 import struct
 import time
 import zlib
+from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from io import BytesIO
 from pathlib import Path
@@ -208,6 +209,7 @@ def send_frame(
     clock=time.perf_counter,
     sleeper=time.sleep,
     pacer=None,
+    on_packet=None,
 ):
     """@brief Pace one frame on a connected datagram socket, aborting when stale.
 
@@ -220,6 +222,7 @@ def send_frame(
     @param clock Injectable monotonic seconds clock.
     @param sleeper Injectable wait function.
     @param pacer Optional sender-owned Pacer shared across consecutive frames.
+    @param on_packet Optional nonblocking callback receiving sent packet and monotonic time.
     @return Pair of (completed, bytes sent); incomplete frames recover on newer SOF.
     """
     if not math.isfinite(bytes_per_second) or bytes_per_second <= 0 or not math.isfinite(deadline):
@@ -244,6 +247,8 @@ def send_frame(
         next_due = now + duration
         if pacer is not None:
             pacer.next_due = next_due
+        if on_packet is not None:
+            on_packet(packet, clock())
     return True, sent
 
 
@@ -264,6 +269,9 @@ def main(argv=None):
     parser.add_argument("--frame-id", type=int, default=1)
     parser.add_argument("--deadline-ms", type=float, default=200)
     parser.add_argument("--feedback-timeout", type=float, default=1)
+    parser.add_argument(
+        "--packet-log", type=Path, help="Write per-datagram sender timing to a new JSON file"
+    )
     args = parser.parse_args(argv)
     if (
         not 1 <= args.port <= 65535
@@ -278,18 +286,42 @@ def main(argv=None):
     try:
         jpeg = args.jpeg.read_bytes()
         capture_us = time.time_ns() // 1000
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        records = []
+        with ExitStack() as stack:
+            packet_log = (
+                stack.enter_context(args.packet_log.open("x", encoding="utf-8"))
+                if args.packet_log
+                else None
+            )
+            sock = stack.enter_context(socket.socket(socket.AF_INET, socket.SOCK_DGRAM))
             sock.bind(("0.0.0.0", args.source_port))
             sock.connect((args.target, args.port))
             sock.setblocking(False)
-            done, size = send_frame(
-                sock,
-                jpeg,
-                args.frame_id,
-                capture_us,
-                args.mbps * 1e6 / 8,
-                time.perf_counter() + args.deadline_ms / 1000,
-            )
+
+            def record(packet, sent_at):
+                """@brief Retain bounded sender-side chunk timing without disk I/O in the send loop."""
+                header = VIDEO.unpack(packet[: VIDEO.size])
+                records.append(
+                    {"offset": header[8], "payload_bytes": header[9], "sent_monotonic_s": sent_at}
+                )
+
+            try:
+                done, size = send_frame(
+                    sock,
+                    jpeg,
+                    args.frame_id,
+                    capture_us,
+                    args.mbps * 1e6 / 8,
+                    time.perf_counter() + args.deadline_ms / 1000,
+                    on_packet=record if packet_log else None,
+                )
+            finally:
+                if packet_log:
+                    json.dump(
+                        {"frame_id": args.frame_id, "capture_us": capture_us, "packets": records},
+                        packet_log,
+                    )
+                    packet_log.write("\n")
             feedback = None
             if done:
                 until = time.perf_counter() + args.feedback_timeout

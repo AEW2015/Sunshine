@@ -6,6 +6,7 @@ import io
 import json
 import socket
 import struct
+import tempfile
 import unittest
 from itertools import pairwise
 from pathlib import Path
@@ -274,6 +275,27 @@ class ReceiverProtocolTests(unittest.TestCase):
         for (started, size), (following, _) in pairwise(sends):
             self.assertGreaterEqual(following - started + 1e-12, size / 100000)
 
+    def test_optional_packet_callback_reports_offsets_and_times(self):
+        """@brief Report only successfully sent datagrams in order, using the send clock."""
+        now, recorded = [0.0], []
+        sock = Mock()
+        sock.send.side_effect = lambda packet: len(packet)
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        done, _ = send_frame(
+            sock,
+            self.jpeg,
+            1,
+            2,
+            100000,
+            2,
+            lambda: now[0],
+            sleeper,
+            on_packet=lambda packet, stamp: recorded.append((packet, stamp)),
+        )
+        self.assertTrue(done)
+        self.assertEqual([p for p, _ in recorded], list(frame_datagrams(self.jpeg, 1, 2)))
+        self.assertTrue(all(b[1] >= a[1] for a, b in pairwise(recorded)))
+
     def test_localhost_udp_datagrams_match_receiver_fixture(self):
         """@brief Send real loopback UDP packets and compare receiver-side bytes."""
         expected = list(frame_datagrams(self.jpeg, 0x12345678, 1234567890123))
@@ -312,6 +334,37 @@ class ReceiverProtocolTests(unittest.TestCase):
         self.assertTrue(result["sent_complete"])
         self.assertFalse(result["end_to_end_verified"])
         self.assertEqual(result["feedback"]["received_frames"], 1)
+
+    def test_single_frame_packet_log_records_actual_offsets(self):
+        """@brief Persist optional timing after transmission without overwriting old logs."""
+        fixture = Path(__file__).parent / "fixtures/receiver-pattern-720x480-420-q65.jpg"
+        peer = MagicMock()
+        peer.__enter__.return_value = peer
+        peer.recv.return_value = FEEDBACK.pack(b"MSF1", 1, 0, 0, 1, 0, 1, 0, 123)
+        packets = list(frame_datagrams(self.jpeg, 1, 123))
+
+        def fake_send(*args, on_packet=None):
+            """@brief Simulate two successful sends with deterministic timestamps."""
+            on_packet(packets[0], 10.0)
+            on_packet(packets[1], 10.02)
+            return True, len(packets[0]) + len(packets[1])
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "packets.json"
+            with (
+                patch("msv1.socket.socket", return_value=peer),
+                patch("msv1.time.time_ns", return_value=123000),
+                patch("msv1.send_frame", side_effect=fake_send),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(
+                    main(["127.0.0.1", "--jpeg", str(fixture), "--packet-log", str(path)]), 0
+                )
+            log = json.loads(path.read_text())
+            self.assertEqual([row["offset"] for row in log["packets"]], [0, 1024])
+            self.assertEqual([row["sent_monotonic_s"] for row in log["packets"]], [10.0, 10.02])
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                main(["127.0.0.1", "--jpeg", str(fixture), "--packet-log", str(path)])
 
     def test_single_frame_command_failures(self):
         """@brief Reject invalid arguments and do not confuse missing feedback with playback."""
