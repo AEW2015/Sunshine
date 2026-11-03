@@ -6,6 +6,12 @@ receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
 mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+The latest application-specific handoff is
+[`handoff/gamebub-app-codec-v7-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v7-20261103),
+paired with [Moonbub v7](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v7-20261103).
+It adds software codec experiments and a combined-profile plan; the v6 handoff
+remains an unchanged snapshot.
+
 This performance-study work is published on
 [`AEW2015/Sunshine:study/30fps-sim-20261102`](https://github.com/AEW2015/Sunshine/tree/study/30fps-sim-20261102).
 The matching FPGA/firmware research and [developer handoff](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/dev-handoff-2026-11-03.md)
@@ -64,6 +70,17 @@ model; short diagnostic counts remain28–29 with assumed8 ms receive and21–24
 with measured Python receive. Exact arithmetic widths and a small/negative
 narrow-integer timing result are retained. These are offline software studies,
 not an installed streaming mode or physical30 fps/target DSP qualification.
+
+[Iteration7](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v7-20261103/docs/custom-codec-prototype-v7-2026-11-03.md)
+adds a compatible word coefficient reader (paired Python receive8–12% faster),
+a new independent-frame macroblock quality-map codec, and exact dirty-tile
+experiments. At nearly matched uniform16 bytes, declared priority-region PSNR
+improves1.47–2.51 dB on the short real samples while background quality falls;
+the237–395 ms offline search is not a live rate controller. The
+[application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v7-20261103/docs/gamebub-application-specific-codec-plan.md)
+selects a new temporal-residual plus ROI profile as the next prototype. These
+formats require matching receiver support and do not add an installed Sunshine
+mode or prove physical30 fps. The v6 handoff remains a separate snapshot.
 
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
