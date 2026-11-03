@@ -32,6 +32,21 @@ from pipeline import Frame, VideoPipeline
 from quality import QualityController
 
 
+def frame_key_is_newer_or_same(current, previous):
+    """@brief Compare wrapping frame identifiers and equal-frame capture timestamps.
+
+    @param current Candidate (frame ID, capture timestamp) key.
+    @param previous Most recently accepted (frame ID, capture timestamp) key.
+    @return True for a newer serial ID or the exact same frame key.
+    """
+    frame_id, capture_us = current
+    previous_id, previous_capture_us = previous
+    frame_delta = (frame_id - previous_id) & 0xFFFFFFFF
+    if frame_delta == 0:
+        return capture_us == previous_capture_us
+    return frame_delta < 0x80000000
+
+
 class FeedbackGate:
     """@brief Limit sends during feedback silence while retaining recovery probes.
 
@@ -99,7 +114,8 @@ class FeedbackGate:
         elif not matched and key != self.heartbeat_key:
             return False
         self.last_feedback = now_ns
-        self.heartbeat_key = key
+        if self.heartbeat_key is None or frame_key_is_newer_or_same(key, self.heartbeat_key):
+            self.heartbeat_key = key
         return True
 
 
@@ -121,9 +137,9 @@ class ReceiverCounterTracker:
     def observe(self, frame_id, capture_us, received, dropped):
         """@brief Accept a current counter snapshot and return wrap-safe deltas.
 
-        Older feedback snapshots are ignored. Frame IDs handle host-clock rollback;
-        capture timestamps otherwise order snapshots. The first snapshot and
-        implausible half-range jumps establish a baseline without claiming outcomes.
+        Older feedback snapshots are ignored using wrapping frame-ID order;
+        equal IDs must have the same capture timestamp. The first snapshot and
+        implausible counter jumps establish a baseline without claiming outcomes.
         A small counter decrease is indistinguishable from wrap and is treated as wrap.
 
         @param frame_id Echoed wrapping frame identifier.
@@ -133,7 +149,7 @@ class ReceiverCounterTracker:
         @return Snapshot deltas and reset state, or None for an older snapshot.
         """
         key = (frame_id, capture_us)
-        if self.key is not None and not self._is_newer_or_same(key, self.key):
+        if self.key is not None and not frame_key_is_newer_or_same(key, self.key):
             return None
 
         if self.received is None:
@@ -159,18 +175,6 @@ class ReceiverCounterTracker:
             "reset": reset,
             "baseline": baseline,
         }
-
-    @classmethod
-    def _is_newer_or_same(cls, current, previous):
-        """@brief Order snapshots by capture time, with frame ID for clock rollback."""
-        frame_id, capture_us = current
-        previous_id, previous_capture_us = previous
-        if capture_us > previous_capture_us:
-            return True
-        if capture_us == previous_capture_us:
-            return frame_id == previous_id
-        frame_delta = (frame_id - previous_id) & 0xFFFFFFFF
-        return 0 < frame_delta < cls._HALF_RANGE
 
 
 class Session:

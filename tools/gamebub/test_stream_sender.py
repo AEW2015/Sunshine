@@ -265,6 +265,44 @@ class StreamSenderTests(unittest.TestCase):
         self.assertFalse(gate.probing)
         self.assertEqual(gate.offer((6, 6), 43), (True, False))
 
+    def test_late_matched_ack_does_not_regress_current_heartbeat(self):
+        """@brief Older ACKs confirm liveness without displacing the newest heartbeat key."""
+        gate = FeedbackGate(0, timeout_ns=10, probe_ns=20)
+        self.assertTrue(gate.feedback((0xFFFFFFFF, 100), True, 1))
+        self.assertTrue(gate.feedback((0, 90), True, 2))
+        self.assertTrue(gate.feedback((0xFFFFFFFF, 100), True, 3))
+        self.assertEqual(gate.heartbeat_key, (0, 90))
+        self.assertTrue(gate.feedback((0, 91), True, 4))
+        self.assertEqual(gate.heartbeat_key, (0, 90))
+        self.assertFalse(gate.feedback((0, 91), False, 5))
+        self.assertTrue(gate.feedback((0, 90), False, 6))
+        self.assertFalse(gate.expire(16))
+        self.assertTrue(gate.expire(17))
+        self.assertFalse(gate.feedback((0, 90), True, 18))
+        self.assertEqual(gate.offer((1, 80), 18), (True, True))
+        self.assertTrue(gate.feedback((1, 80), True, 19))
+        self.assertEqual(gate.heartbeat_key, (1, 80))
+
+    def test_current_heartbeat_survives_reordered_pending_ack(self):
+        """@brief Feedback loop keeps newer heartbeats after a late, still-pending ACK."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(0xFFFFFFFF, 100): None, (0, 90): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        newer = FEEDBACK.pack(b"MSF1", 1, 0, 0, 0, 0, 11, 0, 90)
+        older = FEEDBACK.pack(b"MSF1", 1, 0, 0, 0xFFFFFFFF, 0, 10, 0, 100)
+        s.sock.recv.side_effect = [newer, older, newer, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", return_value=1):
+            s._feedback_loop()
+        self.assertEqual(s.counts["feedback_accepted"], 2)
+        self.assertEqual(s.counts["feedback_heartbeats"], 1)
+        self.assertEqual(s.counts["unmatched_feedback"], 0)
+        self.assertEqual(s.gate.heartbeat_key, (0, 90))
+
     def test_receiver_counter_tracker_handles_wrap_reset_and_reordering(self):
         """@brief Track aggregate counts without assigning them to a frame."""
         tracker = ReceiverCounterTracker()
@@ -304,6 +342,47 @@ class StreamSenderTests(unittest.TestCase):
             reordered.observe(5, 700, 11, 2),
             {"received_delta": 1, "dropped_delta": 0, "reset": False, "baseline": False},
         )
+
+    def test_receiver_counter_frame_order_survives_wall_clock_rollback(self):
+        """@brief A late older ACK after clock rollback cannot reset or double count."""
+        tracker = ReceiverCounterTracker()
+        tracker.observe(0xFFFFFFFE, 110, 10, 0)
+        self.assertEqual(tracker.observe(0xFFFFFFFF, 90, 11, 1)["dropped_delta"], 1)
+        self.assertIsNone(tracker.observe(0xFFFFFFFE, 110, 10, 0))
+        self.assertIsNone(tracker.observe(0xFFFFFFFF, 91, 11, 2))
+        self.assertEqual(
+            tracker.observe(0, 80, 12, 1),
+            {"received_delta": 1, "dropped_delta": 0, "reset": False, "baseline": False},
+        )
+        self.assertEqual(
+            tracker.observe(1, 80, 13, 1),
+            {"received_delta": 1, "dropped_delta": 0, "reset": False, "baseline": False},
+        )
+        self.assertIsNone(tracker.observe(0x80000001, 200, 14, 2))
+
+    def test_late_ack_after_clock_rollback_cannot_double_apply_drop_pressure(self):
+        """@brief Real feedback processing ignores stale counters from an older pending ACK."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(0, 110): None, (1, 100): None, (2, 90): None, (3, 80): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        s.sock.recv.side_effect = [
+            FEEDBACK.pack(b"MSF1", 1, 0, 0, 0, 0, 10, 0, 110),
+            FEEDBACK.pack(b"MSF1", 1, 1, 0, 2, 0, 11, 1, 90),
+            FEEDBACK.pack(b"MSF1", 1, 0, 0, 1, 0, 10, 0, 100),
+            FEEDBACK.pack(b"MSF1", 1, 0, 0, 3, 0, 12, 1, 80),
+            OSError("closed"),
+        ]
+        with patch("stream_sender.time.perf_counter_ns", return_value=1):
+            s._feedback_loop()
+        self.assertEqual(s.counts["receiver_counter_resets"], 0)
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 2)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 1)
+        self.assertEqual(s.quality.value, 70)
 
     def test_feedback_counter_reset_is_rebaselined_after_gate_accepts(self):
         """@brief Count a receiver reset without treating its lower totals as drops."""

@@ -49,6 +49,20 @@ def _validate_finite_numbers(record, line_number):
             pending.extend(value)
 
 
+def _valid_logging_metadata(value):
+    """@brief Check whether logger completion metadata contains every required field.
+
+    @param value Candidate logging metadata object.
+    @return True when counts and error status have valid types and values.
+    """
+    if not isinstance(value, dict):
+        return False
+    for key in ("written", "bytes", "dropped"):
+        if type(value.get(key)) is not int or value[key] < 0:
+            return False
+    return value.get("error") is None or isinstance(value.get("error"), str)
+
+
 class Reservoir:
     """@brief Keep a reproducible, uniformly sampled bounded set of values."""
 
@@ -187,6 +201,9 @@ def analyze_log(path, max_samples=DEFAULT_MAX_SAMPLES, seed=0):
     receiver_counter_snapshot = {}
     receiver_counter_resets = 0
     log_summary = None
+    logging_metadata = None
+    logging_metadata_seen = False
+    logging_metadata_record = None
     records = 0
     ignored_trailing_record = False
 
@@ -235,6 +252,33 @@ def analyze_log(path, max_samples=DEFAULT_MAX_SAMPLES, seed=0):
                 receiver_counter_resets += 1
         elif name == "summary":
             log_summary = event
+            if "logging" in event:
+                logging_metadata = event["logging"]
+                logging_metadata_seen = True
+                logging_metadata_record = records
+        elif name == "logging":
+            logging_metadata = event
+            logging_metadata_seen = True
+            logging_metadata_record = records
+
+    logging_metadata_valid = (
+        logging_metadata_seen
+        and logging_metadata_record == records
+        and not ignored_trailing_record
+        and _valid_logging_metadata(logging_metadata)
+    )
+    reported_drops = logging_metadata["dropped"] if logging_metadata_valid else None
+    reported_error = logging_metadata["error"] if logging_metadata_valid else None
+    if not logging_metadata_valid:
+        logging_assessment = "unknown"
+    elif reported_drops and reported_error:
+        logging_assessment = "drops_and_error_reported"
+    elif reported_drops:
+        logging_assessment = "drops_reported"
+    elif reported_error:
+        logging_assessment = "error_reported"
+    else:
+        logging_assessment = "no_loss_reported"
 
     return {
         "scope": "sender-side log analysis; no receiver display or source capture latency claim",
@@ -261,6 +305,16 @@ def analyze_log(path, max_samples=DEFAULT_MAX_SAMPLES, seed=0):
         "sender_log_summary_status": "present"
         if log_summary is not None
         else ("missing_or_truncated" if ignored_trailing_record else "missing"),
+        "logging_integrity": {
+            "status": "known" if logging_metadata_valid else "unknown",
+            "assessment": logging_assessment,
+            "metadata": logging_metadata if logging_metadata_valid else None,
+            "reported_drops": reported_drops,
+            "reported_error": reported_error,
+            "reason": None
+            if logging_metadata_valid
+            else "Complete final logger metadata is absent, invalid, or followed by another/torn record; JSONL alone cannot establish logging integrity.",
+        },
         "truncated_final_record_ignored": ignored_trailing_record,
     }
 

@@ -71,6 +71,7 @@ class SenderLogAnalysisTests(unittest.TestCase):
         self.assertIn("baseline/reset", counters["limits"])
         self.assertEqual(result["sender_log_summary"]["duration_s"], 1.5)
         self.assertEqual(result["sender_log_summary_status"], "present")
+        self.assertEqual(result["logging_integrity"]["status"], "unknown")
         complete = result["send_timing_by_completion"]["complete"]
         incomplete = result["send_timing_by_completion"]["incomplete"]
         metric = complete["host_assigned_timestamp_to_send_age_ms"]
@@ -91,6 +92,75 @@ class SenderLogAnalysisTests(unittest.TestCase):
         self.assertEqual(result["records"], 1)
         self.assertTrue(result["truncated_final_record_ignored"])
         self.assertEqual(result["sender_log_summary_status"], "missing_or_truncated")
+
+    def test_logging_integrity_requires_complete_final_metadata(self):
+        """@brief Distinguish logger-reported drops/errors from absent metadata."""
+        cases = (
+            (
+                {"event": "logging", "written": 10, "bytes": 1200, "dropped": 2, "error": None},
+                "drops_reported",
+                2,
+                None,
+            ),
+            (
+                {
+                    "event": "logging",
+                    "written": 10,
+                    "bytes": 1200,
+                    "dropped": 0,
+                    "error": "OSError: disk full",
+                },
+                "error_reported",
+                0,
+                "OSError: disk full",
+            ),
+            (
+                {
+                    "event": "logging",
+                    "written": 10,
+                    "bytes": 1200,
+                    "dropped": 2,
+                    "error": "OSError: disk full",
+                },
+                "drops_and_error_reported",
+                2,
+                "OSError: disk full",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for index, (record, assessment, drops, error_text) in enumerate(cases):
+                path = Path(directory) / f"logging-{index}.jsonl"
+                path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+                with self.subTest(assessment=assessment):
+                    result = analyze_log(path)["logging_integrity"]
+                    self.assertEqual(result["status"], "known")
+                    self.assertEqual(result["assessment"], assessment)
+                    self.assertEqual(result["reported_drops"], drops)
+                    self.assertEqual(result["reported_error"], error_text)
+
+            clean = {"written": 1, "bytes": 20, "dropped": 0, "error": None}
+            path = Path(directory) / "embedded.jsonl"
+            path.write_text(
+                json.dumps({"event": "summary", "logging": clean}) + "\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                analyze_log(path)["logging_integrity"]["assessment"], "no_loss_reported"
+            )
+
+            for records in (
+                [{"event": "logging", "written": 1, "dropped": 0, "error": None}],
+                [{"event": "summary", "logging": None}],
+                [cases[0][0], {"event": "later_event"}],
+                [cases[0][0]],
+            ):
+                # The final case adds a torn tail after otherwise complete metadata.
+                content = "".join(json.dumps(item) + "\n" for item in records).encode()
+                if len(records) == 1 and records[0].get("bytes") == 1200:
+                    content += b'{"event":"partial'
+                path.write_bytes(content)
+                integrity = analyze_log(path)["logging_integrity"]
+                self.assertEqual(integrity["status"], "unknown")
+                self.assertEqual(integrity["assessment"], "unknown")
 
     def test_invalid_interior_or_terminated_final_records_fail(self):
         """@brief Reject malformed complete records rather than hiding corruption."""

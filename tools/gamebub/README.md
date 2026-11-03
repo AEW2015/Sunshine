@@ -34,6 +34,12 @@ Receiver cumulative counters are reported as their last observed snapshot;
 sender-reported deltas alone are summed. Baseline and reset events limit the
 meaning of those totals. `sender_log_summary_status` distinguishes a missing
 summary from one possibly lost to a truncated tail.
+`logging_integrity` remains `unknown` unless complete logger metadata appears
+as the final record (or inside the final summary record). The sender's JSONL
+normally does not contain this metadata: its printed result adds logger write,
+drop, and error counts only after the JSONL summary has already been enqueued.
+When valid metadata is present, the report distinguishes drops and I/O errors;
+without it, the log cannot establish whether any records were lost.
 
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
