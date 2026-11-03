@@ -257,6 +257,9 @@ def main(argv=None):
     parser.add_argument("target", help="Test receiver address on a trusted LAN")
     parser.add_argument("--jpeg", required=True, type=Path)
     parser.add_argument("--port", type=int, default=5533)
+    parser.add_argument(
+        "--source-port", type=int, default=0, help="Local UDP port; 0 chooses an ephemeral port"
+    )
     parser.add_argument("--mbps", type=float, default=20)
     parser.add_argument("--frame-id", type=int, default=1)
     parser.add_argument("--deadline-ms", type=float, default=200)
@@ -264,6 +267,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if (
         not 1 <= args.port <= 65535
+        or not 0 <= args.source_port <= 65535
         or not 0 <= args.frame_id <= 0xFFFFFFFF
         or any(
             not math.isfinite(n) or n <= 0
@@ -275,6 +279,7 @@ def main(argv=None):
         jpeg = args.jpeg.read_bytes()
         capture_us = time.time_ns() // 1000
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.bind(("0.0.0.0", args.source_port))
             sock.connect((args.target, args.port))
             sock.setblocking(False)
             done, size = send_frame(

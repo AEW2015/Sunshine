@@ -304,7 +304,10 @@ class ReceiverProtocolTests(unittest.TestCase):
             patch("msv1.send_frame", return_value=(True, 50)),
             contextlib.redirect_stdout(stdout),
         ):
-            self.assertEqual(main(["127.0.0.1", "--jpeg", str(fixture)]), 0)
+            self.assertEqual(
+                main(["127.0.0.1", "--jpeg", str(fixture), "--source-port", "55534"]), 0
+            )
+        peer.bind.assert_called_once_with(("0.0.0.0", 55534))
         result = json.loads(stdout.getvalue())
         self.assertTrue(result["sent_complete"])
         self.assertFalse(result["end_to_end_verified"])
@@ -315,6 +318,8 @@ class ReceiverProtocolTests(unittest.TestCase):
         fixture = Path(__file__).parent / "fixtures/receiver-pattern-720x480-420-q65.jpg"
         for option, value in (
             ("--port", "0"),
+            ("--source-port", "-1"),
+            ("--source-port", "65536"),
             ("--frame-id", "-1"),
             ("--mbps", "nan"),
             ("--deadline-ms", "0"),

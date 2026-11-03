@@ -164,6 +164,8 @@ on the intended trusted test LAN after the Game Bub agent configures the receive
 and provides its IPv4 address. No keys or input are injected by this command.
 The sender validates the restricted JPEG profile and reports success only after
 matching ingress feedback; that does not establish decode or presentation.
+Use `--source-port` to keep a fixed sender port when the receiver pins its peer;
+restart the receiver session if a previous sender used a different source port.
 
 ```powershell
 py -3.11 -m uv run --locked python msv1.py 192.168.1.50 --jpeg fixtures\frame-00000000-420-r0.jpg --frame-id 1
