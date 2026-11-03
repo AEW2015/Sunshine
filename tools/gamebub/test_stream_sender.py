@@ -21,7 +21,14 @@ from host import canvas as reference_canvas
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
 from quality import QualityController
-from stream_sender import FeedbackGate, Session, desktop_duplication_frames, main, run
+from stream_sender import (
+    FeedbackGate,
+    Session,
+    desktop_duplication_frames,
+    main,
+    recovering_desktop_frames,
+    run,
+)
 
 
 class MemoryEvents:
@@ -68,6 +75,145 @@ class StreamSenderTests(unittest.TestCase):
         ):
             next(desktop_duplication_frames(30))
 
+    def test_desktop_recovery_reopens_and_resets_after_frame(self):
+        """@brief Consecutive failures back off and a new frame resets the retry budget."""
+
+        def broken():
+            """@brief Simulate a failed graph after it was opened."""
+            raise av.FFmpegError(5, "device lost")
+            yield  # pragma: no cover
+
+        def once(value):
+            """@brief Yield a fresh frame then simulate a subsequent device loss."""
+            yield value
+            raise OSError("device lost again")
+
+        events, sleep = Mock(), Mock()
+        with patch(
+            "stream_sender.desktop_duplication_frames",
+            side_effect=[broken(), broken(), once("first"), broken(), broken(), once("second")],
+        ):
+            frames = recovering_desktop_frames(30, events, sleep)
+            self.assertEqual(next(frames), "first")
+            self.assertEqual(next(frames), "second")
+            frames.close()
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [0.1, 0.2, 0.1, 0.2, 0.4])
+        self.assertEqual(events.call_args_list[2].args[0], "capture_restored")
+        self.assertEqual(events.call_args_list[-1].args[0], "capture_restored")
+
+    def test_desktop_recovery_exhausts_budget_and_closes_graphs(self):
+        """@brief Permanent failure closes every graph and reports the final error."""
+        graphs = [MagicMock() for _ in range(4)]
+        for graph in graphs:
+            graph.__next__.side_effect = OSError("unavailable")
+        events, sleep = Mock(), Mock()
+        with (
+            patch("stream_sender.desktop_duplication_frames", side_effect=graphs),
+            self.assertRaisesRegex(OSError, "unavailable"),
+        ):
+            next(recovering_desktop_frames(30, events, sleep))
+        for graph in graphs:
+            graph.close.assert_called_once()
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [0.1, 0.2, 0.4])
+        self.assertFalse(events.call_args.kwargs["retry"])
+
+    def test_desktop_empty_graph_is_not_silent_eof(self):
+        """@brief Unexpected capture EOF is retried and ultimately surfaced."""
+        with (
+            patch(
+                "stream_sender.desktop_duplication_frames", side_effect=lambda _: (x for x in ())
+            ),
+            self.assertRaisesRegex(OSError, "ended unexpectedly"),
+        ):
+            next(recovering_desktop_frames(30, Mock(), Mock()))
+
+    def test_desktop_recovery_events_reach_sender_log(self):
+        """@brief A reopening capture emits failure and restoration through the session."""
+        broken = MagicMock()
+        broken.__next__.side_effect = OSError("lost")
+        image = Image.new("RGB", (720, 480))
+        session = Mock()
+        session.lock = threading.Lock()
+        session.counts = Counter()
+        session.close.return_value = {}
+        with tempfile.TemporaryDirectory() as directory:
+            args = SimpleNamespace(
+                target="127.0.0.1",
+                port=5533,
+                log=Path(directory) / "run.jsonl",
+                clip=None,
+                desktop_backend="ddagrab",
+                fps=10,
+                mbps=20,
+                max_age_ms=200,
+                quality=75,
+                min_quality=20,
+                frames=1,
+            )
+            with (
+                patch("stream_sender.Session", return_value=session),
+                patch(
+                    "stream_sender.desktop_duplication_frames",
+                    side_effect=[broken, (x for x in [image])],
+                ),
+            ):
+                run(args)
+        self.assertEqual(
+            [c.args[0] for c in session._event.call_args_list],
+            ["capture_config", "capture_error", "capture_restored"],
+        )
+        broken.close.assert_called_once()
+        session.pipeline.submit.assert_called_once()
+
+    def test_desktop_capture_stall_skips_expired_slots(self):
+        """@brief Rebase slow startup and skip, rather than submit, expired capture slots."""
+        image = Image.new("RGB", (720, 480))
+        for stall_ns, expected_ids, skipped in [(250_000_000, [0, 3], 2), (500_000_000, [0], 3)]:
+            with self.subTest(stall_ns=stall_ns), tempfile.TemporaryDirectory() as directory:
+                clock = [0]
+
+                def acquire(clock=clock, stall_ns=stall_ns):
+                    """@brief Model a slow initial open followed by a stalled capture."""
+                    clock[0] += 2_000_000_000
+                    yield image
+                    clock[0] += stall_ns
+                    yield image
+
+                def sleep(seconds, clock=clock):
+                    """@brief Advance a fake monotonic clock without real waits."""
+                    clock[0] += int(seconds * 1_000_000_000)
+
+                session = Mock()
+                session.lock = threading.Lock()
+                session.counts = Counter()
+                session.close.return_value = {}
+                args = SimpleNamespace(
+                    target="127.0.0.1",
+                    port=5533,
+                    log=Path(directory) / "run.jsonl",
+                    clip=None,
+                    desktop_backend="ddagrab",
+                    fps=10,
+                    mbps=20,
+                    max_age_ms=200,
+                    quality=75,
+                    min_quality=20,
+                    frames=4,
+                )
+                with (
+                    patch("stream_sender.Session", return_value=session),
+                    patch("stream_sender.desktop_duplication_frames", return_value=acquire()),
+                    patch(
+                        "stream_sender.time.perf_counter_ns",
+                        side_effect=lambda clock=clock: clock[0],
+                    ),
+                    patch("stream_sender.time.sleep", side_effect=sleep),
+                ):
+                    run(args)
+                ids = [call.args[0].frame_id for call in session.pipeline.submit.call_args_list]
+                self.assertEqual(ids, expected_ids)
+                self.assertEqual(session.counts["skipped_slots"], skipped)
+
     def test_feedback_gate_timeout_heartbeat_and_probe_recovery(self):
         """@brief Silence limits traffic; only a fresh probe can restore regular sending."""
         with self.assertRaises(ValueError):
@@ -89,6 +235,69 @@ class StreamSenderTests(unittest.TestCase):
         self.assertFalse(gate.probing)
         self.assertEqual(gate.offer((6, 6), 43), (True, False))
 
+    def test_feedback_grace_starts_after_initial_traffic(self):
+        """@brief Capture startup, preflight, and initial frame sending do not consume grace."""
+        gate = FeedbackGate(None, timeout_ns=10, probe_ns=20)
+        self.assertFalse(gate.expire(100))
+        self.assertFalse(gate.feedback((1, 1), False, 100))
+        self.assertEqual(gate.offer((1, 1), 100), (True, False))
+        self.assertFalse(gate.expire(1_000))
+        gate.sent(1_000)
+        self.assertFalse(gate.expire(1_010))
+        self.assertTrue(gate.expire(1_011))
+        self.assertTrue(gate.probing)
+        self.assertEqual(gate.offer((2, 2), 1_011), (True, True))
+        self.assertFalse(gate.feedback((1, 1), True, 1_012))
+        self.assertTrue(gate.feedback((2, 2), True, 1_012))
+
+    def test_initial_feedback_during_send_is_not_overwritten(self):
+        """@brief Matching feedback received before send returns retains its timestamp."""
+        gate = FeedbackGate(None, timeout_ns=10, probe_ns=20)
+        gate.offer((1, 1), 100)
+        self.assertTrue(gate.feedback((1, 1), True, 105))
+        gate.sent(108)
+        self.assertEqual(gate.last_feedback, 105)
+
+    def test_no_traffic_does_not_arm_initial_feedback_timeout(self):
+        """@brief A preflight refusal cannot start silence detection without datagrams."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(None, timeout_ns=10, probe_ns=20)
+        frame = Frame(2, 1, 2, Image.new("RGB", (720, 480)))
+        with patch("stream_sender.send_frame", return_value=(False, 0)):
+            self.assertFalse(s._send(frame, b"x"))
+        self.assertIsNone(s.gate.last_feedback)
+        self.assertEqual(len(s.pending), 0)
+        self.assertFalse(s.gate.expire(100_000))
+
+    def test_initial_send_longer_than_timeout_arms_after_it_finishes(self):
+        """@brief A paced first frame receives its full feedback grace after transmission."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(None, timeout_ns=10, probe_ns=20)
+        frame = Frame(2, 1, 2, Image.new("RGB", (720, 480)))
+
+        def long_send(*args, **kwargs):
+            """@brief Simulate sending for much longer than the silence deadline."""
+            self.assertFalse(s.gate.expire(1_000))
+            return True, 40
+
+        with (
+            patch("stream_sender.time.perf_counter_ns", return_value=1_001),
+            patch("stream_sender.send_frame", side_effect=long_send),
+        ):
+            self.assertTrue(s._send(frame, b"x"))
+        self.assertEqual(s.gate.last_feedback, 1_001)
+        self.assertIn((2, 2), s.pending)
+        self.assertFalse(s.gate.expire(1_011))
+        self.assertTrue(s.gate.expire(1_012))
+
     def test_silent_peer_suppresses_frames_and_clears_stale_pending(self):
         """@brief Timeout limits datagrams to probes and rejects delayed old feedback."""
         s = Session.__new__(Session)
@@ -108,6 +317,60 @@ class StreamSenderTests(unittest.TestCase):
             self.assertEqual(send.call_count, 1)
         self.assertEqual(s.counts["feedback_suppressed"], 1)
         self.assertEqual(s.counts["feedback_abandoned"], 1)
+
+    def test_slow_capture_start_gets_full_feedback_grace(self):
+        """@brief Slow initialization does not falsely put a responsive peer into probing."""
+        stop = threading.Event()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+            receiver.bind(("127.0.0.1", 0))
+            receiver.settimeout(0.05)
+
+            def peer():
+                """@brief Acknowledge the first complete frame."""
+                while not stop.is_set():
+                    try:
+                        packet, address = receiver.recvfrom(2048)
+                    except TimeoutError:
+                        continue
+                    fields = VIDEO.unpack(packet[: VIDEO.size])
+                    if fields[3] & 2:
+                        receiver.sendto(
+                            FEEDBACK.pack(b"MSF1", 1, 0, 0, fields[4], 0, 1, 0, fields[12]),
+                            address,
+                        )
+                        return
+
+            def slow_capture():
+                """@brief Delay capture longer than the 750 ms liveness timeout."""
+                time.sleep(0.85)
+                yield Image.new("RGB", (720, 480), "red")
+
+            thread = threading.Thread(target=peer)
+            thread.start()
+            try:
+                with tempfile.TemporaryDirectory() as directory:
+                    args = SimpleNamespace(
+                        target="127.0.0.1",
+                        port=receiver.getsockname()[1],
+                        log=Path(directory) / "slow-start.jsonl",
+                        clip=None,
+                        fps=5,
+                        mbps=100,
+                        max_age_ms=500,
+                        quality=75,
+                        min_quality=20,
+                        frames=1,
+                    )
+                    result = run(args, slow_capture())
+                    events = [
+                        json.loads(line)["event"] for line in args.log.read_text().splitlines()
+                    ]
+            finally:
+                stop.set()
+                thread.join(2)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(result["counts"]["feedback_accepted"], 1)
+        self.assertNotIn("feedback_timeout", events)
 
     def test_loopback_silence_then_fresh_probe_restores_video(self):
         """@brief A silent localhost peer causes suppression and later probe recovery."""
@@ -395,6 +658,17 @@ class StreamSenderTests(unittest.TestCase):
             s._encode(None)
         self.assertEqual(s.quality.value, 70)
 
+    def test_quality_does_not_recover_before_first_send(self):
+        """@brief An unstarted feedback gate cannot establish congestion recovery."""
+        s = Session.__new__(Session)
+        s.lock, s.log = threading.Lock(), MemoryEvents()
+        s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(None)
+        s.quality.congested()
+        s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
+        with patch("stream_sender.encode_receiver_jpeg", return_value=b"x"):
+            s._encode(None)
+        self.assertEqual(s.quality.value, 70)
+
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
         s = Session.__new__(Session)
@@ -579,7 +853,7 @@ class StreamSenderTests(unittest.TestCase):
                 source = MagicMock()
                 source.__next__.side_effect = av.FFmpegError(5, "capture failed")
                 with (
-                    patch("stream_sender.desktop_duplication_frames", return_value=source),
+                    patch("stream_sender.recovering_desktop_frames", return_value=source),
                     self.assertRaises(av.FFmpegError),
                 ):
                     run(args)

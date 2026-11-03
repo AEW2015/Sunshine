@@ -104,7 +104,8 @@ reported send rate was 28.40 fps, 6.96 Mbps of MSV1 traffic, with quality 75
 throughout. The desktop content was uncontrolled and `ddagrab` may repeat
 unchanged frames. This result exercises host capture, encoding, packetization,
 and localhost ingress only, not the physical Wi-Fi, QSPI, FPGA, or display.
-Capture-device loss exits with an error; automatic reinitialization remains work.
+At the time of this run capture-device loss exited with an error; a later
+change added bounded reopen attempts that still require physical validation.
 
 Reproduce with a pinned MoonBub reference clone and a new log filename:
 

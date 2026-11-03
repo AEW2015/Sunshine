@@ -218,9 +218,11 @@ class ReceiverProtocolTests(unittest.TestCase):
         self.assertTrue(done)
         self.assertEqual(sent, sum(len(c.args[0]) for c in sock.send.call_args_list))
         now[0] = 0
+        sock.reset_mock()
         done, sent = send_frame(sock, self.jpeg, 2, 5, 100000, 0.015, lambda: now[0], sleeper)
         self.assertFalse(done)
-        self.assertGreater(sent, 0)
+        self.assertEqual(sent, 0)
+        sock.send.assert_not_called()
         with self.assertRaises(ValueError):
             send_frame(sock, self.jpeg, 1, 2, 0, 1)
         sock.send.return_value = 1
@@ -235,8 +237,37 @@ class ReceiverProtocolTests(unittest.TestCase):
             """@brief Simulate Windows waking after the sender's deadline."""
             now[0] += delay + 1
 
-        done, _ = send_frame(sock, self.jpeg, 1, 2, 100000, 0.3, lambda: now[0], late_sleep)
+        done, sent = send_frame(sock, self.jpeg, 1, 2, 100000, 0.3, lambda: now[0], late_sleep)
         self.assertFalse(done)
+        self.assertGreater(sent, 0)
+
+    def test_preflight_accounts_for_pending_pacer_and_validates_input(self):
+        """@brief A pending pacer can make a frame infeasible without emitting a partial frame."""
+        sock = Mock()
+        pacer = Pacer(next_due=0.9)
+        done, sent = send_frame(sock, self.jpeg, 1, 2, 100000, 1, lambda: 0, lambda _: None, pacer)
+        self.assertFalse(done)
+        self.assertEqual(sent, 0)
+        self.assertEqual(pacer.next_due, 0.9)
+        sock.send.assert_not_called()
+        with self.assertRaises(ValueError):
+            send_frame(sock, b"bad", 1, 2, 100000, 0.00001, lambda: 0)
+
+    def test_elapsed_time_after_send_can_expire_remaining_frame(self):
+        """@brief An unexpected socket delay can expire a previously feasible frame."""
+        now = [0.0]
+        sock = Mock()
+
+        def delayed_send(packet):
+            """@brief Delay after accepting the first datagram."""
+            now[0] += 1
+            return len(packet)
+
+        sock.send.side_effect = delayed_send
+        done, sent = send_frame(sock, self.jpeg, 1, 2, 100000, 0.5, lambda: now[0])
+        self.assertFalse(done)
+        self.assertGreater(sent, 0)
+        self.assertEqual(sock.send.call_count, 1)
 
     def test_validation_delay_does_not_cause_packet_burst(self):
         """@brief Validation or scheduler delays do not grant a burst of link credit."""
@@ -272,6 +303,22 @@ class ReceiverProtocolTests(unittest.TestCase):
                     sock, self.jpeg, frame_id, 2, 100000, 10, lambda: now[0], sleeper, pacer
                 )[0]
             )
+        for (started, size), (following, _) in pairwise(sends):
+            self.assertGreaterEqual(following - started + 1e-12, size / 100000)
+
+    def test_pacer_waits_again_after_early_wakeup(self):
+        """@brief Early timer wakeups never release a chunk ahead of its paced time."""
+        now, sends, waits = [0.0], [], []
+        sock = Mock()
+        sock.send.side_effect = lambda packet: sends.append((now[0], len(packet))) or len(packet)
+
+        def early_once(delay):
+            """@brief Wake halfway through alternating waits, then advance to the target."""
+            waits.append(delay)
+            now[0] += delay / 2 if len(waits) % 2 else delay
+
+        self.assertTrue(send_frame(sock, self.jpeg, 1, 2, 100000, 2, lambda: now[0], early_once)[0])
+        self.assertGreater(len(waits), len(sends) - 1)
         for (started, size), (following, _) in pairwise(sends):
             self.assertGreaterEqual(following - started + 1e-12, size / 100000)
 

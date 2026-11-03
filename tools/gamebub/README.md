@@ -110,10 +110,12 @@ On Windows, `--desktop --desktop-backend ddagrab` opts into the experimental
 FFmpeg Desktop Duplication capture path. It uses the primary output, downloads
 BGRA frames and applies bilinear libswscale scaling; `--desktop-filter` only
 affects the default ImageGrab backend. The graph may repeat unchanged frames,
-and the sender cannot distinguish those from fresh updates. GPU/device loss,
-fullscreen games and sustained 30 fps have not been validated. Capture errors
-stop the sender rather than silently switching backends; start a new run after
-resolving the error and follow the session rules below.
+and the sender cannot distinguish those from fresh updates. Capture failures
+are logged and the graph is reopened up to three times with bounded backoff;
+after repeated failures the sender exits rather than switching backends. A native
+capture call that blocks indefinitely cannot be interrupted by this retry loop.
+GPU/device-loss recovery, fullscreen games and sustained 30 fps still require
+physical testing; follow the session rules below when starting a new run.
 
 The optional `--desktop-filter box` uses a faster resize filter in one static
 desktop microbenchmark, but its visual quality on moving games is unverified.

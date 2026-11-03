@@ -14,6 +14,7 @@ import zlib
 from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from io import BytesIO
+from itertools import chain
 from pathlib import Path
 
 from PIL import Image
@@ -213,6 +214,9 @@ def send_frame(
 ):
     """@brief Pace one frame on a connected datagram socket, aborting when stale.
 
+    Reject a frame before sending if even its ideal serialization time cannot
+    fit its deadline. Scheduler delays can still require a mid-frame abort.
+
     @param sock Connected UDP socket; authentication is outside this test protocol.
     @param jpeg Complete receiver-compatible JPEG.
     @param frame_id Unsigned wrapping frame ID.
@@ -228,16 +232,21 @@ def send_frame(
     if not math.isfinite(bytes_per_second) or bytes_per_second <= 0 or not math.isfinite(deadline):
         raise ValueError("Rate and deadline must be finite; rate must be positive")
     next_due, sent = pacer.next_due if pacer is not None else None, 0
-    for packet in frame_datagrams(jpeg, frame_id, capture_us):
+    packets = frame_datagrams(jpeg, frame_id, capture_us)
+    first = next(packets)  # Validate the JPEG and identifiers before the preflight.
+    wire_bytes = len(jpeg) + ((len(jpeg) + MAX_PAYLOAD - 1) // MAX_PAYLOAD) * VIDEO.size
+    start = max(next_due, clock()) if next_due is not None else clock()
+    if start + wire_bytes / bytes_per_second > deadline:
+        return False, 0
+    for packet in chain((first,), packets):
         now = clock()
         due = max(next_due, now) if next_due is not None else now
         duration = len(packet) / bytes_per_second
         if due + duration > deadline:
             return False, sent
-        delay = due - now
-        if delay > 0:
-            sleeper(delay)
-        now = clock()
+        while now < due:
+            sleeper(due - now)
+            now = clock()
         if now + duration > deadline:
             return False, sent
         count = sock.send(packet)

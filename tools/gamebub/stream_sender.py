@@ -32,7 +32,12 @@ class FeedbackGate:
     """
 
     def __init__(self, now_ns, timeout_ns=750_000_000, probe_ns=1_000_000_000):
-        """@brief Start with a grace period and fixed monotonic durations."""
+        """@brief Set fixed monotonic durations; None defers the initial grace period.
+
+        @param now_ns Initial grace timestamp, or None to defer it until traffic is sent.
+        @param timeout_ns Maximum feedback silence before probing.
+        @param probe_ns Minimum interval between recovery probes.
+        """
         if timeout_ns <= 0 or probe_ns <= 0:
             raise ValueError("Feedback timing must be positive")
         self.last_feedback = now_ns
@@ -44,7 +49,11 @@ class FeedbackGate:
 
     def expire(self, now_ns):
         """@brief Enter probing once and indicate when old pending ACKs must be cleared."""
-        if not self.probing and now_ns - self.last_feedback > self.timeout_ns:
+        if (
+            self.last_feedback is not None
+            and not self.probing
+            and now_ns - self.last_feedback > self.timeout_ns
+        ):
             self.probing = True
             self.next_probe = now_ns
             self.probe_key = None
@@ -62,6 +71,14 @@ class FeedbackGate:
         self.next_probe = now_ns + self.probe_ns
         self.probe_key = key
         return True, True
+
+    def sent(self, now_ns):
+        """@brief Arm initial grace after transmission, preserving any earlier feedback.
+
+        @param now_ns Monotonic time after a send which transmitted at least one byte.
+        """
+        if self.last_feedback is None:
+            self.last_feedback = now_ns
 
     def feedback(self, key, matched, now_ns):
         """@brief Process a matching ACK or current heartbeat and report liveness."""
@@ -112,7 +129,8 @@ class Session:
         self.stop = threading.Event()
         self.pacer = Pacer()
         self.start_ns = time.perf_counter_ns()
-        self.gate = FeedbackGate(self.start_ns)
+        # Capture startup and a paced first frame can be slower than the liveness timeout.
+        self.gate = FeedbackGate(None)
         self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
@@ -142,6 +160,7 @@ class Session:
             recent_feedback = (
                 self.recovery_eligible
                 and not self.gate.probing
+                and self.gate.last_feedback is not None
                 and time.perf_counter_ns() - self.gate.last_feedback <= self.gate.timeout_ns
             )
             self.quality.observe(wire, budget, recent_feedback)
@@ -201,6 +220,8 @@ class Session:
             raise
         with self.lock:
             self.counts["wire_bytes"] += sent
+            if sent:
+                self.gate.sent(time.perf_counter_ns())
             if not done:
                 self.pending.pop(key, None)
                 self.quality.congested()
@@ -338,6 +359,42 @@ def desktop_duplication_frames(fps):
         yield from capture.decode(video=0)
 
 
+def recovering_desktop_frames(fps, on_event, sleeper=time.sleep):
+    """@brief Reopen a failed duplication graph with a bounded consecutive retry budget.
+
+    @param fps Requested output rate for each new graph.
+    @param on_event Receives structured capture errors and recovery events.
+    @param sleeper Wait function used for bounded exponential backoff.
+    @return Iterator of newly acquired frames; no previously returned frame is replayed here.
+    @throws OSError If the graph ends unexpectedly or recovery attempts are exhausted.
+    @throws av.FFmpegError If an FFmpeg error persists through the retry budget.
+
+    This cannot interrupt a native graph open or decode call that blocks indefinitely.
+    """
+    failures = 0
+    while True:
+        frames = desktop_duplication_frames(fps)
+        try:
+            while True:
+                frame = next(frames)
+                if failures:
+                    on_event("capture_restored", attempts=failures)
+                    failures = 0
+                yield frame
+        except StopIteration:
+            error = OSError("Desktop Duplication graph ended unexpectedly")
+        except (OSError, av.FFmpegError) as exc:
+            error = exc
+        finally:
+            frames.close()
+        failures += 1
+        retry = failures <= 3
+        on_event("capture_error", attempt=failures, retry=retry, error=str(error))
+        if not retry:
+            raise error
+        sleeper(0.1 * 2 ** (failures - 1))
+
+
 def run(args, source=None):
     """@brief Capture a paced clip or desktop and write bounded-queue telemetry.
 
@@ -350,13 +407,19 @@ def run(args, source=None):
         and not args.clip
         and getattr(args, "desktop_backend", "imagegrab") == "ddagrab"
     )
+
+    def capture_event(kind, **fields):
+        """@brief Record capture recovery in the sender's bounded event log."""
+        with session.lock:
+            session._event(kind, **fields)
+
     frames = (
         source
         if source is not None
         else (
             clip_frames(args.clip, args.fps)
             if args.clip
-            else desktop_duplication_frames(args.fps)
+            else recovering_desktop_frames(args.fps, capture_event)
             if dxgi
             else None
         )
@@ -397,6 +460,19 @@ def run(args, source=None):
                 else:
                     image = ImageGrab.grab()
                 now = time.perf_counter_ns()
+                if dxgi:
+                    # Startup can be slow; schedule from the first acquired frame.
+                    # Later stalls must consume elapsed slots, never replay old IDs.
+                    if slot == 0:
+                        started = now
+                        skipped = 0
+                    else:
+                        actual = (now - started) * args.fps // 1_000_000_000
+                        if actual >= args.frames:
+                            with session.lock:
+                                session.counts["skipped_slots"] += args.frames - slot
+                            break
+                        skipped = max(skipped, actual - slot)
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
                 prepared = canvas(image, Image.Resampling[filter_name.upper()])
