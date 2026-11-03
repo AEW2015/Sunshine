@@ -40,7 +40,9 @@ a reliable unit-test assertion on shared machines.
 8. **Adapt quality with hysteresis.** Test: scripted congestion reduces quality
    within allowed bounds, sustained headroom raises it slowly, transient loss
    does not oscillate, and oversize frames are dropped or re-encoded within
-   the age budget.
+   the age budget. The experimental sender now uses fast backoff and requires
+   30 headroom observations with accepted feedback to recover one quality step;
+   tune against real receiver measurements.
 9. **Honor the receiver frame limit.** Test: exactly-at-limit and over-limit
    payloads, incomplete sends, and repeated oversize frames; never send a frame
    that exceeds negotiated memory.

@@ -18,6 +18,7 @@ from controller import ControllerTracker
 from host import Profile, canvas, clip_frames, encode
 from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, parse_feedback, send_frame
 from pipeline import Frame, VideoPipeline
+from quality import QualityController
 
 
 class FeedbackGate:
@@ -101,7 +102,8 @@ class Session:
         self.sock, self.log, self.fps = sock, log, fps
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
-        self.quality, self.max_quality, self.min_quality = quality, quality, min_quality
+        self.quality = QualityController(quality, min_quality)
+        self.recovery_eligible = False
         self.lock = threading.Lock()
         self.pending = OrderedDict()
         self.counts = Counter()
@@ -122,23 +124,26 @@ class Session:
     def _encode(self, image):
         """@brief Encode a frame and slowly adapt quality to the per-frame wire budget."""
         with self.lock:
-            quality = self.quality
+            quality = self.quality.value
         started = time.monotonic_ns()
         try:
             jpeg, _ = encode(image, quality, Profile(huffman_sha256=None))
         except (OverflowError, OSError, ValueError) as error:
             with self.lock:
-                self.quality = max(self.min_quality, self.quality - 5)
+                self.quality.congested()
+                self.recovery_eligible = False
                 self._event("encode_error", quality=quality, error=str(error))
             raise
         wire = len(jpeg) + ((len(jpeg) + 1023) // 1024) * VIDEO.size
         with self.lock:
             self.counts["encoded_bytes"] += len(jpeg)
             budget = self.rate / self.fps
-            if wire > budget * 0.9:
-                self.quality = max(self.min_quality, self.quality - 5)
-            elif wire < budget * 0.7:
-                self.quality = min(self.max_quality, self.quality + 1)
+            recent_feedback = (
+                self.recovery_eligible
+                and not self.gate.probing
+                and time.monotonic_ns() - self.gate.last_feedback <= self.gate.timeout_ns
+            )
+            self.quality.observe(wire, budget, recent_feedback)
             self._event(
                 "encode",
                 quality=quality,
@@ -155,6 +160,7 @@ class Session:
             was_probing = self.gate.probing
             allowed, clear_pending = self.gate.offer(key, time.monotonic_ns())
             if not was_probing and self.gate.probing:
+                self.recovery_eligible = False
                 self._event("feedback_timeout")
             if clear_pending:
                 self.counts["feedback_abandoned"] += len(self.pending)
@@ -182,12 +188,14 @@ class Session:
             with self.lock:
                 self.pending.pop(key, None)
                 self.counts["socket_failures"] += 1
+                self.recovery_eligible = False
             raise
         with self.lock:
             self.counts["wire_bytes"] += sent
             if not done:
                 self.pending.pop(key, None)
-                self.quality = max(self.min_quality, self.quality - 5)
+                self.quality.congested()
+                self.recovery_eligible = False
             self._event(
                 "send",
                 frame_id=frame.frame_id,
@@ -215,6 +223,7 @@ class Session:
             except OSError as error:
                 with self.lock:
                     self.counts["feedback_socket_failures"] += 1
+                    self.recovery_eligible = False
                     self._event("feedback_error", error=str(error))
                     if self.controller.disconnect() is not None:
                         self._event("controller", gamepad_flags=0, reason="socket_error")
@@ -229,6 +238,7 @@ class Session:
             with self.lock:
                 now = time.monotonic_ns()
                 if self.gate.expire(now):
+                    self.recovery_eligible = False
                     self.counts["feedback_abandoned"] += len(self.pending)
                     self.pending.clear()
                     self._event("feedback_timeout")
@@ -256,7 +266,10 @@ class Session:
                     "feedback_accepted" if feedback.status == 0 else "feedback_rejected"
                 ] += 1
                 if feedback.status:
-                    self.quality = max(self.min_quality, self.quality - 5)
+                    self.quality.congested()
+                    self.recovery_eligible = False
+                else:
+                    self.recovery_eligible = True
                 self._event(
                     "feedback",
                     frame_id=feedback.frame_id,
@@ -280,7 +293,7 @@ class Session:
                 "scope": "MSV1 video test; feedback is ingress only",
                 "end_to_end_verified": False,
                 "duration_s": duration,
-                "quality_final": self.quality,
+                "quality_final": self.quality.value,
                 "counts": dict(self.counts),
                 "pending_feedback": len(self.pending),
                 "feedback_probing": self.gate.probing,

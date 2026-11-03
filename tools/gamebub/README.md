@@ -76,7 +76,7 @@ do not use that run for performance measurements. Regression tests use controlle
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
 `make_assets.py`, `realtime.py`, `seed_pairing.py`, `msv1.py`, `pipeline.py`,
-`stream_sender.py`, and `controller.py`.
+`stream_sender.py`, `controller.py`, and `quality.py`.
 
 `controller.py` tracks the 12-bit feedback snapshots and logs translated
 Windows-style gamepad flags. It rejects old video-frame identities, emits a
@@ -105,6 +105,11 @@ and bitrate include a 300 ms final feedback grace period. Exit status 0 means at
 least one matching accepted ingress response, 2 means none; either result can
 include drops and does not establish FPGA decode or display. Inspect the log and
 receiver output. The test receiver's restart/session rules apply to frame IDs.
+
+The quality controller decreases promptly on oversized wire budget, send failure,
+or receiver busy/drop feedback. It requires 30 consecutive small encoded frames
+and recent accepted feedback before raising quality by one point. It does not
+estimate or guarantee actual Wi-Fi throughput.
 
 The socket is nonblocking. Failures and partial frames are counted, later SOF
 recovers per receiver protocol, and busy/drop feedback lowers JPEG quality.

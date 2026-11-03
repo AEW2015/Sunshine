@@ -18,6 +18,7 @@ from PIL import Image
 from controller import ControllerTracker
 from msv1 import FEEDBACK, VIDEO, Pacer
 from pipeline import Frame
+from quality import QualityController
 from stream_sender import FeedbackGate, Session, main, run
 
 
@@ -49,7 +50,8 @@ class StreamSenderTests(unittest.TestCase):
         """@brief Timeout limits datagrams to probes and rejects delayed old feedback."""
         s = Session.__new__(Session)
         s.lock, s.log, s.sock = threading.Lock(), io.StringIO(), Mock()
-        s.quality, s.min_quality, s.age_ns, s.rate, s.pacer = 75, 20, 100, 3000, Pacer()
+        s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
+        s.recovery_eligible = True
         s.pending, s.counts = OrderedDict({(0, 0): None}), Counter()
         s.gate = FeedbackGate(0, timeout_ns=10, probe_ns=20)
         frame = Frame(2, 1, 2, Image.new("RGB", (720, 480)))
@@ -204,29 +206,30 @@ class StreamSenderTests(unittest.TestCase):
         """@brief Congestion and encoder/socket failures lower quality within bounds."""
         s = Session.__new__(Session)
         s.lock, s.log, s.sock = threading.Lock(), io.StringIO(), Mock()
-        s.quality, s.min_quality, s.max_quality = 75, 20, 75
+        s.quality = QualityController(75, 20, recovery_frames=1)
+        s.recovery_eligible = True
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
         s.gate = FeedbackGate(time.monotonic_ns())
         with patch("stream_sender.encode", return_value=(b"x" * 100, {})):
             s._encode(None)
-        self.assertEqual(s.quality, 70)
+        self.assertEqual(s.quality.value, 70)
         with patch("stream_sender.encode", return_value=(b"x", {})):
             s._encode(None)
-        self.assertEqual(s.quality, 71)
+        self.assertEqual(s.quality.value, 71)
         with patch("stream_sender.encode", return_value=(b"x" * 40, {})):
             s._encode(None)
-        self.assertEqual(s.quality, 71)
+        self.assertEqual(s.quality.value, 71)
         with (
             patch("stream_sender.encode", side_effect=OverflowError("too big")),
             self.assertRaises(OverflowError),
         ):
             s._encode(None)
-        self.assertEqual(s.quality, 66)
+        self.assertEqual(s.quality.value, 66)
         frame = Frame(2, 10, 20, Image.new("RGB", (720, 480)))
         with patch("stream_sender.send_frame", return_value=(False, 40)):
             self.assertFalse(s._send(frame, b"x"))
-        self.assertEqual(s.quality, 61)
+        self.assertEqual(s.quality.value, 61)
         with (
             patch("stream_sender.send_frame", side_effect=OSError("closed")),
             self.assertRaises(OSError),
@@ -240,6 +243,20 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(len(s.pending), 512)
         self.assertEqual(s.counts["feedback_evicted"], 1)
 
+    def test_quality_does_not_recover_on_old_feedback(self):
+        """@brief Old ACKs do not permit quality recovery while the send worker is blocked."""
+        s = Session.__new__(Session)
+        s.lock, s.log = threading.Lock(), io.StringIO()
+        s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(0, 10, 20)
+        s.quality.congested()
+        s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
+        with (
+            patch("stream_sender.time.monotonic_ns", return_value=11),
+            patch("stream_sender.encode", return_value=(b"x", {})),
+        ):
+            s._encode(None)
+        self.assertEqual(s.quality.value, 70)
+
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
         s = Session.__new__(Session)
@@ -247,7 +264,8 @@ class StreamSenderTests(unittest.TestCase):
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
         s.gate = FeedbackGate(time.monotonic_ns())
         s.controller = ControllerTracker()
-        s.quality, s.min_quality = 75, 20
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
         s.sock = Mock()
         s.sock.recv.side_effect = [
             b"bad",
@@ -259,7 +277,7 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(s.counts["invalid_feedback"], 1)
         self.assertEqual(s.counts["unmatched_feedback"], 1)
         self.assertEqual(s.counts["feedback_rejected"], 1)
-        self.assertEqual(s.quality, 70)
+        self.assertEqual(s.quality.value, 70)
         self.assertEqual(s.counts["feedback_socket_failures"], 1)
 
     def test_feedback_heartbeat_and_ack_after_timeout(self):
@@ -269,7 +287,8 @@ class StreamSenderTests(unittest.TestCase):
         s.pending = OrderedDict({(4, 10): None, (5, 11): None})
         s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=10, probe_ns=20)
         s.controller = ControllerTracker()
-        s.quality, s.min_quality = 75, 20
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
         s.sock = Mock()
         ack = FEEDBACK.pack(b"MSF1", 1, 0, 0, 4, 0, 0, 0, 10)
         late = FEEDBACK.pack(b"MSF1", 1, 0, 0, 5, 0, 0, 0, 11)
@@ -288,7 +307,8 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None}), Counter()
         s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(10)
-        s.quality, s.min_quality = 75, 20
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
         s.sock = Mock()
         pressed = FEEDBACK.pack(b"MSF1", 1, 0, 1 << 11, 4, 0, 0, 0, 10)
         s.sock.recv.side_effect = [pressed, BlockingIOError(), pressed, OSError("closed")]
@@ -305,7 +325,8 @@ class StreamSenderTests(unittest.TestCase):
         s.lock, s.log, s.stop = threading.Lock(), io.StringIO(), threading.Event()
         s.pending, s.counts = OrderedDict({(4, 10): None, (5, 11): None}), Counter()
         s.gate, s.controller = FeedbackGate(0, 1000, 100), ControllerTracker(1000)
-        s.quality, s.min_quality = 75, 20
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
         s.sock = Mock()
         s.sock.recv.side_effect = [
             FEEDBACK.pack(b"MSF1", 1, 0, 1 << 11, 4, 0, 0, 0, 10),
