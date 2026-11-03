@@ -8,11 +8,12 @@ has square pixels and is not exactly 16:9; the sender preserves its proportions
 in a 691x405 viewport centered within the 720x480 canvas, with black borders.
 The measured JPEG stream uses 8-bit YCbCr 4:2:0, baseline JPEG, quality 75.
 
-Both runs used a 30 fps target, 20 Mbps MSV1 datagram cap, 200 ms host age
+All runs used a 30 fps target, 20 Mbps MSV1 datagram cap, 200 ms host age
 deadline, and 20..75 quality range. A Python reference reassembler from MoonBub
 commit `75f8497b6ffefadd8c0403728b93ccfbbfa02f52` ran as a localhost UDP peer
 and acknowledged each complete frame. The Windows native Sunshine build ran
-concurrently and its CPU load was not controlled. These are host/localhost
+concurrently with the first four runs; the fifth ran after the build finished.
+Other machine load was not controlled. These are host/localhost
 measurements only: no Wi-Fi, ESP32, FPGA, display or end-to-end latency was
 measured. The 300 ms final feedback grace period is included in each duration.
 
@@ -22,6 +23,7 @@ measured. The 300 ms final feedback grace period is included in each duration.
 | Windows QueryPerformanceCounter | 30.323 s | 900 | 899 | 863 (28.46/s) | 1 / 36 | 9.45 Mbps |
 | High-resolution clock, one JPEG validation | 30.330 s | 898 | 897 | 875 (28.85/s) | 1 / 22 | 9.62 Mbps |
 | Reproducible reference harness | 30.327 s | 900 | 899 | 880 (29.02/s) | 1 / 19 | 9.68 Mbps |
+| Reference harness after native build | 30.316 s | 900 | 900 | 893 (29.46/s) | 0 / 7 | 9.87 Mbps |
 
 All reference runs had zero malformed packets, zero unacknowledged completed
 frames, zero dropped log records and JPEG quality 75 throughout. In the first
@@ -47,6 +49,15 @@ encoded 899 frames at quality 75, with 880 received and no malformed packets.
 Host completion age was p50 46.93 ms, p95 72.04 ms and max 112.25 ms; sender
 queue age was p50 0.37 ms and p95 19.16 ms. No physical playback is implied.
 
+In the fifth run, after the native build stopped, all 900 captures were encoded
+at quality 75 and seven waiting JPEGs were replaced. The reference accepted 893
+frames with zero malformed packets or dropped log records. Encoded payload was
+9.59 Mbps and MSV1 datagrams were 9.87 Mbps over 30.316 seconds, including the
+feedback grace period. Mean JPEG size was 40,367 bytes, p95 53,547 and maximum
+58,722. Host encode time was p50 3.83 ms and p95 4.72 ms; capture-to-final-send
+age was p50 42.04 ms, p95 68.95 ms and maximum 92.85 ms. These are not Wi-Fi or
+display latency measurements.
+
 The source may be downloaded into ignored local artifacts for repeat testing:
 
 ```powershell
@@ -65,5 +76,6 @@ The two detailed JSONL logs remain in ignored local artifacts, named
 `stream-reference-xonotic-20261102.jsonl` and
 `stream-reference-xonotic-perfclock-20261102.jsonl`; the third run is
 `stream-reference-xonotic-single-validate-20261102.jsonl` and the fourth is
-`xonotic-repro-20261102.jsonl`. The reference peer is a
+`xonotic-repro-20261102.jsonl`; the fifth is `xonotic-after-build-20261102.jsonl`.
+The reference peer is a
 host test harness, not a physical receiver.
