@@ -187,7 +187,9 @@ class Session:
         except (OSError, ValueError) as error:
             with self.lock:
                 self.pending.pop(key, None)
-                self.counts["socket_failures" if isinstance(error, OSError) else "packet_failures"] += 1
+                self.counts[
+                    "socket_failures" if isinstance(error, OSError) else "packet_failures"
+                ] += 1
                 self.recovery_eligible = False
                 self._event(
                     "send_error",
