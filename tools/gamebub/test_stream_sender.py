@@ -75,31 +75,60 @@ class StreamSenderTests(unittest.TestCase):
         ):
             next(desktop_duplication_frames(30))
 
-    def test_desktop_recovery_reopens_and_resets_after_frame(self):
-        """@brief Consecutive failures back off and a new frame resets the retry budget."""
+    def test_desktop_recovery_reopens_and_resets_after_stable_frames(self):
+        """@brief Retry budget resets after ten seconds of successful frame delivery."""
 
         def broken():
             """@brief Simulate a failed graph after it was opened."""
             raise av.FFmpegError(5, "device lost")
             yield  # pragma: no cover
 
-        def once(value):
-            """@brief Yield a fresh frame then simulate a subsequent device loss."""
-            yield value
+        def then_fail(*values):
+            """@brief Yield frames then simulate a subsequent device loss."""
+            yield from values
             raise OSError("device lost again")
 
-        events, sleep = Mock(), Mock()
+        events, sleep, elapsed = Mock(), Mock(), [0]
         with patch(
             "stream_sender.desktop_duplication_frames",
-            side_effect=[broken(), broken(), once("first"), broken(), broken(), once("second")],
+            side_effect=[
+                broken(),
+                broken(),
+                then_fail("first", "stable"),
+                broken(),
+                broken(),
+                then_fail("second"),
+            ],
         ):
-            frames = recovering_desktop_frames(30, events, sleep)
+            frames = recovering_desktop_frames(30, events, sleep, lambda: elapsed[0])
             self.assertEqual(next(frames), "first")
+            elapsed[0] = 10
+            self.assertEqual(next(frames), "stable")
             self.assertEqual(next(frames), "second")
             frames.close()
         self.assertEqual([call.args[0] for call in sleep.call_args_list], [0.1, 0.2, 0.1, 0.2, 0.4])
         self.assertEqual(events.call_args_list[2].args[0], "capture_restored")
         self.assertEqual(events.call_args_list[-1].args[0], "capture_restored")
+
+    def test_desktop_recovery_limits_repeated_single_frame_flapping(self):
+        """@brief An unstable graph cannot evade the retry budget by yielding one frame."""
+
+        def unstable(value):
+            """@brief Yield once before a runtime device error."""
+            yield value
+            raise OSError("flapping")
+
+        sleep, events = Mock(), Mock()
+        with patch(
+            "stream_sender.desktop_duplication_frames",
+            side_effect=[unstable(i) for i in range(4)],
+        ):
+            frames = recovering_desktop_frames(30, events, sleep, lambda: 0)
+            self.assertEqual([next(frames) for _ in range(4)], [0, 1, 2, 3])
+            with self.assertRaisesRegex(OSError, "flapping"):
+                next(frames)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [0.1, 0.2, 0.4])
+        self.assertFalse(events.call_args.kwargs["retry"])
 
     def test_desktop_recovery_exhausts_budget_and_closes_graphs(self):
         """@brief Permanent failure closes every graph and reports the final error."""
@@ -490,6 +519,7 @@ class StreamSenderTests(unittest.TestCase):
                         frames=4,
                         source_port=source_port,
                         start_frame_id=0xFFFFFFFE,
+                        packet_timing=True,
                     )
                     source = iter([Image.new("RGB", (720, 480), (i * 40, 0, 0)) for i in range(4)])
                     result = run(args, source)
@@ -510,6 +540,16 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(result["logging"]["dropped"], 0)
         self.assertIsNone(result["logging"]["error"])
         self.assertEqual(sum(event["event"] == "send" for event in events), 4)
+        timing = [event for event in events if event["event"] == "packet_timing"]
+        self.assertEqual([event["frame_id"] for event in timing], completed)
+        for event in timing:
+            self.assertGreater(event["capture_us"], 0)
+            self.assertEqual(event["packets"][0][0], 0)
+            self.assertTrue(all(len(packet) == 3 and packet[1] > 0 for packet in event["packets"]))
+            self.assertEqual(
+                [packet[0] for packet in event["packets"]],
+                sorted(packet[0] for packet in event["packets"]),
+            )
         self.assertEqual(
             [
                 (event["gamepad_flags"], event["reason"])
@@ -643,6 +683,53 @@ class StreamSenderTests(unittest.TestCase):
             self.assertTrue(s._send(frame, b"x"))
         self.assertEqual(len(s.pending), 512)
         self.assertEqual(s.counts["feedback_evicted"], 1)
+
+    def test_packet_timing_is_opt_in_and_retains_partial_send(self):
+        """@brief Packet events include only callbacks for successfully sent datagrams."""
+        for enabled, result, enqueue in [
+            (False, "complete", True),
+            (True, "complete", True),
+            (True, "partial", True),
+            (True, "error", True),
+            (True, "partial", False),
+        ]:
+            with self.subTest(enabled=enabled, result=result, enqueue=enqueue):
+                s = Session.__new__(Session)
+                s.lock, s.log, s.sock = threading.Lock(), Mock(), Mock()
+                s.log.submit.side_effect = lambda event, enqueue=enqueue: (
+                    enqueue if event["event"] == "packet_timing" else True
+                )
+                s.packet_timing = enabled
+                s.quality, s.age_ns, s.rate, s.pacer = QualityController(75, 20), 100, 3000, Pacer()
+                s.recovery_eligible = True
+                s.pending, s.counts = OrderedDict(), Counter()
+                s.gate = FeedbackGate(None)
+                frame = Frame(2, 10, 20, Image.new("RGB", (720, 480)))
+
+                def send(*args, result=result, **kwargs):
+                    """@brief Report actual sends, then simulate completion or an error."""
+                    callback = kwargs["on_packet"]
+                    if callback:
+                        packet = VIDEO.pack(b"MSV1", 1, 1, 1, 2, 720, 480, 2048, 0, 1024, 0, 0, 20)
+                        callback(packet, 1.25)
+                    if result == "error":
+                        raise OSError("socket failed after one packet")
+                    return result == "complete", 1064
+
+                with patch("stream_sender.send_frame", side_effect=send):
+                    if result == "error":
+                        with self.assertRaises(OSError):
+                            s._send(frame, b"jpeg")
+                    else:
+                        self.assertEqual(s._send(frame, b"jpeg"), result == "complete")
+                events = [c.args[0] for c in s.log.submit.call_args_list]
+                timing = [e for e in events if e["event"] == "packet_timing"]
+                if enabled:
+                    self.assertEqual(timing[0]["packets"], [[0, 1024, 1.25]])
+                    self.assertEqual((timing[0]["frame_id"], timing[0]["capture_us"]), (2, 20))
+                    self.assertEqual(s.counts["packet_timing_enqueue_dropped"], int(not enqueue))
+                else:
+                    self.assertEqual(timing, [])
 
     def test_quality_does_not_recover_on_old_feedback(self):
         """@brief Old ACKs do not permit quality recovery while the send worker is blocked."""
@@ -782,10 +869,13 @@ class StreamSenderTests(unittest.TestCase):
         with patch("stream_sender.run", return_value={"counts": {}}), patch("builtins.print"):
             self.assertEqual(main(["127.0.0.1", "--desktop", "--log", "unused"]), 2)
         with (
-            patch("stream_sender.run", return_value={"counts": {"feedback_accepted": 1}}),
+            patch("stream_sender.run", return_value={"counts": {"feedback_accepted": 1}}) as sender,
             patch("builtins.print"),
         ):
-            self.assertEqual(main(["127.0.0.1", "--desktop", "--log", "unused"]), 0)
+            self.assertEqual(
+                main(["127.0.0.1", "--desktop", "--log", "unused", "--packet-timing"]), 0
+            )
+            self.assertTrue(sender.call_args.args[0].packet_timing)
         with (
             patch("stream_sender.run", side_effect=OSError("closed")),
             self.assertRaises(SystemExit),

@@ -322,6 +322,23 @@ class ReceiverProtocolTests(unittest.TestCase):
         for (started, size), (following, _) in pairwise(sends):
             self.assertGreaterEqual(following - started + 1e-12, size / 100000)
 
+    def test_pacer_anchors_next_send_after_delayed_socket_call(self):
+        """@brief Preemption during a socket call cannot shorten the next send interval."""
+        now, sends = [0.0], []
+        sock = Mock()
+
+        def delayed_send(packet):
+            """@brief Simulate a delayed send and record when the call completes."""
+            now[0] += 0.004
+            sends.append((now[0], len(packet)))
+            return len(packet)
+
+        sock.send.side_effect = delayed_send
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        self.assertTrue(send_frame(sock, self.jpeg, 1, 2, 100000, 2, lambda: now[0], sleeper)[0])
+        for (sent, size), (following, _) in pairwise(sends):
+            self.assertGreaterEqual(following - sent + 1e-12, size / 100000)
+
     def test_optional_packet_callback_reports_offsets_and_times(self):
         """@brief Report only successfully sent datagrams in order, using the send clock."""
         now, recorded = [0.0], []

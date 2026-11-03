@@ -97,7 +97,7 @@ class FeedbackGate:
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
-    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality):
+    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality, packet_timing=False):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
         @param sock Connected nonblocking datagram socket for the test peer.
@@ -107,6 +107,7 @@ class Session:
         @param max_age_ms Capture-to-send deadline in milliseconds.
         @param quality Initial and maximum JPEG quality.
         @param min_quality Minimum adaptation quality.
+        @param packet_timing Record per-datagram timing in the bounded event log.
         """
         if (
             type(fps) is not int
@@ -119,6 +120,7 @@ class Session:
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
+        self.packet_timing = packet_timing
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.quality = QualityController(quality, min_quality)
@@ -137,8 +139,8 @@ class Session:
         self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, MAX_FRAME)
 
     def _event(self, kind, **fields):
-        """@brief Serialize one event under the session lock."""
-        self.log.submit({"event": kind, **fields})
+        """@brief Serialize one event under the session lock and return enqueue status."""
+        return self.log.submit({"event": kind, **fields})
 
     def _encode(self, image):
         """@brief Encode a frame and slowly adapt quality to the per-frame wire budget."""
@@ -193,6 +195,13 @@ class Session:
             while len(self.pending) > 512:
                 self.pending.popitem(last=False)
                 self.counts["feedback_evicted"] += 1
+        records = []
+
+        def record(packet, sent_at):
+            """@brief Retain only sent offsets and host times, bounded by frame size."""
+            header = VIDEO.unpack_from(packet)
+            records.append([header[8], header[9], sent_at])
+
         try:
             done, sent = send_frame(
                 self.sock,
@@ -203,6 +212,7 @@ class Session:
                 (frame.captured_ns + self.age_ns) / 1e9,
                 clock=lambda: time.perf_counter_ns() / 1e9,
                 pacer=self.pacer,
+                on_packet=record if getattr(self, "packet_timing", False) else None,
             )
         except (OSError, ValueError) as error:
             with self.lock:
@@ -218,6 +228,16 @@ class Session:
                     error=str(error),
                 )
             raise
+        finally:
+            if records:
+                with self.lock:
+                    if not self._event(
+                        "packet_timing",
+                        frame_id=frame.frame_id,
+                        capture_us=frame.capture_us,
+                        packets=records,
+                    ):
+                        self.counts["packet_timing_enqueue_dropped"] += 1
         with self.lock:
             self.counts["wire_bytes"] += sent
             if sent:
@@ -359,27 +379,37 @@ def desktop_duplication_frames(fps):
         yield from capture.decode(video=0)
 
 
-def recovering_desktop_frames(fps, on_event, sleeper=time.sleep):
-    """@brief Reopen a failed duplication graph with a bounded consecutive retry budget.
+def recovering_desktop_frames(fps, on_event, sleeper=time.sleep, clock=time.monotonic):
+    """@brief Reopen a failed duplication graph with a bounded retry budget.
 
     @param fps Requested output rate for each new graph.
     @param on_event Receives structured capture errors and recovery events.
     @param sleeper Wait function used for bounded exponential backoff.
+    @param clock Monotonic clock used to measure stable capture.
     @return Iterator of newly acquired frames; no previously returned frame is replayed here.
     @throws OSError If the graph ends unexpectedly or recovery attempts are exhausted.
     @throws av.FFmpegError If an FFmpeg error persists through the retry budget.
 
-    This cannot interrupt a native graph open or decode call that blocks indefinitely.
+    Retry history resets when a frame arrives at least ten seconds after the
+    last recovery without an intervening capture failure. This cannot interrupt
+    a native graph open or decode call that blocks indefinitely.
     """
     failures = 0
+    recovering = False
+    stable_since = None
     while True:
         frames = desktop_duplication_frames(fps)
         try:
             while True:
                 frame = next(frames)
-                if failures:
+                if recovering:
                     on_event("capture_restored", attempts=failures)
+                    recovering = False
+                    stable_since = clock()
+                elif failures and clock() - stable_since >= 10:
+                    on_event("capture_stable", attempts=failures)
                     failures = 0
+                    stable_since = None
                 yield frame
         except StopIteration:
             error = OSError("Desktop Duplication graph ended unexpectedly")
@@ -388,10 +418,12 @@ def recovering_desktop_frames(fps, on_event, sleeper=time.sleep):
         finally:
             frames.close()
         failures += 1
+        stable_since = None
         retry = failures <= 3
         on_event("capture_error", attempt=failures, retry=retry, error=str(error))
         if not retry:
             raise error
+        recovering = True
         sleeper(0.1 * 2 ** (failures - 1))
 
 
@@ -432,7 +464,14 @@ def run(args, source=None):
         sock.connect((args.target, args.port))
         sock.setblocking(False)
         session = Session(
-            sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality
+            sock,
+            log,
+            args.fps,
+            args.mbps,
+            args.max_age_ms,
+            args.quality,
+            args.min_quality,
+            packet_timing=getattr(args, "packet_timing", False),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -512,6 +551,11 @@ def main(argv=None):
         help="Experimental desktop scaling filter; clip video uses libswscale bilinear",
     )
     parser.add_argument("--log", type=Path, required=True)
+    parser.add_argument(
+        "--packet-timing",
+        action="store_true",
+        help="Record bounded per-frame datagram send timing in the JSONL log",
+    )
     parser.add_argument("--port", type=int, default=5533)
     parser.add_argument(
         "--source-port", type=int, default=0, help="Local UDP port; 0 chooses an ephemeral port"

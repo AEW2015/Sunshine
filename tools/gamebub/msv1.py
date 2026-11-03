@@ -253,11 +253,12 @@ def send_frame(
         if count != len(packet):
             raise OSError("Partial UDP datagram send")
         sent += count
-        next_due = now + duration
+        sent_at = clock()
+        next_due = sent_at + duration
         if pacer is not None:
             pacer.next_due = next_due
         if on_packet is not None:
-            on_packet(packet, clock())
+            on_packet(packet, sent_at)
     return True, sent
 
 

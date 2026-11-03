@@ -111,8 +111,10 @@ FFmpeg Desktop Duplication capture path. It uses the primary output, downloads
 BGRA frames and applies bilinear libswscale scaling; `--desktop-filter` only
 affects the default ImageGrab backend. The graph may repeat unchanged frames,
 and the sender cannot distinguish those from fresh updates. Capture failures
-are logged and the graph is reopened up to three times with bounded backoff;
-after repeated failures the sender exits rather than switching backends. A native
+are logged and the graph is reopened up to three times with bounded backoff.
+The retry budget resets when a frame arrives at least ten seconds after the
+last recovery without an intervening capture error, so rapid one-frame failures cannot retry
+forever. After repeated failures the sender exits rather than switching backends. A native
 capture call that blocks indefinitely cannot be interrupted by this retry loop.
 GPU/device-loss recovery, fullscreen games and sustained 30 fps still require
 physical testing; follow the session rules below when starting a new run.
@@ -151,6 +153,19 @@ to 64 MiB; records may be dropped when either bound is reached or the file
 fails. The printed final summary reports written and dropped records and any
 I/O error. A summary record is attempted in JSONL but can itself be dropped
 when logging is saturated. Shutdown waits for the file writer to return.
+
+For receiver gap diagnosis, `stream_sender.py --packet-timing` adds one
+`packet_timing` event per frame with sent datagrams. It contains `frame_id`,
+`capture_us`, and `packets` entries `[JPEG offset, payload bytes, host
+monotonic send time in seconds]`. Times are recorded after socket sends; they
+do not establish Wi-Fi delivery or share a clock with the receiver. The event
+also captures successful sends before a partial-frame abort or socket error.
+Each frame is limited to at most 256 datagrams by the current MSV1 maximum
+frame size. Records include neither destination addresses nor image bytes.
+This option adds overhead and can saturate the bounded log, so it is off by
+default. `packet_timing_enqueue_dropped` counts timing events rejected at
+enqueue; the final `logging.dropped` also includes events dropped later by the
+writer or file size cap. Missing records are not proof that packets were not sent.
 
 The quality controller decreases promptly on oversized wire budget, send failure,
 or receiver busy/drop feedback. It requires 30 consecutive small encoded frames

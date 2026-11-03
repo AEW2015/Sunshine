@@ -138,6 +138,7 @@ def run_reference(args, source=None):
         log=args.log,
         clip=args.clip,
         desktop_backend=getattr(args, "desktop_backend", "imagegrab"),
+        packet_timing=getattr(args, "packet_timing", False),
         fps=args.fps,
         mbps=args.mbps,
         max_age_ms=args.max_age_ms,
@@ -167,6 +168,9 @@ def main(argv=None):
     source.add_argument("--desktop", action="store_true")
     parser.add_argument("--desktop-backend", choices=("imagegrab", "ddagrab"), default="imagegrab")
     parser.add_argument("--log", type=Path, required=True)
+    parser.add_argument(
+        "--packet-timing", action="store_true", help="Log each sent packet's timing"
+    )
     parser.add_argument("--frames", type=int, default=900)
     parser.add_argument(
         "--loop", action="store_true", help="Repeat the clip until frame count is reached"

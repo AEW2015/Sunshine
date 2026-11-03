@@ -341,6 +341,7 @@ class ReferenceLoopbackTests(unittest.TestCase):
             min_quality=20,
             frames=1,
             desktop_backend="ddagrab",
+            packet_timing=True,
         )
         with (
             patch("reference_loopback.load_reference"),
@@ -349,6 +350,7 @@ class ReferenceLoopbackTests(unittest.TestCase):
         ):
             reference.run_reference(args)
         self.assertEqual(send.call_args.args[0].desktop_backend, "ddagrab")
+        self.assertTrue(send.call_args.args[0].packet_timing)
         peer.close.assert_called_once()
 
 
