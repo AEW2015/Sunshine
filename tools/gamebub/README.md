@@ -1,14 +1,14 @@
 # Game Bub host laboratory
 
-This is the initial offline milestone, pending coordination with the ESP32/FPGA
-agent. It is **not a network sender or an integrated Sunshine JPEG mode**.
-There is no socket code, selected packet format, or receiver playback claim.
+This is an experimental host laboratory, pending receiver testing. `msv1.py`
+sends one video fixture over the receiver's video-only UDP test protocol; it is
+not an integrated Sunshine JPEG mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The target product is one dedicated 720×480/30 fps video, audio and simple
 button mode, rather than a general Moonlight feature set. Its exact codec and
 audio profile await the receiver agent; see the
-[current protocol draft](protocol/0.4.0-draft.md). The wider options below are
+[current protocol draft](protocol/0.5.0-draft.md). The wider options below are
 laboratory controls for experiments, not proposed end-user modes.
 
 `realtime.py` contains a latest-video slot, bounded audio queue, logical
@@ -49,10 +49,11 @@ changing Sunshine's dependencies. From `tools\gamebub`:
 py -3.11 -m uv sync --locked
 py -3.11 -m uv run --locked ruff check .
 py -3.11 -m uv run --locked ruff format --check .
-py -3.11 -m uv run --locked coverage run -m unittest -v
-py -3.11 -m uv run --locked coverage run --append host.py --output artifacts\coverage-entry --frames 1 --link-mbps 1000
-py -3.11 -m uv run --locked coverage run --append make_assets.py --output artifacts\coverage-fixtures
-py -3.11 -m uv run --locked coverage report --fail-under=100
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run -m unittest -v'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append host.py --output artifacts/coverage-entry --frames 1 --link-mbps 1000'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append make_assets.py --output artifacts/coverage-fixtures'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage run --append msv1.py 127.0.0.1 --jpeg fixtures/receiver-pattern-720x480-420-q65.jpg --deadline-ms 0.001 || test $? -eq 2'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked coverage report --fail-under=100'
 ```
 
 Use a fresh output directory for each run; measurement files are never overwritten.
@@ -60,7 +61,45 @@ The appended coverage commands exercise CLI entry points under instrumentation;
 do not use that run for performance measurements. Regression tests use controlled
 clocks for deterministic overload behavior, real JPEG encode/decode, a generated
 60-Hz video input, and fixture regeneration checks. Coverage measures `host.py`
-`make_assets.py`, `realtime.py`, and `seed_pairing.py`.
+`make_assets.py`, `realtime.py`, `seed_pairing.py`, and `msv1.py`.
+
+## Send a single receiver test frame
+
+The receiver's MSV1/MSF1 protocol is unauthenticated and video-only. Use it only
+on the intended trusted test LAN after the Game Bub agent configures the receiver
+and provides its IPv4 address. No keys or input are injected by this command.
+The sender validates the restricted JPEG profile and reports success only after
+matching ingress feedback; that does not establish decode or presentation.
+
+```powershell
+py -3.11 -m uv run --locked python msv1.py 192.168.1.50 --jpeg fixtures\frame-00000000-420-r0.jpg --frame-id 1
+```
+
+Substitute the actual receiver address. The selected JPEG is the exact frame-0
+4:2:0 fixture that the receiver team separately verified in FPGA RTL simulation.
+A new command during the same receiver
+session must use a newer frame ID; the receiver resets its baseline on session
+disconnect. The default sender rate is 20 Mbps including MSV1 headers, with a
+200 ms frame deadline and one-second feedback timeout. Exit code 2 indicates a
+deadline, dropped/busy response, or missing matching feedback. This command is a
+single-fixture bring-up tool, not a clip/desktop streaming implementation.
+See [the protocol draft](protocol/0.5.0-draft.md) for limitations.
+
+To additionally compile and test the receiver's exact Rust parser on the host,
+install the MSYS2 `mingw-w64-ucrt-x86_64-rust` package and clone the receiver
+repository. The test reads the pinned `75f8497` revision directly through Git;
+it checks the source hash, valid-frame acceptance, CRC rejection, recovery on a
+new frame, and frame-ID wrap. It uses temporary files and no physical receiver.
+
+```powershell
+git clone --no-checkout https://github.com/AEW2015/moonbub.git C:\ai\moonbub-reference
+$env:MOONBUB_REFERENCE = 'C:/ai/moonbub-reference'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'py.exe -3.11 -m uv run --locked python -m unittest test_receiver_integration -v'
+```
+
+The integration test is skipped when `MOONBUB_REFERENCE` is unset. The recorded
+host-only results are in `measurements/msv1-firmware-parser.json` and the
+`msv1-*-loopback.json` files.
 
 ## Preparing a known client without a PIN prompt
 
@@ -183,12 +222,12 @@ RGB hashes are informational because hardware IDCT rounding may differ.
 
 ## Sunshine integration gate and Windows native build
 
-At inspection, `C:\msys64\msys2_shell.cmd`, CMake, and the UCRT64 compiler were
-absent. The installed `SunshineService` was running from `C:\Program Files\Sunshine`.
-No native Sunshine build, installation, service restart, or Moonlight session
-was attempted. `src/` and stock protocol behavior are unchanged.
+At the initial inspection, MSYS2 and its UCRT64 toolchain were absent. They are
+now installed at `C:\msys64` for the separate candidate build. The installed
+`SunshineService` continues to run from `C:\Program Files\Sunshine`; it has not
+been replaced or restarted. `src/` and stock protocol behavior are unchanged.
 
-After the standalone receiver gate in the [protocol draft](protocol/0.4.0-draft.md)
+After the standalone receiver gate in the [protocol draft](protocol/0.5.0-draft.md)
 passes, use a separately built candidate with its own configuration/state and
 ports. `src/nvhttp.cpp` advertises stock codec capabilities, `src/rtsp.cpp` parses
 video format/launch configuration, and `src/video.cpp`/`src/stream.cpp` connect
@@ -197,20 +236,24 @@ paired-client acceptance, a distinct identity/transport, and rejection of unknow
 or mismatched capabilities. Merely adding a fourth integer to `videoFormat` is
 insufficient; current encoder and packet assumptions must be audited together.
 
-Install MSYS2 at `C:\msys64`; update it and install the UCRT64 dependencies listed
+On a fresh machine, install MSYS2 at `C:\msys64`; update it and install the UCRT64 dependencies listed
 in the repository's [Windows build instructions](../../docs/building.md#windows),
 including native Node.js for web assets. Record `pacman -Q`, Node, CMake, compiler,
-and submodule revisions with build results. No MSYS2 packages were installed by
-this milestone. From the candidate root, the required command forms are:
+and submodule revisions with build results. From the candidate root, the required
+command forms are:
 
 ```powershell
-& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake -S . -B cmake-build-gamebub -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTS=ON -DBUILD_DOCS=ON -DSUNSHINE_ENABLE_TRAY=OFF'
+& C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake -S . -B cmake-build-gamebub -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_DOCS=OFF -DSUNSHINE_ENABLE_TRAY=OFF -DCUDA_FAIL_ON_MISSING=OFF -DDOTNET_EXECUTABLE='
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake --build cmake-build-gamebub --parallel 4'
 & C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c './cmake-build-gamebub/tests/test_sunshine.exe'
 ```
 
-These native commands are instructions for the later integration milestone,
-**not verified build results**. Initialize all pinned submodules first. After any
+If native Node.js is not on the build PATH, provide its `npm.cmd` with
+`-DNPM=C:/path/to/node/npm.cmd`. The empty `DOTNET_EXECUTABLE` disables optional
+WiX packaging when a .NET runtime exists without an SDK; remove that setting
+if a configured WiX installer is required. The flags build the stock Sunshine
+test baseline without the tray; they do not implement Game Bub streaming.
+Initialize all pinned submodules first. After any
 native code changes, run `uv run --locked lb-update-clang-format` from the root
 and inspect the diff. Add GoogleTest coverage through `tests/tests_common.h`,
 following AGENTS.md include groups. Never run an installer, install a service,

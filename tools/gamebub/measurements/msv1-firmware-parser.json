@@ -1,0 +1,13 @@
+{
+  "scope": "host process running pinned receiver Rust packet parser; no ESP32/QSPI/FPGA/display",
+  "receiver_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+  "receiver_source_sha256": "32a91ffaf0b39a82f11036be7e501765cd3f9fed6905c27b6efc01f358d79e64",
+  "jpeg_sha256": "b327b1c2e2af7988e66f2ae570534a91c4526bbb53739ee5809f51e123228fb6",
+  "valid_packets": 70,
+  "valid_complete": true,
+  "crc_corruption_rejected": true,
+  "newer_sof_recovery": true,
+  "frame_id_wrap": true,
+  "feedback_roundtrip": true,
+  "physical_playback_verified": false
+}

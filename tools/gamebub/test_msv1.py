@@ -1,0 +1,262 @@
+"""@brief Regression tests against the pinned MoonBub receiver packet fixture."""
+
+import contextlib
+import hashlib
+import io
+import json
+import socket
+import struct
+import unittest
+from itertools import pairwise
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+from host import Profile, canvas, encode, pattern
+from msv1 import (
+    FEEDBACK,
+    frame_datagrams,
+    gamebub_buttons,
+    main,
+    parse_feedback,
+    send_frame,
+    validate_receiver_jpeg,
+)
+
+
+class ReceiverProtocolTests(unittest.TestCase):
+    """@brief Exercise the actual JPEG restrictions, wire bytes and feedback."""
+
+    @classmethod
+    def setUpClass(cls):
+        """@brief Read receiver-owned deterministic fixtures pinned in the handoff."""
+        directory = Path(__file__).parent / "fixtures"
+        cls.jpeg = (directory / "receiver-pattern-720x480-420-q65.jpg").read_bytes()
+        cls.golden = (directory / "receiver-pattern-msv1-packets.bin").read_bytes()
+
+    def test_exact_receiver_golden_datagrams(self):
+        """@brief Match every header, payload and CRC against the receiver's fixture."""
+        self.assertEqual(
+            hashlib.sha256(self.jpeg).hexdigest(),
+            "8cc99ea7d50d1d20255e41ff7247b0770b3349e705c27152a41817418ce5c9de",
+        )
+        self.assertEqual(
+            hashlib.sha256(self.golden).hexdigest(),
+            "78c58cfcc4860761c33bcc7021e3db14e9fa66ef5e9a385ae1e4c00c82a6447f",
+        )
+        frames = frame_datagrams(self.jpeg, 0x12345678, 1234567890123)
+        actual = b"".join(struct.pack("!H", len(packet)) + packet for packet in frames)
+        self.assertEqual(actual, self.golden)
+
+    def test_restricted_jpeg_validation(self):
+        """@brief Accept baseline 420 and reject unsupported receiver options."""
+        self.assertEqual(validate_receiver_jpeg(self.jpeg)["subsampling"], "4:2:0")
+        image = canvas(pattern(0))
+        unsupported = [
+            encode(image, 65, Profile("4:4:4"))[0],
+            encode(image, 65, Profile("4:2:2"))[0],
+            encode(image, 65, Profile(restart_mcus=10))[0],
+            b"x",
+            self.jpeg + bytes(262144),
+        ]
+        for jpeg in unsupported:
+            with self.subTest(length=len(jpeg)), self.assertRaises(ValueError):
+                validate_receiver_jpeg(jpeg)
+
+    def test_receiver_rtl_verified_host_fixture_is_transmittable(self):
+        """@brief The exact 420 frame exercised by the receiver RTL meets the host profile."""
+        jpeg = (Path(__file__).parent / "fixtures/frame-00000000-420-r0.jpg").read_bytes()
+        self.assertEqual(
+            hashlib.sha256(jpeg).hexdigest(),
+            "b327b1c2e2af7988e66f2ae570534a91c4526bbb53739ee5809f51e123228fb6",
+        )
+        self.assertEqual(validate_receiver_jpeg(jpeg)["subsampling"], "4:2:0")
+        self.assertGreater(len(list(frame_datagrams(jpeg, 7, 1))), 1)
+
+    def test_reject_header_profile_changes(self):
+        """@brief Reject unsupported marker layouts, altered dimensions and tables."""
+        jpeg = self.jpeg
+        app = jpeg.index(b"JFIF\x00")
+        sof = jpeg.index(b"\xff\xc0")
+        dht = jpeg.index(b"\xff\xc4")
+        altered = [
+            jpeg[:app] + b"NOPE\x00" + jpeg[app + 5 :],
+            jpeg[: sof + 7] + b"\x01\x00" + jpeg[sof + 9 :],
+            jpeg[: dht + 21] + bytes([jpeg[dht + 21] ^ 1]) + jpeg[dht + 22 :],
+            jpeg[:2] + b"\xff\xfe\x00\x03x" + jpeg[2:],
+        ]
+        for value in altered:
+            with self.assertRaises(ValueError):
+                validate_receiver_jpeg(value)
+
+    def test_packet_limits(self):
+        """@brief Check identifier, timestamp and payload bounds without network I/O."""
+        for args in (
+            (-1, 0, 1024),
+            (2**32, 0, 1024),
+            (1, -1, 1024),
+            (1, 2**64, 1024),
+            (1, 0, 0),
+            (1, 0, 1025),
+            (True, 0, 1),
+        ):
+            with self.subTest(args=args), self.assertRaises(ValueError):
+                list(frame_datagrams(self.jpeg, *args))
+        packets = list(frame_datagrams(self.jpeg, 0, 0, 1000))
+        self.assertGreater(len(packets), 1)
+        self.assertTrue(all(len(packet) <= 1040 for packet in packets))
+
+    def test_feedback_and_button_mapping(self):
+        """@brief Parse peer feedback and translate all twelve receiver button bits."""
+        data = FEEDBACK.pack(b"MSF1", 1, 0, 0xFFF, 99, 42, 7, 3, 123)
+        feedback = parse_feedback(data)
+        self.assertEqual((feedback.status, feedback.frame_id, feedback.capture_us), (0, 99, 123))
+        self.assertEqual(
+            gamebub_buttons(feedback.buttons),
+            frozenset(
+                ("a", "b", "x", "y", "up", "down", "left", "right", "l", "r", "start", "select")
+            ),
+        )
+        for invalid in (
+            b"",
+            FEEDBACK.pack(b"FAIL", 1, 0, 0, 0, 0, 0, 0, 0),
+            FEEDBACK.pack(b"MSF1", 2, 0, 0, 0, 0, 0, 0, 0),
+            FEEDBACK.pack(b"MSF1", 1, 4, 0, 0, 0, 0, 0, 0),
+        ):
+            with self.assertRaises(ValueError):
+                parse_feedback(invalid)
+        for mask in (-1, 4096, True):
+            with self.assertRaises(ValueError):
+                gamebub_buttons(mask)
+
+    def test_paced_send_and_expiry(self):
+        """@brief Pace actual datagrams and stop a stale partial frame before its deadline."""
+        now = [0.0]
+        sock = Mock()
+        sock.send.side_effect = lambda packet: len(packet)
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        done, sent = send_frame(sock, self.jpeg, 1, 4, 100000, 1, lambda: now[0], sleeper)
+        self.assertTrue(done)
+        self.assertEqual(sent, sum(len(c.args[0]) for c in sock.send.call_args_list))
+        now[0] = 0
+        done, sent = send_frame(sock, self.jpeg, 2, 5, 100000, 0.015, lambda: now[0], sleeper)
+        self.assertFalse(done)
+        self.assertGreater(sent, 0)
+        with self.assertRaises(ValueError):
+            send_frame(sock, self.jpeg, 1, 2, 0, 1)
+        sock.send.return_value = 1
+        sock.send.side_effect = None
+        with self.assertRaises(OSError):
+            send_frame(sock, self.jpeg, 1, 2, 100000, 1, lambda: 0, sleeper)
+
+        now[0] = 0
+        sock.send.side_effect = lambda packet: len(packet)
+
+        def late_sleep(delay):
+            """@brief Simulate Windows waking after the sender's deadline."""
+            now[0] += delay + 1
+
+        done, _ = send_frame(sock, self.jpeg, 1, 2, 100000, 0.3, lambda: now[0], late_sleep)
+        self.assertFalse(done)
+
+    def test_validation_delay_does_not_cause_packet_burst(self):
+        """@brief Validation or scheduler delays do not grant a burst of link credit."""
+        now = [0.0]
+        sends = []
+        sock = Mock()
+        sock.send.side_effect = lambda packet: sends.append((now[0], len(packet))) or len(packet)
+
+        def validate(_data):
+            """@brief Spend time validating before the first packet becomes available."""
+            now[0] += 0.1
+
+        def sleep(delay):
+            """@brief Advance the deterministic monotonic clock."""
+            now[0] += delay
+
+        with patch("msv1.validate_receiver_jpeg", side_effect=validate):
+            done, _ = send_frame(sock, self.jpeg, 1, 2, 100000, 1, lambda: now[0], sleep)
+        self.assertTrue(done)
+        for (started, length), (following, _) in pairwise(sends):
+            self.assertGreaterEqual(following - started + 1e-12, length / 100000)
+
+    def test_localhost_udp_datagrams_match_receiver_fixture(self):
+        """@brief Send real loopback UDP packets and compare receiver-side bytes."""
+        expected = list(frame_datagrams(self.jpeg, 0x12345678, 1234567890123))
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+            receiver.bind(("127.0.0.1", 0))
+            receiver.settimeout(1)
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sender:
+                sender.connect(receiver.getsockname())
+                done, _ = send_frame(
+                    sender, self.jpeg, 0x12345678, 1234567890123, 1000000000, float("1e20")
+                )
+            self.assertTrue(done)
+            received = [receiver.recv(2048) for _ in expected]
+        self.assertEqual(received, expected)
+
+    def test_single_frame_command_and_matching_feedback(self):
+        """@brief Ignore stale feedback and report a matching ingress acknowledgement."""
+        fixture = Path(__file__).parent / "fixtures/receiver-pattern-720x480-420-q65.jpg"
+        peer = MagicMock()
+        peer.__enter__.return_value = peer
+        stale = FEEDBACK.pack(b"MSF1", 1, 0, 0, 0, 0, 0, 0, 123)
+        good = FEEDBACK.pack(b"MSF1", 1, 0, 0, 1, 0, 1, 0, 123)
+        peer.recv.side_effect = [stale, good]
+        stdout = io.StringIO()
+        with (
+            patch("msv1.socket.socket", return_value=peer),
+            patch("msv1.time.time_ns", return_value=123000),
+            patch("msv1.send_frame", return_value=(True, 50)),
+            contextlib.redirect_stdout(stdout),
+        ):
+            self.assertEqual(main(["127.0.0.1", "--jpeg", str(fixture)]), 0)
+        result = json.loads(stdout.getvalue())
+        self.assertTrue(result["sent_complete"])
+        self.assertFalse(result["end_to_end_verified"])
+        self.assertEqual(result["feedback"]["received_frames"], 1)
+
+    def test_single_frame_command_failures(self):
+        """@brief Reject invalid arguments and do not confuse missing feedback with playback."""
+        fixture = Path(__file__).parent / "fixtures/receiver-pattern-720x480-420-q65.jpg"
+        for option, value in (
+            ("--port", "0"),
+            ("--frame-id", "-1"),
+            ("--mbps", "nan"),
+            ("--deadline-ms", "0"),
+            ("--feedback-timeout", "0"),
+        ):
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                main(["127.0.0.1", "--jpeg", str(fixture), option, value])
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            main(["127.0.0.1", "--jpeg", "missing-file.jpg"])
+        for complete, reply in (
+            (False, None),
+            (True, TimeoutError()),
+            (True, FEEDBACK.pack(b"MSF1", 1, 2, 0, 1, 0, 0, 1, 123)),
+        ):
+            peer = MagicMock()
+            peer.__enter__.return_value = peer
+            peer.recv.side_effect = reply if isinstance(reply, Exception) else None
+            if isinstance(reply, bytes):
+                peer.recv.return_value = reply
+            with (
+                patch("msv1.socket.socket", return_value=peer),
+                patch("msv1.time.time_ns", return_value=123000),
+                patch("msv1.send_frame", return_value=(complete, 50)),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(main(["127.0.0.1", "--jpeg", str(fixture)]), 2)
+
+        peer = MagicMock()
+        peer.__enter__.return_value = peer
+        with (
+            patch("msv1.socket.socket", return_value=peer),
+            patch("msv1.time.perf_counter", side_effect=[0, 0, 1]),
+            patch("msv1.send_frame", return_value=(True, 50)),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(main(["127.0.0.1", "--jpeg", str(fixture)]), 2)
+
+
+if __name__ == "__main__":
+    unittest.main()

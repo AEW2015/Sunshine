@@ -1,0 +1,26 @@
+{
+  "scope": "localhost UDP to pinned receiver Python reference; not ESP32/FPGA/display",
+  "receiver_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+  "receiver_protocol_source_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+  "result": {
+    "frame_bytes": 26159,
+    "sha256": "8cc99ea7d50d1d20255e41ff7247b0770b3349e705c27152a41817418ce5c9de",
+    "frame_id": 1
+  },
+  "sender": {
+    "sent_complete": true,
+    "msv1_bytes": 27199,
+    "feedback": {
+      "status": 0,
+      "buttons": 2117,
+      "frame_id": 1,
+      "free_bytes": 65536,
+      "received_frames": 1,
+      "dropped_frames": 0,
+      "capture_us": 1793672177677152
+    },
+    "end_to_end_verified": false,
+    "scope": "single test frame; ingress only"
+  },
+  "physical_playback_verified": false
+}
