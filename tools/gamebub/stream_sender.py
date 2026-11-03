@@ -79,7 +79,7 @@ class FeedbackGate:
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
-    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality):
+    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality, max_jpeg_bytes=MAX_FRAME):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
         @param sock Connected nonblocking datagram socket for the test peer.
@@ -89,6 +89,7 @@ class Session:
         @param max_age_ms Capture-to-send deadline in milliseconds.
         @param quality Initial and maximum JPEG quality.
         @param min_quality Minimum adaptation quality.
+        @param max_jpeg_bytes Maximum complete JPEG bytes accepted by the receiver profile.
         """
         if (
             type(fps) is not int
@@ -98,11 +99,14 @@ class Session:
             or not math.isfinite(max_age_ms)
             or max_age_ms < 0.000001
             or not 1 <= min_quality <= quality <= 95
+            or type(max_jpeg_bytes) is not int
+            or not 1 <= max_jpeg_bytes <= MAX_FRAME
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
+        self.max_jpeg_bytes = max_jpeg_bytes
         self.quality = QualityController(quality, min_quality)
         self.recovery_eligible = False
         self.lock = threading.Lock()
@@ -115,7 +119,7 @@ class Session:
         self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
-        self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, MAX_FRAME)
+        self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, max_jpeg_bytes)
 
     def _event(self, kind, **fields):
         """@brief Serialize one event under the session lock."""
@@ -134,6 +138,16 @@ class Session:
                 self.recovery_eligible = False
                 self._event("encode_error", quality=quality, error=str(error))
             raise
+        if len(jpeg) > self.max_jpeg_bytes:
+            with self.lock:
+                self.quality.congested()
+                self.recovery_eligible = False
+                self.counts['oversize_dropped'] += 1
+                self._event('oversize_drop', quality=quality, bytes=len(jpeg),
+                            max_jpeg_bytes=self.max_jpeg_bytes)
+            # Never send or truncate an oversized compressed frame. The next
+            # capture can use the reduced quality, subject to its own deadline.
+            raise ValueError('JPEG exceeds configured receiver frame capacity')
         wire = len(jpeg) + ((len(jpeg) + 1023) // 1024) * VIDEO.size
         with self.lock:
             self.counts["encoded_bytes"] += len(jpeg)
@@ -344,7 +358,8 @@ def run(args, source=None):
         sock.connect((args.target, args.port))
         sock.setblocking(False)
         session = Session(
-            sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality
+            sock, log, args.fps, args.mbps, args.max_age_ms, args.quality, args.min_quality,
+            getattr(args, 'max_jpeg_bytes', MAX_FRAME),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -352,6 +367,7 @@ def run(args, source=None):
                 "capture_config",
                 source="desktop" if frames is None else "clip_or_test_source",
                 desktop_filter=filter_name if frames is None else None,
+                max_jpeg_bytes=session.max_jpeg_bytes,
             )
         started = time.perf_counter_ns()
         slot = 0
@@ -411,6 +427,8 @@ def main(argv=None):
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
+    parser.add_argument("--max-jpeg-bytes", type=int, default=MAX_FRAME,
+                        help="Maximum complete JPEG bytes; e.g. 49152 for the experimental 48 KiB bank")
     args = parser.parse_args(argv)
     if (
         not 1 <= args.port <= 65535
@@ -419,6 +437,7 @@ def main(argv=None):
         or not 1 <= args.frames <= 108000
         or not 1 <= args.fps <= 30
         or not 1 <= args.min_quality <= args.quality <= 95
+        or not 1 <= args.max_jpeg_bytes <= MAX_FRAME
         or any(not math.isfinite(v) or v <= 0 for v in (args.mbps, args.max_age_ms))
     ):
         parser.error("Invalid port, frame count, fps, quality, bitrate or deadline")

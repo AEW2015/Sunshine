@@ -6,6 +6,15 @@ receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
 mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
+For the experimental FPGA design with 48 KiB compressed-frame banks, the
+standalone sender can be run with `--max-jpeg-bytes 49152`. It drops a JPEG
+that exceeds the configured limit before sending any packet, records an
+`oversize_drop`, and reduces quality for subsequent frames. It never truncates
+the JPEG. The default remains the existing 262,144-byte MSV1 limit; select a
+smaller cap only when the receiver actually implements that capacity. The cap
+does not reduce the 720×480 canvas dimensions and does not guarantee a given
+frame rate or image quality.
+
 See [the optimization and validation backlog](OPTIMIZATION-PLAN.md) for
 prioritized pipeline, audio, controller, and compatibility work and the tests
 and hardware measurements each item needs.

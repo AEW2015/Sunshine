@@ -17,8 +17,8 @@ from PIL import Image
 
 from controller import ControllerTracker
 from host import canvas as reference_canvas
-from msv1 import FEEDBACK, VIDEO, Pacer
-from pipeline import Frame
+from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer
+from pipeline import Frame, VideoPipeline
 from quality import QualityController
 from stream_sender import FeedbackGate, Session, main, run
 
@@ -312,6 +312,7 @@ class StreamSenderTests(unittest.TestCase):
         s = Session.__new__(Session)
         s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
         s.quality = QualityController(75, 20, recovery_frames=1)
+        s.max_jpeg_bytes = MAX_FRAME
         s.recovery_eligible = True
         s.rate, s.fps, s.age_ns, s.pacer = 3000, 30, 100, Pacer()
         s.pending, s.counts = OrderedDict(), Counter()
@@ -360,6 +361,7 @@ class StreamSenderTests(unittest.TestCase):
         s = Session.__new__(Session)
         s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(0, 10, 20)
+        s.max_jpeg_bytes = MAX_FRAME
         s.quality.congested()
         s.recovery_eligible, s.rate, s.fps, s.counts = True, 3000, 30, Counter()
         with (
@@ -368,6 +370,34 @@ class StreamSenderTests(unittest.TestCase):
         ):
             s._encode(None)
         self.assertEqual(s.quality.value, 70)
+
+    def test_receiver_jpeg_cap_drops_whole_frame_and_reduces_quality(self):
+        """A receiver cap must not truncate a frame or send any of its packets."""
+        s = Session.__new__(Session)
+        s.lock, s.log = threading.Lock(), MemoryEvents()
+        s.quality, s.gate = QualityController(75, 20), FeedbackGate(0)
+        s.max_jpeg_bytes = 49152
+        s.recovery_eligible, s.rate, s.fps, s.counts = True, 10**9, 30, Counter()
+        with patch('stream_sender.encode_receiver_jpeg', return_value=b'x' * 49153):
+            with self.assertRaisesRegex(ValueError, 'frame capacity'):
+                s._encode(None)
+        self.assertEqual(s.counts['oversize_dropped'], 1)
+        self.assertEqual(s.quality.value, 70)
+        self.assertFalse(s.recovery_eligible)
+        self.assertEqual(json.loads(s.log.getvalue())['event'], 'oversize_drop')
+        with patch('stream_sender.encode_receiver_jpeg', return_value=b'x' * 49152):
+            self.assertEqual(len(s._encode(None)), 49152)
+        emitted = []
+        pipeline = VideoPipeline(s._encode, lambda frame, data: emitted.append(data) or True,
+                                 100, 49152, lambda: 100)
+        with patch('stream_sender.encode_receiver_jpeg', return_value=b'x' * 49153):
+            pipeline.submit(Frame(1, 100, 1, Image.new('RGB', (720, 480))))
+            pipeline.close()
+        self.assertEqual(emitted, [])
+        self.assertEqual(pipeline.snapshot()['counts']['encode_failures'], 1)
+        for bad in (0, True, MAX_FRAME + 1):
+            with self.assertRaises(ValueError):
+                Session(None, None, 30, 20, 200, 75, 20, bad)
 
     def test_feedback_filters_unmatched_and_reacts_to_busy(self):
         """@brief Bad or old feedback cannot acknowledge a frame; busy lowers quality."""
