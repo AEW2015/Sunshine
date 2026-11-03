@@ -18,7 +18,16 @@ from PIL import Image, ImageGrab
 from controller import ControllerTracker
 from event_log import EventLog
 from host import canvas, clip_frames
-from msv1 import FEEDBACK, MAX_FRAME, VIDEO, Pacer, encode_receiver_jpeg, parse_feedback, send_frame
+from msv1 import (
+    FEEDBACK,
+    MAX_FRAME,
+    VIDEO,
+    Pacer,
+    PartialSendError,
+    encode_receiver_jpeg,
+    parse_feedback,
+    send_frame,
+)
 from pipeline import Frame, VideoPipeline
 from quality import QualityController
 
@@ -94,6 +103,76 @@ class FeedbackGate:
         return True
 
 
+class ReceiverCounterTracker:
+    """@brief Track cumulative receiver counters without attributing them to frames.
+
+    Feedback heartbeats echo the currently active frame, so counter deltas prove
+    aggregate receiver outcomes but cannot safely identify a particular frame.
+    """
+
+    _HALF_RANGE = 0x80000000
+
+    def __init__(self):
+        """@brief Start without a receiver counter baseline."""
+        self.key = None
+        self.received = None
+        self.dropped = None
+
+    def observe(self, frame_id, capture_us, received, dropped):
+        """@brief Accept a current counter snapshot and return wrap-safe deltas.
+
+        Older feedback snapshots are ignored. Frame IDs handle host-clock rollback;
+        capture timestamps otherwise order snapshots. The first snapshot and
+        implausible half-range jumps establish a baseline without claiming outcomes.
+        A small counter decrease is indistinguishable from wrap and is treated as wrap.
+
+        @param frame_id Echoed wrapping frame identifier.
+        @param capture_us Echoed host capture timestamp.
+        @param received Cumulative completed-frame counter.
+        @param dropped Cumulative dropped-frame counter.
+        @return Snapshot deltas and reset state, or None for an older snapshot.
+        """
+        key = (frame_id, capture_us)
+        if self.key is not None and not self._is_newer_or_same(key, self.key):
+            return None
+
+        if self.received is None:
+            received_delta = dropped_delta = 0
+            reset = False
+            baseline = True
+        else:
+            received_delta = (received - self.received) & 0xFFFFFFFF
+            dropped_delta = (dropped - self.dropped) & 0xFFFFFFFF
+            if key == self.key and max(received_delta, dropped_delta) >= self._HALF_RANGE:
+                # The receiver can emit multiple snapshots for one active frame;
+                # a regressing duplicate is reordered feedback, not a reboot.
+                return None
+            reset = max(received_delta, dropped_delta) >= self._HALF_RANGE
+            baseline = reset
+            if reset:
+                received_delta = dropped_delta = 0
+
+        self.key, self.received, self.dropped = key, received, dropped
+        return {
+            "received_delta": received_delta,
+            "dropped_delta": dropped_delta,
+            "reset": reset,
+            "baseline": baseline,
+        }
+
+    @classmethod
+    def _is_newer_or_same(cls, current, previous):
+        """@brief Order snapshots by capture time, with frame ID for clock rollback."""
+        frame_id, capture_us = current
+        previous_id, previous_capture_us = previous
+        if capture_us > previous_capture_us:
+            return True
+        if capture_us == previous_capture_us:
+            return frame_id == previous_id
+        frame_delta = (frame_id - previous_id) & 0xFFFFFFFF
+        return 0 < frame_delta < cls._HALF_RANGE
+
+
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
@@ -127,6 +206,8 @@ class Session:
         self.recovery_eligible = False
         self.lock = threading.Lock()
         self.pending = OrderedDict()
+        self.receiver_counters = ReceiverCounterTracker()
+        self.status_pressure_keys = OrderedDict()
         self.counts = Counter()
         self.stop = threading.Event()
         self.pacer = Pacer()
@@ -217,6 +298,10 @@ class Session:
         except (OSError, ValueError) as error:
             with self.lock:
                 self.pending.pop(key, None)
+                if isinstance(error, PartialSendError):
+                    self.counts["wire_bytes"] += error.sent_bytes
+                    if error.sent_bytes:
+                        self.gate.sent(time.perf_counter_ns())
                 self.counts[
                     "socket_failures" if isinstance(error, OSError) else "packet_failures"
                 ] += 1
@@ -225,6 +310,7 @@ class Session:
                     "send_error",
                     frame_id=frame.frame_id,
                     capture_us=frame.capture_us,
+                    wire_bytes=error.sent_bytes if isinstance(error, PartialSendError) else 0,
                     error=str(error),
                 )
             raise
@@ -297,6 +383,42 @@ class Session:
                 if not self.gate.feedback(key, matched, now):
                     self.counts["unmatched_feedback"] += 1
                     continue
+                if not hasattr(self, "receiver_counters"):
+                    self.receiver_counters = ReceiverCounterTracker()
+                counter_delta = self.receiver_counters.observe(
+                    feedback.frame_id,
+                    feedback.capture_us,
+                    feedback.received_frames,
+                    feedback.dropped_frames,
+                )
+                received_delta = dropped_delta = 0
+                if counter_delta is not None:
+                    received_delta = counter_delta["received_delta"]
+                    dropped_delta = counter_delta["dropped_delta"]
+                    if counter_delta["reset"]:
+                        self.counts["receiver_counter_resets"] += 1
+                    self.counts["receiver_completed_frames_since_baseline"] += received_delta
+                    self.counts["receiver_dropped_frames_since_baseline"] += dropped_delta
+                    if (
+                        received_delta
+                        or dropped_delta
+                        or counter_delta["baseline"]
+                        or counter_delta["reset"]
+                    ):
+                        self._event(
+                            "receiver_counters",
+                            frame_id=feedback.frame_id,
+                            capture_us=feedback.capture_us,
+                            received_frames=feedback.received_frames,
+                            dropped_frames=feedback.dropped_frames,
+                            received_delta=received_delta,
+                            dropped_delta=dropped_delta,
+                            reset=counter_delta["reset"],
+                            baseline=counter_delta["baseline"],
+                        )
+                pressure_applied = self._apply_drop_delta(dropped_delta)
+                if feedback.status:
+                    self._apply_status_pressure(key, feedback.status, counter_delta)
                 if was_probing:
                     self._event("feedback_restored", frame_id=feedback.frame_id)
                 try:
@@ -318,16 +440,17 @@ class Session:
                         received_frames=feedback.received_frames,
                         dropped_frames=feedback.dropped_frames,
                     )
+                    if feedback.status:
+                        self.recovery_eligible = False
                     continue
                 del self.pending[key]
                 self.counts[
                     "feedback_accepted" if feedback.status == 0 else "feedback_rejected"
                 ] += 1
                 if feedback.status:
-                    self.quality.congested()
                     self.recovery_eligible = False
                 else:
-                    self.recovery_eligible = True
+                    self.recovery_eligible = not pressure_applied
                 self._event(
                     "feedback",
                     frame_id=feedback.frame_id,
@@ -338,6 +461,50 @@ class Session:
                     received_frames=feedback.received_frames,
                     dropped_frames=feedback.dropped_frames,
                 )
+
+    def _apply_drop_delta(self, dropped_delta):
+        """@brief Lower quality for newly reported cumulative drops.
+
+        @param dropped_delta Newly observed cumulative receiver drops.
+        @return True when drop pressure was applied.
+        """
+        if dropped_delta <= 0:
+            return False
+        for _ in range(min(dropped_delta, (self.quality.value - self.quality.minimum + 4) // 5)):
+            self.quality.congested()
+        self.recovery_eligible = False
+        return True
+
+    def _apply_status_pressure(self, key, status, counter_delta):
+        """@brief Use negative status only when it adds pressure beyond the drop counter.
+
+        @param key Feedback frame ID and capture timestamp.
+        @param status Receiver status code.
+        @param counter_delta Accepted cumulative counter update, if any.
+        """
+        if not hasattr(self, "status_pressure_keys"):
+            self.status_pressure_keys = OrderedDict()
+        if key in self.status_pressure_keys:
+            return
+        self.status_pressure_keys[key] = None
+        while len(self.status_pressure_keys) > 512:
+            self.status_pressure_keys.popitem(last=False)
+
+        # The pinned receiver reports status 1 after incrementing its cumulative
+        # drop counter. Use it directly only to seed an otherwise unknown baseline.
+        # Later status-1 packets with no counter delta may be duplicate errors for
+        # the same dropped frame, even when a prior heartbeat carried that delta.
+        if status == 1:
+            if counter_delta is not None and counter_delta["baseline"]:
+                self.quality.congested()
+                self.recovery_eligible = False
+            return
+
+        # The pinned firmware does not emit status 2. For other defined negative
+        # statuses, don't double count a simultaneous cumulative drop update.
+        if counter_delta is None or counter_delta["dropped_delta"] == 0:
+            self.quality.congested()
+        self.recovery_eligible = False
 
     def close(self):
         """@brief Drain workers, allow a short ACK grace period and return a summary."""

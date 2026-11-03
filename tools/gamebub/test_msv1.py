@@ -18,6 +18,7 @@ from host import Profile, canvas, encode, pattern
 from msv1 import (
     FEEDBACK,
     Pacer,
+    PartialSendError,
     ValidatedJpeg,
     encode_receiver_jpeg,
     frame_datagrams,
@@ -240,6 +241,81 @@ class ReceiverProtocolTests(unittest.TestCase):
         done, sent = send_frame(sock, self.jpeg, 1, 2, 100000, 0.3, lambda: now[0], late_sleep)
         self.assertFalse(done)
         self.assertGreater(sent, 0)
+
+    def test_socket_error_after_datagram_preserves_partial_byte_count(self):
+        """@brief Wrap a partial socket failure while preserving its errno, text and cause."""
+        packets = list(frame_datagrams(self.jpeg, 1, 2))
+        error = OSError(10054, "receiver unavailable")
+        sock = Mock()
+        sock.send.side_effect = [len(packets[0]), error]
+        now, recorded = [0.0], []
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        pacer = Pacer()
+        with self.assertRaises(PartialSendError) as raised:
+            send_frame(
+                sock,
+                self.jpeg,
+                1,
+                2,
+                100000,
+                10,
+                lambda: now[0],
+                sleeper,
+                pacer,
+                lambda packet, stamp: recorded.append((packet, stamp)),
+            )
+        failure = raised.exception
+        self.assertIsInstance(failure, OSError)
+        self.assertEqual(failure.sent_bytes, len(packets[0]))
+        self.assertIs(failure.original_error, error)
+        self.assertIs(failure.__cause__, error)
+        self.assertEqual(failure.errno, error.errno)
+        self.assertEqual(failure.args, error.args)
+        self.assertEqual(str(failure), str(error))
+        self.assertEqual([item[0] for item in recorded], packets[:1])
+        self.assertIsNotNone(pacer.next_due)
+
+    def test_zero_byte_socket_error_is_unmodified(self):
+        """@brief Failure before the first packet retains the original exception object."""
+        error = OSError(10054, "receiver unavailable")
+        sock = Mock()
+        sock.send.side_effect = error
+        recorded = []
+        with self.assertRaises(OSError) as raised:
+            send_frame(
+                sock,
+                self.jpeg,
+                1,
+                2,
+                100000,
+                10,
+                lambda: 0,
+                on_packet=lambda packet, stamp: recorded.append((packet, stamp)),
+            )
+        self.assertIs(raised.exception, error)
+        self.assertEqual(recorded, [])
+
+    def test_short_datagram_after_success_reports_only_complete_packets(self):
+        """@brief A short UDP send is not counted as a completely sent datagram."""
+        packets = list(frame_datagrams(self.jpeg, 1, 2))
+        sock = Mock()
+        sock.send.side_effect = [len(packets[0]), 1]
+        now, recorded = [0.0], []
+        sleeper = lambda delay: now.__setitem__(0, now[0] + delay)
+        with self.assertRaisesRegex(PartialSendError, "Partial UDP datagram send") as raised:
+            send_frame(
+                sock,
+                self.jpeg,
+                1,
+                2,
+                100000,
+                10,
+                lambda: now[0],
+                sleeper,
+                on_packet=lambda packet, stamp: recorded.append((packet, stamp)),
+            )
+        self.assertEqual(raised.exception.sent_bytes, len(packets[0]))
+        self.assertEqual([item[0] for item in recorded], packets[:1])
 
     def test_preflight_accounts_for_pending_pacer_and_validates_input(self):
         """@brief A pending pacer can make a frame infeasible without emitting a partial frame."""

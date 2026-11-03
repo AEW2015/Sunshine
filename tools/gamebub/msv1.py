@@ -172,6 +172,24 @@ class Pacer:
     next_due: float | None = None
 
 
+class PartialSendError(OSError):
+    """@brief A socket failure after earlier complete datagrams were sent."""
+
+    def __init__(self, original_error, sent_bytes):
+        """@brief Preserve the original error and count fully sent datagram bytes.
+
+        @param original_error Socket failure that ended transmission.
+        @param sent_bytes Bytes in fully sent datagrams before the failure.
+        """
+        super().__init__(*original_error.args)
+        self.original_error = original_error
+        self.sent_bytes = sent_bytes
+
+    def __str__(self):
+        """@brief Preserve the original platform-specific error description."""
+        return str(self.original_error)
+
+
 def parse_feedback(data: bytes) -> Feedback:
     """@brief Parse a complete MSF1 feedback packet from the already connected peer.
 
@@ -228,6 +246,7 @@ def send_frame(
     @param pacer Optional sender-owned Pacer shared across consecutive frames.
     @param on_packet Optional nonblocking callback receiving sent packet and monotonic time.
     @return Pair of (completed, bytes sent); incomplete frames recover on newer SOF.
+    @throws PartialSendError If a socket error occurs after complete datagrams were sent.
     """
     if not math.isfinite(bytes_per_second) or bytes_per_second <= 0 or not math.isfinite(deadline):
         raise ValueError("Rate and deadline must be finite; rate must be positive")
@@ -249,9 +268,14 @@ def send_frame(
             now = clock()
         if now + duration > deadline:
             return False, sent
-        count = sock.send(packet)
-        if count != len(packet):
-            raise OSError("Partial UDP datagram send")
+        try:
+            count = sock.send(packet)
+            if count != len(packet):
+                raise OSError("Partial UDP datagram send")
+        except OSError as error:
+            if sent:
+                raise PartialSendError(error, sent) from error
+            raise
         sent += count
         sent_at = clock()
         next_due = sent_at + duration

@@ -17,8 +17,10 @@ quality remained at 75. Average JPEG payload was 7.251 Mbps and average MSV1
 traffic was 7.540 Mbps; these exclude UDP/IP/Wi-Fi overhead and audio, and the
 configured MSV1 cap was 20 Mbps.
 
-Host-measured capture-to-final-send age was median 40.041 ms, p95 47.285 ms,
-maximum 129.043 ms. Encoded queue age was median 0.231 ms and p95 4.019 ms;
+Host timestamp-to-final-send age was median 40.041 ms, p95 47.285 ms,
+maximum 129.043 ms. The timestamp is assigned after retrieving a frame, so it
+excludes capture wait and the source image's age. Encoded queue age was median
+0.231 ms and p95 4.019 ms;
 encoding was median 3.921 ms and p95 5.398 ms. These host-side ages are not
 glass-to-glass latency. A few spot checks of the Python process reported about
 80–82 MB of private memory; infrequent samples do not rule out leaks. The run

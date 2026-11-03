@@ -12,17 +12,15 @@ Physical bring-up has started: see [handheld fixture results](measurements/handh
 for confirmed decode/display at low rates and sequence errors at higher rates.
 The operator also confirmed visible updates in a [short live game-video diagnostic](measurements/handheld-live-game-test-01.md)
 at a 1 fps target and 0.5 Mbps cap; audio and input were not tested.
-Most recently, cumulative handheld counters were 7 received/7 decoded/7
-displayed/4 dropped; a 0.5 Mbps fixture displayed and a 0.7 Mbps fixture was
-dropped. The first failing expected/observed offsets are unavailable because
-serial logging was not captured. Please instrument the first sequence error
-per frame with frame ID and expected/observed offsets, and correlate socket
-drops, QSPI timing/credits and decode/display counters before selecting a rate.
-The receiver agent reports a separate earlier 1 Mbps gap (expected 7168,
-observed 8192), but no failure in its two later capture windows. Its installed
-firmware does not yet capture per-transfer QSPI duration, receive-queue drops,
-or decode-to-display timestamps. A bounded per-frame trace matched to the host
-packet log is the next agreed diagnostic; no new wire format is assumed.
+Later [16-slot fixture trials](measurements/handheld-16slot-fixture-trials.md)
+included two 20-frame runs at 1 Mbps with no receiver-reported drops; the
+operator confirmed frame 88 was decoded and displayed. The receiver team has
+enabled trace telemetry and supplied FPGA and isolated QSPI timing. In a
+subsequent [5 fps live desktop run](measurements/ddagrab-soak-10m.md), the
+host sent 92 of 100 target frames and the last feedback reported 82 received
+and 10 dropped; an independent starting counter baseline and decode/display
+counts were not recorded. Receiver log correlation remains important before
+selecting a sustained rate. No new wire format is assumed by the telemetry.
 The host's [30 fps JPEG bandwidth study](measurements/30fps-jpeg-budget.md)
 quantifies the expected MSV1 rate across quality settings on moving footage.
 

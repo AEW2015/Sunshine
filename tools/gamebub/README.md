@@ -135,6 +135,11 @@ receiver output. The test receiver's restart/session rules apply to frame IDs.
 Matched feedback events include the receiver's cumulative received and dropped
 counts. A status-0 heartbeat may occur before a frame finishes; check counter
 changes and the handheld's independent decode/display counters.
+`receiver_counters` events and summary deltas are aggregate changes since the
+first accepted snapshot, not per-frame confirmations; the initial snapshot is
+an unknown baseline. The host ignores unmatched feedback and interprets
+32-bit counter wrap using a half-range heuristic, so a receiver reset near a
+wrap boundary cannot always be distinguished from normal wrap.
 The pinned firmware locks onto the first sender's IP **and UDP source port**
 for its test session. Restarting the sender with a new ephemeral port will be
 ignored until the receiver test session is restarted. For a coordinated host

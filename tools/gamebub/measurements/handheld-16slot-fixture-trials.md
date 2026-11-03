@@ -15,7 +15,7 @@ measurement. Sender timestamps describe completed socket sends, not arrival.
 | 16 slots, 1.0 Mbps | 28–47 | 20 | 19 / 1 | Feedback identifies frame 38 as dropped. |
 | 16 slots, consumer priority 6, 1.0 Mbps | 48–67 | 20 | 20 / 0 | Producer priority 5; feedback status 0 for each. |
 | 16 slots, consumer priority 5, 1.0 Mbps | 68–87 | 20 | 20 / 0 | Feedback counters increased from 20 / 0 to 40 / 0. |
-| Receiver ready after QSPI benchmark, 0.7 Mbps | 88 | 1 | 1 / 0 | Feedback status 0; FPGA stage timing and display results were not provided. |
+| Receiver ready after QSPI benchmark, 0.7 Mbps | 88 | 1 | 1 / 0 | Operator confirmed decode and display and reported stage timing below. |
 
 The later 20-frame runs each contained 1,400 sent datagrams. For IDs 28–47,
 median host inter-datagram gap was 8.971 ms, p95 9.338 ms, and max 10.999 ms;
@@ -33,8 +33,8 @@ between each and its preceding datagram; this does not establish their delivery
 to the ESP32 or the stage responsible for the reported gap. On 20 samples per
 condition, the 20/20 priority-6 and 20/20 priority-5 feedback results do not
 establish that either priority is more reliable. The feedback counts are ingress
-observations; apart from the user's statement that frames 25–27 passed, these
-records do not independently establish decode or display. Receiver logs and
+observations; apart from the user's statements that frames 25–27 passed and
+frame 88 was displayed, these records do not independently establish decode or display. Receiver logs and
 independent display counters remain necessary.
 
 The receiver operator subsequently reported that frame 88 was received,

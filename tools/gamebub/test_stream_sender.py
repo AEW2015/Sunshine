@@ -18,11 +18,12 @@ from PIL import Image
 
 from controller import ControllerTracker
 from host import canvas as reference_canvas
-from msv1 import FEEDBACK, VIDEO, Pacer
+from msv1 import FEEDBACK, VIDEO, Pacer, PartialSendError, encode_receiver_jpeg
 from pipeline import Frame
 from quality import QualityController
 from stream_sender import (
     FeedbackGate,
+    ReceiverCounterTracker,
     Session,
     desktop_duplication_frames,
     main,
@@ -263,6 +264,259 @@ class StreamSenderTests(unittest.TestCase):
         self.assertTrue(gate.feedback((5, 5), True, 42))
         self.assertFalse(gate.probing)
         self.assertEqual(gate.offer((6, 6), 43), (True, False))
+
+    def test_receiver_counter_tracker_handles_wrap_reset_and_reordering(self):
+        """@brief Track aggregate counts without assigning them to a frame."""
+        tracker = ReceiverCounterTracker()
+        self.assertEqual(
+            tracker.observe(0xFFFFFFFF, 100, 0xFFFFFFFE, 0xFFFFFFFF),
+            {"received_delta": 0, "dropped_delta": 0, "reset": False, "baseline": True},
+        )
+        wrapped = tracker.observe(0, 200, 0xFFFFFFFF, 0)
+        self.assertEqual(
+            wrapped,
+            {"received_delta": 1, "dropped_delta": 1, "reset": False, "baseline": False},
+        )
+        self.assertIsNone(tracker.observe(0xFFFFFFFF, 100, 0xFFFFFFFE, 0xFFFFFFFF))
+        reset_tracker = ReceiverCounterTracker()
+        self.assertEqual(
+            reset_tracker.observe(1, 300, 100, 200),
+            {"received_delta": 0, "dropped_delta": 0, "reset": False, "baseline": True},
+        )
+        reset = reset_tracker.observe(2, 400, 0, 0)
+        self.assertEqual(
+            reset,
+            {"received_delta": 0, "dropped_delta": 0, "reset": True, "baseline": True},
+        )
+        after_reset = reset_tracker.observe(3, 500, 1, 2)
+        self.assertEqual(
+            after_reset,
+            {"received_delta": 1, "dropped_delta": 2, "reset": False, "baseline": False},
+        )
+        reordered = ReceiverCounterTracker()
+        reordered.observe(4, 600, 10, 1)
+        self.assertEqual(
+            reordered.observe(4, 600, 10, 2),
+            {"received_delta": 0, "dropped_delta": 1, "reset": False, "baseline": False},
+        )
+        self.assertIsNone(reordered.observe(4, 600, 10, 1))
+        self.assertEqual(
+            reordered.observe(5, 700, 11, 2),
+            {"received_delta": 1, "dropped_delta": 0, "reset": False, "baseline": False},
+        )
+
+    def test_feedback_counter_reset_is_rebaselined_after_gate_accepts(self):
+        """@brief Count a receiver reset without treating its lower totals as drops."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(1, 100): None, (2, 200): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        before = FEEDBACK.pack(b"MSF1", 1, 0, 0, 1, 0, 100, 200, 100)
+        after = FEEDBACK.pack(b"MSF1", 1, 0, 0, 2, 0, 0, 0, 200)
+        s.sock.recv.side_effect = [before, after, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2, 2, 3]):
+            s._feedback_loop()
+        self.assertEqual(s.counts["receiver_counter_resets"], 1)
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 0)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 0)
+        self.assertEqual(s.quality.value, 75)
+
+    def test_accepted_but_stale_counter_snapshot_is_ignored(self):
+        """@brief A still-pending old frame may pass liveness but cannot regress counters."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(4, 400): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.receiver_counters = ReceiverCounterTracker()
+        s.receiver_counters.observe(5, 500, 10, 10)
+        s.sock = Mock()
+        delayed = FEEDBACK.pack(b"MSF1", 1, 0, 0, 4, 0, 12, 15, 400)
+        s.sock.recv.side_effect = [delayed, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2]):
+            s._feedback_loop()
+        self.assertEqual(s.counts["feedback_accepted"], 1)
+        self.assertEqual((s.receiver_counters.received, s.receiver_counters.dropped), (10, 10))
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 0)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 0)
+        self.assertEqual(s.quality.value, 75)
+
+    def test_status_pressure_baseline_deduplication_and_bound(self):
+        """@brief Apply status-only pressure conservatively and bound remembered keys."""
+        s = Session.__new__(Session)
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = True
+        first_key = (1, 100)
+        s._apply_status_pressure(first_key, 1, {"baseline": True, "dropped_delta": 0})
+        self.assertEqual(s.quality.value, 70)
+        self.assertFalse(s.recovery_eligible)
+        s._apply_status_pressure(first_key, 1, {"baseline": False, "dropped_delta": 0})
+        self.assertEqual(s.quality.value, 70)
+
+        no_baseline_key = (2, 200)
+        s._apply_status_pressure(no_baseline_key, 1, {"baseline": False, "dropped_delta": 0})
+        self.assertEqual(s.quality.value, 70)
+        error_key = (3, 300)
+        s._apply_status_pressure(error_key, 3, None)
+        self.assertEqual(s.quality.value, 65)
+        busy_key = (4, 400)
+        s._apply_status_pressure(busy_key, 2, {"baseline": False, "dropped_delta": 1})
+        self.assertEqual(s.quality.value, 65)
+
+        s.status_pressure_keys = OrderedDict(((i, i), None) for i in range(512))
+        new_key = (1000, 1000)
+        s._apply_status_pressure(new_key, 2, None)
+        self.assertEqual(len(s.status_pressure_keys), 512)
+        self.assertNotIn((0, 0), s.status_pressure_keys)
+        self.assertIn(new_key, s.status_pressure_keys)
+
+    def test_same_key_heartbeat_then_drop_counter_reduces_quality_once(self):
+        """@brief A later counter update on an echoed key signals a drop, not completion."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        key = (7, 700)
+        s.pending = OrderedDict({key: None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        early = FEEDBACK.pack(b"MSF1", 1, 0, 0, 7, 0, 0, 0, 700)
+        drop_count = FEEDBACK.pack(b"MSF1", 1, 0, 0, 7, 0, 0, 1, 700)
+        dropped = FEEDBACK.pack(b"MSF1", 1, 1, 0, 7, 0, 0, 1, 700)
+        s.sock.recv.side_effect = [early, drop_count, dropped, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2, 2, 3, 3, 4]):
+            s._feedback_loop()
+        self.assertEqual(s.counts["feedback_accepted"], 1)
+        self.assertEqual(s.counts["feedback_rejected"], 0)
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 0)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 1)
+        self.assertEqual(s.quality.value, 70)
+        self.assertFalse(s.recovery_eligible)
+
+    def test_unmatched_feedback_cannot_mutate_receiver_counters_or_quality(self):
+        """@brief A delayed key rejected by the gate cannot apply its counter snapshot."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(4, 400): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.receiver_counters = ReceiverCounterTracker()
+        s.receiver_counters.observe(4, 400, 10, 10)
+        s.sock = Mock()
+        delayed = FEEDBACK.pack(b"MSF1", 1, 0, 0, 5, 0, 12, 15, 500)
+        s.sock.recv.side_effect = [delayed, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2]):
+            s._feedback_loop()
+        self.assertEqual((s.receiver_counters.received, s.receiver_counters.dropped), (10, 10))
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 0)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 0)
+        self.assertEqual(s.quality.value, 75)
+        self.assertEqual(s.counts["unmatched_feedback"], 1)
+
+    def test_same_key_completion_counter_counts_aggregate_only(self):
+        """@brief A later complete counter increase is not assigned to heartbeat frame ID."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        key = (7, 700)
+        s.pending = OrderedDict({key: None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        early = FEEDBACK.pack(b"MSF1", 1, 0, 0, 7, 0, 0, 0, 700)
+        complete = FEEDBACK.pack(b"MSF1", 1, 0, 0, 7, 0, 1, 0, 700)
+        s.sock.recv.side_effect = [early, complete, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2, 2, 3]):
+            s._feedback_loop()
+        self.assertEqual(s.counts["feedback_accepted"], 1)
+        self.assertEqual(s.counts["receiver_completed_frames_since_baseline"], 1)
+        self.assertEqual(s.counts["feedback_heartbeats"], 1)
+
+    def test_matching_drop_status_and_counter_apply_one_backoff(self):
+        """@brief A matched status-1 reply and its counter delta are one congestion event."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.stop = threading.Lock(), MemoryEvents(), threading.Event()
+        s.pending = OrderedDict({(8, 800): None, (9, 900): None})
+        s.counts, s.gate = Counter(), FeedbackGate(0, timeout_ns=1000, probe_ns=100)
+        s.controller = ControllerTracker()
+        s.quality = QualityController(75, 20)
+        s.recovery_eligible = False
+        s.sock = Mock()
+        baseline = FEEDBACK.pack(b"MSF1", 1, 0, 0, 8, 0, 0, 0, 800)
+        dropped = FEEDBACK.pack(b"MSF1", 1, 1, 0, 9, 0, 0, 1, 900)
+        s.sock.recv.side_effect = [baseline, dropped, OSError("closed")]
+        with patch("stream_sender.time.perf_counter_ns", side_effect=[1, 1, 2, 2, 3]):
+            s._feedback_loop()
+        self.assertEqual(s.quality.value, 70)
+        self.assertEqual(s.counts["receiver_dropped_frames_since_baseline"], 1)
+        self.assertEqual(s.counts["feedback_rejected"], 1)
+
+    def test_partial_send_error_accounts_wire_bytes_and_arms_grace(self):
+        """@brief A second-datagram failure records first-datagram bytes and grace."""
+        s = Session.__new__(Session)
+        s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
+        s.quality = QualityController(75, 20)
+        s.age_ns, s.rate, s.pacer = 1_000_000_000, 100_000_000, Pacer()
+        s.recovery_eligible = False
+        s.pending, s.counts = OrderedDict(), Counter()
+        s.gate = FeedbackGate(None)
+        image = Image.effect_noise((720, 480), 100).convert("RGB")
+        jpeg = encode_receiver_jpeg(image, 75)
+        captured_ns = time.perf_counter_ns()
+        frame = Frame(2, captured_ns, 20, image, captured_ns)
+        calls = 0
+
+        def fail_on_second_datagram(packet):
+            """@brief Accept one full UDP datagram, then fail the next send."""
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                return len(packet)
+            raise OSError("socket closed")
+
+        s.sock.send.side_effect = fail_on_second_datagram
+        with self.assertRaises(PartialSendError):
+            s._send(frame, jpeg)
+        self.assertEqual(calls, 2)
+        self.assertEqual(s.counts["wire_bytes"], VIDEO.size + 1024)
+        self.assertEqual(s.counts["socket_failures"], 1)
+        self.assertIsNotNone(s.gate.last_feedback)
+        self.assertEqual(len(s.pending), 0)
+        event = next(json.loads(line) for line in s.log.getvalue().splitlines())
+        self.assertEqual(event["wire_bytes"], VIDEO.size + 1024)
+
+        zero = Session.__new__(Session)
+        zero.lock, zero.log, zero.sock = threading.Lock(), MemoryEvents(), Mock()
+        zero.quality, zero.age_ns, zero.rate, zero.pacer = (
+            QualityController(75, 20),
+            100,
+            3000,
+            Pacer(),
+        )
+        zero.recovery_eligible = False
+        zero.pending, zero.counts = OrderedDict(), Counter()
+        zero.gate = FeedbackGate(None)
+        zero_frame = Frame(3, 10, 30, Image.new("RGB", (720, 480)))
+        with (
+            patch(
+                "stream_sender.send_frame",
+                side_effect=PartialSendError(OSError("closed before packet"), 0),
+            ),
+            self.assertRaises(PartialSendError),
+        ):
+            zero._send(zero_frame, b"jpeg")
+        self.assertEqual(zero.counts["wire_bytes"], 0)
+        self.assertIsNone(zero.gate.last_feedback)
 
     def test_feedback_grace_starts_after_initial_traffic(self):
         """@brief Capture startup, preflight, and initial frame sending do not consume grace."""
