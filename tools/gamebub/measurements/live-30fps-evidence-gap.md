@@ -25,6 +25,21 @@ ignored COM exception. Sequential ImageGrab localhost tests reached 16.31 fps
 with bilinear and 17.32 fps with BOX, but their live inputs differed, so these
 are not controlled quality or filter comparisons. See [the probe](dxgi-desktop-probe.md).
 
+## Companion receiver simulation update
+
+The Moonbub study has since replayed 90 game-derived JPEG frames through a
+behavioral QSPI-to-display model, at 30.009 presentations per second across
+89 intervals, with a 37.507 ms maximum modeled arrival-to-swap age. This was
+roughly three seconds, used precompressed source footage, and assumed complete
+compressed frames were already available at the receiver. It did not measure
+capture or encode on this Windows host, live Sunshine, real Wi-Fi, target CPU,
+or the physical display. See [the receiver study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/gameplay-study/README.md).
+
+A separate ESP32-S3 emulator test receives one synthetic JPEG over a virtual
+localhost-only UDP path using the unchanged receiver logic; packets are
+ACK-paced, and its RTL replay is a separate model. Neither test measures live
+capture, sender goodput or game-to-photon latency. See [the emulator study](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/fpga/experiments/throughput30/burst/esp-emulator-study/README.md).
+
 ## Next host-side checks
 
 1. On the Windows test system, capture the actual game at 30 fps for several
