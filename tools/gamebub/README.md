@@ -56,6 +56,15 @@ The short conditional rate gains and synthetic recovery-quality result do not
 establish sustained30 fps or add a Sunshine/ESP32/FPGA mode. Per-kind native
 service, physical reference memory and integration remain implementation gates.
 
+[Iteration6](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/custom-codec-prototype-v6-2026-11-03.md)
+reduces host key preparation with lazy verification, fast entropy and token
+lists: a paired24-key sample improves33.18→27.67 ms mean, with two calls still
+over33.33 ms. Per-selected-packet measured Python services now drive the finite
+model; short diagnostic counts remain28–29 with assumed8 ms receive and21–24
+with measured Python receive. Exact arithmetic widths and a small/negative
+narrow-integer timing result are retained. These are offline software studies,
+not an installed streaming mode or physical30 fps/target DSP qualification.
+
 Its [external-memory follow-up](https://github.com/AEW2015/moonbub/blob/study/30fps-sim-20261102/docs/external-memory-audit-plan.md)
 defines the SRAM/SDRAM qualification, queue-ownership and measured bandwidth
 gates that must precede any receiver-buffer or frame-cap change.
