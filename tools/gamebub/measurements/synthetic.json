@@ -1,0 +1,101 @@
+{
+  "measurement": "host_encoding_and_zero_overhead_link_simulation",
+  "end_to_end_verified": false,
+  "resolution": [
+    720,
+    480
+  ],
+  "content_viewport": [
+    0,
+    37,
+    720,
+    405
+  ],
+  "target_fps": 30,
+  "duration_s": 30.02838629996404,
+  "source": "synthetic_not_game_footage",
+  "profile": {
+    "subsampling": "4:2:0",
+    "restart_mcus": 0,
+    "max_frame_bytes": 262144,
+    "huffman_sha256": null
+  },
+  "counts": {
+    "skipped_slots": 294,
+    "stale": 10,
+    "simulated_complete": 596
+  },
+  "encoded_fps": 20.180904626257778,
+  "simulated_complete_fps": 19.84788639810171,
+  "encoded_mbps": 6.9621645969117685,
+  "simulated_complete_mbps": 6.836158491814987,
+  "encoded_bytes": {
+    "mean": 43123.46699669967,
+    "max": 71675
+  },
+  "encode_ms": {
+    "count": 606,
+    "p50": 7.614699890837073,
+    "p95": 11.562800034880638,
+    "max": 29.433999909088016
+  },
+  "host_age_ms": {
+    "count": 596,
+    "p50": 48.71980007737875,
+    "p95": 58.68360004387796,
+    "max": 66.7665998917073
+  },
+  "quality_histogram": {
+    "75": 1,
+    "70": 1,
+    "65": 1,
+    "60": 1,
+    "61": 1,
+    "56": 2,
+    "57": 1,
+    "52": 6,
+    "47": 18,
+    "42": 26,
+    "37": 25,
+    "38": 25,
+    "33": 19,
+    "34": 19,
+    "29": 10,
+    "30": 14,
+    "31": 20,
+    "32": 18,
+    "35": 26,
+    "36": 27,
+    "39": 27,
+    "40": 32,
+    "41": 30,
+    "43": 24,
+    "44": 24,
+    "45": 27,
+    "46": 23,
+    "48": 17,
+    "49": 16,
+    "50": 15,
+    "51": 9,
+    "27": 11,
+    "22": 10,
+    "23": 11,
+    "24": 11,
+    "25": 11,
+    "20": 8,
+    "21": 7,
+    "26": 13,
+    "28": 10,
+    "53": 4,
+    "54": 3,
+    "55": 2
+  },
+  "configured_link_mbps": 20.0,
+  "queue_capacity_frames": 0,
+  "receiver_latency_ms": null,
+  "versions": {
+    "pyav": "18.1.0",
+    "pillow": "13.0.0",
+    "libjpeg_turbo": "3.2.0"
+  }
+}
