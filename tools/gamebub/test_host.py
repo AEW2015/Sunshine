@@ -50,6 +50,17 @@ class ImageTests(unittest.TestCase):
             host.canvas(Image.new("RGB", (10000, 1), "white")).getbbox(), (0, 239, 720, 240)
         )
 
+    def test_alternate_resize_filters_keep_canvas_geometry(self):
+        """@brief Desktop filters preserve letterbox geometry while changing interpolation."""
+        source = host.pattern(2)
+        lanczos = host.canvas(source)
+        for filter_type in (Image.Resampling.BILINEAR, Image.Resampling.BICUBIC):
+            with self.subTest(filter_type=filter_type):
+                scaled = host.canvas(source, filter_type)
+                self.assertEqual(scaled.size, (720, 480))
+                self.assertEqual(scaled.getpixel((0, 0)), (0, 0, 0))
+                self.assertNotEqual(scaled.tobytes(), lanczos.tobytes())
+
     def test_pattern_is_deterministic_and_moves(self):
         """@brief ID patch and motion are deterministic, including wrapped IDs."""
         self.assertEqual(host.pattern(1).tobytes(), host.pattern(1).tobytes())
@@ -182,6 +193,14 @@ class JpegTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 host.inspect_jpeg(changed)
 
+    def test_entropy_scan_handles_stuffed_bytes_and_truncation(self):
+        """@brief Search past stuffed 0xff bytes and reject incomplete entropy markers."""
+        prefix = self.data[:-2]
+        self.assertEqual(host.inspect_jpeg(prefix + b"\xff\x00\x01\xff\xd9"), self.metadata)
+        for tail in (b"\x01\x02", b"\xff", b"\xff\x00", b"\xff\xc4"):
+            with self.subTest(tail=tail), self.assertRaises(ValueError):
+                host.inspect_jpeg(prefix + tail)
+
 
 class LinkTests(unittest.TestCase):
     """@brief Check exact simulated deadlines and bounded capacity under overload."""
@@ -276,6 +295,20 @@ class PipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             _, _, rows = self.invoke(Path(temp), "--link-mbps", "21")
             self.assertTrue(all(row["quality"] == 75 for row in rows))
+
+    def test_desktop_filter_is_applied_and_recorded(self):
+        """@brief An opted-in fast desktop filter is used and recorded in the run summary."""
+        with (
+            tempfile.TemporaryDirectory() as temp,
+            patch("host.ImageGrab.grab", return_value=host.pattern(0)),
+            patch("host.canvas", wraps=host.canvas) as resize,
+        ):
+            status, summary, _ = self.invoke(
+                Path(temp), "--desktop", "--desktop-filter", "bilinear", "--link-mbps", "1000"
+            )
+            self.assertEqual(status, 0)
+            self.assertEqual(summary["desktop_filter"], "bilinear")
+            self.assertEqual(resize.call_args.args[1], Image.Resampling.BILINEAR)
 
     def test_failure_exit_and_desktop_source(self):
         """@brief Desktop capture errors are logged and produce a failing exit status."""

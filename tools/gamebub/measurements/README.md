@@ -66,6 +66,42 @@ and desktop baselines predate that clip-only optimization. Earlier exploratory
 Big Buck Bunny runs with full-resolution RGB conversion are excluded from this
 table; they remain locally under ignored `artifacts/` for debugging.
 
+## Marker scan and desktop filter experiments
+
+The host now searches compressed bytes for JPEG marker prefixes in native code,
+instead of visiting every byte in Python. It retains marker ordering and restart
+checks, frame-size limits, and software decoding. In two consecutive uninstrumented
+300-iteration runs on the same 71 KB synthetic JPEG, median inspection fell from
+6.86 ms to 0.28 ms; median encode plus inspection and decode fell from 11.11 ms
+to 4.42 ms. These single-machine timings are not pure encoder measurements.
+
+A new uninstrumented 30.026-second Big Buck Bunny run used the same clip,
+720×480 canvas, 30 fps target, 20 Mbps simulated link, initial quality 75, and
+66.7 ms deadline as the baseline above. It encoded 732 frames at 24.38 fps;
+719 met the modeled deadline (23.95 fps), 13 were stale and 168 slots skipped.
+Encoded payload was 5.714 Mbps; encode plus validation was 4.42 ms at p95.
+JPEG quality ranged 20–75; simulated host completion age was 56.72 ms at p95.
+Run-to-run load and adaptive quality vary, so the 23.73-to-24.38 fps comparison
+is an observation from two runs, not a controlled estimate of a speedup.
+See `bbb-fast-scan.json` and `bbb-fast-scan-frames.jsonl` for the full record.
+
+For one 1920×1080 desktop image, median Pillow screen capture was 36.44 ms;
+median Lanczos resize was 28.72 ms and bilinear was 13.29 ms. The bilinear image
+had 39.73 dB PSNR relative to Lanczos on that one desktop image. This is a
+single-image difference metric, not a game-quality evaluation. It can soften
+text and detail. A separate 10.054-second desktop run with `--desktop-filter
+bilinear` encoded at 15.91 fps and had 13.13 fps simulated completions, 28 stale
+frames and 140 skipped slots. Quality reached its minimum 20; encoded payload
+was 1.596 Mbps and modeled host completion age was 65.68 ms at p95. The desktop
+contents and host load were not controlled across runs. See
+`desktop-bilinear.json` and `desktop-bilinear-frames.jsonl` for details.
+
+All of these remain host-only results, with serialized simulated transmission;
+no receiver, Wi-Fi, QSPI, or display timing has been measured. Capture and
+resizing still take too long for the 30 fps target on this machine. The next
+practical work is a faster capture path and a bounded capture/encode/transmit
+pipeline once real transport and feedback are agreed.
+
 ## Remaining acceptance evidence
 
 - Decoder-approved capabilities, a mutually versioned wire specification, and

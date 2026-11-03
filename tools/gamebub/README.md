@@ -55,6 +55,7 @@ The default source is a deterministic moving pattern, not game footage:
 ```powershell
 py -3.11 -m uv run --locked python host.py --output artifacts\patterns --frames 900 --fps 30 --quality 75 --link-mbps 20
 py -3.11 -m uv run --locked python host.py --desktop --output artifacts\desktop --frames 300 --fps 30 --link-mbps 20
+py -3.11 -m uv run --locked python host.py --desktop --desktop-filter bilinear --output artifacts\desktop-fast --frames 300 --fps 30 --link-mbps 20
 py -3.11 -m uv run --locked python host.py --clip C:\clips\game.mp4 --output artifacts\game --frames 1800 --fps 30 --quality 75 --link-mbps 20 --save-jpeg
 ```
 
@@ -64,7 +65,10 @@ Clips must have square pixels and strictly increasing PTS; normalize rotated or
 anamorphic footage before use. Clip frames are sampled on the requested timeline;
 EOF stops the run, and source starvation skips pacing slots without a queue.
 Stale clip samples skip RGB conversion. The selected frame is scaled with
-libswscale before conversion; image/desktop sources use Pillow Lanczos.
+libswscale before conversion; image/desktop sources default to Pillow Lanczos.
+For desktop only, `--desktop-filter bicubic` or `bilinear` trades resize quality
+for speed. Bilinear can soften small text and fine detail; assess the actual game
+image before selecting it. The selected filter is recorded in `summary.json`.
 Capture, scale, encode, validation, modeled link delay, and optional file writes
 all occur serially. Capture/scale and encode/validation timings are logged
 separately. This implementation prioritizes conformance and bounded memory.
@@ -106,6 +110,8 @@ do not assume a decoder supports these values. The default profile has no pinned
 fingerprint. Actual JPEG output is inspected for SOF0/8-bit three-component
 YCbCr, 8-bit DQT 0/1, DHT selectors 0/1/16/17, one interleaved scan, subsampling,
 DRI, restart sequence/count, exact EOI, frame-size bound, and software decode.
+The header/restart inspector searches marker prefixes in native code and still
+checks the same marker sequence; every encoded image also gets a software decode.
 The header/restart inspector does not independently decode MCU entropy or prove
 each restart's entropy position; receiver validation remains necessary. The
 model's deadline is predicted completion; Windows scheduling can overshoot it,

@@ -52,10 +52,13 @@ class Profile:
             raise ValueError("Huffman digest must be lowercase SHA-256")
 
 
-def canvas(image: Image.Image | av.VideoFrame) -> Image.Image:
+def canvas(
+    image: Image.Image | av.VideoFrame, resampling: Image.Resampling = Image.Resampling.LANCZOS
+) -> Image.Image:
     """@brief Fit a source without distortion inside a centered 720x405 viewport.
 
     @param image Source RGB-compatible image with square pixels.
+    @param resampling Pillow resize filter for image sources; video uses libswscale.
     @return A 720x480 RGB canvas; 16:9 input has 37 top and 38 bottom black rows.
     """
     scale = min(WIDTH / image.width, CONTENT_HEIGHT / image.height)
@@ -64,7 +67,7 @@ def canvas(image: Image.Image | av.VideoFrame) -> Image.Image:
         # Scale only the selected decoded frame, before allocating a full-size RGB image.
         image = image.reformat(width=size[0], height=size[1], format="rgb24").to_image()
     else:
-        image = image.convert("RGB").resize(size, Image.Resampling.LANCZOS)
+        image = image.convert("RGB").resize(size, resampling)
     result = Image.new("RGB", (WIDTH, HEIGHT))
     result.paste(
         image,
@@ -188,10 +191,11 @@ def inspect_jpeg(data: bytes) -> dict:
         raise ValueError("Unsupported YCbCr component layout")
     restarts = []
     while pos < len(data):
-        value = data[pos]
+        # Ordinary entropy bytes cannot be markers; search for the next prefix in C.
+        pos = data.find(b"\xff", pos)
+        if pos < 0:
+            raise ValueError("Missing JPEG EOI")
         pos += 1
-        if value != 255:
-            continue
         if pos >= len(data):
             raise ValueError("Truncated entropy marker")
         marker = data[pos]
@@ -361,7 +365,11 @@ def run(args) -> dict:
                         image = next(frames)
                 else:
                     image = ImageGrab.grab() if args.desktop else pattern(slot)
-                prepared = canvas(image)
+                prepared = (
+                    canvas(image, Image.Resampling[args.desktop_filter.upper()])
+                    if args.desktop
+                    else canvas(image)
+                )
                 encoding_start = time.perf_counter()
                 data, metadata = encode(prepared, quality, profile)
                 encoded = time.perf_counter()
@@ -433,6 +441,7 @@ def run(args) -> dict:
         "source": str(args.clip)
         if args.clip
         else ("desktop" if args.desktop else "synthetic_not_game_footage"),
+        "desktop_filter": args.desktop_filter if args.desktop else None,
         "profile": asdict(profile),
         "counts": dict(counts),
         "encoded_fps": len(sizes) / duration,
@@ -485,6 +494,9 @@ def main(argv=None) -> int:
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--clip", type=Path)
     source.add_argument("--desktop", action="store_true")
+    parser.add_argument(
+        "--desktop-filter", choices=("lanczos", "bicubic", "bilinear"), default="lanczos"
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--frames", type=int, default=300)
