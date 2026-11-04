@@ -7,41 +7,43 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v17-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v17-20261103),
-paired with [Moonbub v17](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v17-20261103).
-Read the [v17 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/custom-codec-prototype-v17-2026-11-03.md),
-[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/gamebub-application-specific-codec-plan.md),
-and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/dev-handoff-2026-11-03.md).
-Earlier branches remain frozen.
+[`handoff/gamebub-app-codec-v18-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v18-20261103),
+paired with [Moonbub v18](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v18-20261103).
+Read the [v18 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/custom-codec-prototype-v18-2026-11-03.md),
+[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/gamebub-application-specific-codec-plan.md),
+and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/dev-handoff-2026-11-03.md).
+Earlier branches remain frozen; this branch changes host handoff documentation only.
 
-V17 implements an actual AR03/AF03 bank-local refresh profile. Independent keys
-replace bank 0 while confirmed bank-1 P frames can continue. Exact publication
-ACKs, typed leases, destination reservations and expiry precedence remain. On
-180 distinct regression source IDs at 720×480 coded / 720×405 active, periodic
-refresh improves 161→178 eventual presentations with all four exact UI patches.
-The repeat matches packet/source IDs. The rolling five-second count 151 is phase,
-not a capture rate above 30 Hz; maximum presentation gaps remain 66.667 ms.
+V18 splits actual AR03 candidate construction from identity/bank commit. A candidate
+owns its source reference; admission rejection pays construction/discard without
+sending bytes or changing publication identity. Native controls give 42 byte/pixel
+identical commits, six transport discards and four cap rejections.
 
-Prospective host pacing bounds an active body, latest pending candidate, packet
-credits, mailbox and feedback ledger. Credit framing is paid: 56-byte header and
-1,008-byte payload retain a 1,064-byte datagram within the existing 1,065-byte DMA
-allocation. Zero modeled mailbox overflow trades throughput/admission for bounded
-backlog/occupancy. Dropping encoded reference publications can break later P frames, so these
-size-only traces are not decoded-video proof. Consumed packet credits differ
-from AF03 decoded YUV publication ACKs. Host candidate/commit integration is next.
+One finite controller now carries actual AR03 through precommit admission, individual
+GF03 v3 fragments, PC18 consumed-packet credits/QC18 queries, reassembly, decode and
+AF03 bank publication. Its prospective 1,008-byte payload + 31-byte GF header +
+16-byte identity prefix gives a maximum 1,055-byte UDP datagram within the existing
+1,065-byte DMA allocation. PC18 is 29 bytes, QC18 28 bytes; IPv4/UDP costs are paid.
+Six data tokens and one query control token bound ownership. Consumed credits do
+not publish decoded references. The installed MSV1 JPEG endpoint does not support
+this new protocol or its proposed true-FIFO interface.
 
-A separate memory study adds per-burst arbitration, refresh/row/turnaround/stall
-costs, bounded local staging and epoch-tagged panel prefetch. It distinguishes
-logical front-ID cadence from complete clean panel epochs. Repeated coefficient
-traffic templates do not represent distinct decoded gameplay or fitted hardware.
+Six full-resolution 90-frame native regressions and two 48-frame fault controls
+cover 636 captures; all finish with bounded state drained and zero selected UI
+word errors. The 150-ms / 8-ms-batch case presents 70/90 with 15 paid precommit
+rejections and no receiver NACKs. Native diagnostic windows span 19.5–29 IDs/s;
+no sustained physical 30 fps is proved. Remeasured Python costs change scheduling,
+so profile ranking is not a controlled speedup comparison. AR03 trace fixtures
+retain 16 packets, decoded references, 97,308 coefficient blocks and 53 atomic
+negative cases; native peak stripe token demand reaches 9.05× the uniform mean.
 
-The paired branch carries sources, retained evidence, tests, independent audit
-and `experiments/verify_prototype_v17.py`. These are separate conditional Python
-models, not one joint native system. Current ESP32 firmware remains MSV1 JPEG;
-AR03/credit forwarding is unimplemented. Calibrate actual CPU/CRC/DMA/heap, Wi-Fi
-batching/RTT and FIFO/SDRAM service, then qualify mapped addresses, resources,
-clocks and scanline deadlines before claiming physical 30 fps. This Sunshine branch
-publishes host handoff references only; the installed service is unchanged.
+Next reserve receiver capacity, connect actual traces to incremental decode and
+SDRAM/scanline scheduling, then calibrate bounded native ESP32 CRC/copy/DMA/heap,
+Wi-Fi RTT/batching, QSPI/FIFO and FPGA memory/resource timing. Port behind explicit
+negotiation/reset; preserve the working JPEG hardware baseline. Run the paired
+`experiments/verify_prototype_v18.py` for retained evidence and independent audit.
+Python CPU/ESP32 budgets are conditional; this is not ISA, RF or fitted-FPGA proof.
+The Sunshine native encoder and installed service are unchanged.
 V13 below is historical.
 
 V13 implements real cap-before-commit source reuse: native combat preparation
