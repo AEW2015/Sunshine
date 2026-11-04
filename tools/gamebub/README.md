@@ -1,10 +1,38 @@
 # Game Bub host laboratory
 
+The [consolidated finite-session launcher](SESSION-LAUNCHER.md) now provides
+explicit JPEG video, PC audio and controller modes, source-inactivity reporting
+and bounded capture shutdown. It passes fake-device and real localhost UDP
+tests; its new WASAPI callback path still needs a controlled hardware test.
+The [v20 offline development guide](V20-DEVELOPMENT.md) covers the separate
+native inverse, full-body decoder, real GM01/CP02 encoder and HP01/HR01 HUD
+encoder. All 20 frozen encoder cases reproduce exact inner, selected patch and
+complete AR03 bytes; the 10 mandatory cases verify 13 actual policy attempts.
+The 10 baseline cases use their original partial HUD selections and do not
+qualify mandatory coverage. SR01 decoding is available; SR01 encoding and
+persistent analysis/patch caches are not implemented. See the
+[body/policy validation](measurements/v20-native-body-candidate-20261104.md) and
+[native encoder validation](measurements/v20-native-encoder-20261104.md), plus
+[earlier offline validation](measurements/v20-offline-foundations-20261104.md) for
+exact results and open gates. Neither addition installs a new Sunshine service
+or supplies a live custom-codec endpoint. Offline encoder profiling establishes
+no new hardware playback rate or physical 30 fps result.
+
 This is an experimental host laboratory, pending receiver testing. `msv1.py`
 sends one fixture, while `stream_sender.py` streams a clip or desktop using the
 receiver's video-only UDP test protocol. Neither is an integrated Sunshine JPEG
 mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
+
+See [audio and controller setup](AUDIO-CONTROLLER-SETUP.md) and the
+[controller quickstart](CONTROLLER-QUICKSTART.md) for Windows speaker-loopback
+capture, product-rounded IMA ADPCM and the ordered-input virtual Xbox adapter.
+Earlier physical audio and controller tests are recorded in `measurements/`;
+those do not qualify the new callback implementation or the custom v20 codec.
+
+See the [Windows development and testing plan](WINDOWS-DEVELOPMENT-PLAN.md) for
+the staged path from the study audit through reliable hardware playback and
+dedicated Sunshine integration, including regression tests and acceptance gates.
 
 ## Sender log analysis
 
@@ -137,6 +165,40 @@ one video frame cannot be distinguished; an ordered, authenticated input
 session must be agreed and tested before using these states to drive games.
 
 ## Continuous video test sender
+
+The current requested view uses **zero host shift**: omit the option or use
+`--shift-right-px 0` / `shift_right_px=0` in programmatic test options. This
+restores the full canvas width and leaves receiver margin placement separate.
+
+The optional experimental `--shift-right-px 20` remains available for reproduction.
+After scaling/letterboxing, this inserts 20 black columns at the left and crops
+the rightmost 20 columns. It translates pixels without rescaling and keeps the
+encoded dimensions at 720x480. It does not move MoonBub's panel viewport. The
+option defaults to zero, preserving earlier runs; record it explicitly when
+constructing a programmatic `run()` namespace. The
+`session_config` event records the selected shift. Larger offsets must remain
+below 720 pixels. Exact pre-encode black pixels can have normal JPEG edge
+ringing after compression.
+
+The sender accepts `--max-jpeg-bytes` (1..262144, default 262144) as a local
+receiver-capacity guard and `--jpeg-retry-quality-drop` (0..94, default 0) for
+one optional lower-quality retry after size rejection. These options do not
+negotiate a new receiver profile or change MSV1 packet bytes. Agree a capacity
+with the receiver before physical testing; 49152 bytes is an experimental study
+value, not the current default.
+
+An initial JPEG exceeding even the protocol maximum can trigger the retry.
+Only the final, complete JPEG within capacity and the strict decoder profile
+can enter the sender. A retry never repairs ordinary encoding or JPEG-format
+errors. Original capture deadlines apply before encoding, before retry and
+after encoding; a running encoder call cannot be interrupted. Successful
+retries lower subsequent adaptive quality to at most the retry quality, while
+preserving any concurrent congestion reduction. The event log records frame
+identity, initial oversize, retry quality, final size and failure disposition.
+
+`reference_loopback.py` accepts the same two flags for host-only capacity tests.
+Keep its JSONL log and printed final summary: logger integrity metadata appears
+in the printed summary after the JSONL logger closes.
 
 On the intended trusted test LAN, after the receiver team enables Test MJPEG
 and supplies its address, replace the example address and input path:

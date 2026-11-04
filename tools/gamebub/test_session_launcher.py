@@ -1,0 +1,247 @@
+"""@brief Reproducible launcher tests never capture, inject or contact hardware."""
+
+import json
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import session_launcher as launcher
+
+
+class LauncherTests(unittest.TestCase):
+    """@brief Validate opt-in modes, provenance, finite children and failure logs."""
+
+    def args(self, root, extra=()):
+        """@brief Parse a finite default video run in a fresh evidence directory."""
+        return launcher.parser().parse_args(
+            [
+                "--receiver",
+                "127.0.0.1",
+                "--bind",
+                "127.0.0.1",
+                "--start-frame-id",
+                "100",
+                "--output",
+                str(root / "new"),
+                "--video",
+                *extra,
+            ]
+        )
+
+    def test_dry_run_manifest_no_devices_network_or_process(self):
+        """@brief Dry-run records every media setting and source hash without side effects."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(
+                Path(directory), ["--audio", "--gamepad", "--profile", "wow", "--dry-run"]
+            )
+            with (
+                patch.object(launcher, "run_av") as av,
+                patch.object(launcher, "VideoProcess") as video,
+            ):
+                result = launcher.run(args)
+            self.assertTrue(result["dry_run"])
+            av.assert_not_called()
+            video.assert_not_called()
+            manifest = json.loads((args.output / "manifest.json").read_text())
+            self.assertEqual(manifest["profile"], "wow")
+            self.assertEqual(manifest["canvas"], [720, 480])
+            self.assertIn("--packet-timing", result["video_command"])
+            with self.assertRaises(FileExistsError):
+                launcher.run(args)
+
+    def test_validation_before_files(self):
+        """@brief Reject bad modes, bounds and nonfinite values before any resources open."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for extra in (
+                ["--seconds", "nan"],
+                ["--seconds", "0"],
+                ["--gain", "2"],
+                ["--fps", "31"],
+                ["--quality", "0"],
+                ["--mbps", "0"],
+                ["--deadline-ms", "0"],
+                ["--source-timeout", "0"],
+                ["--start-frame-id", "-1"],
+                ["--start-frame-id", "4294967295"],
+                ["--seconds", "7200", "--fps", "30"],
+                ["--video-port", "0"],
+                ["--av-source-port", "65536"],
+                ["--av-source-port", "4", "--video-source-port", "4"],
+            ):
+                with self.subTest(extra=extra), self.assertRaises(ValueError):
+                    launcher.run(self.args(root, extra))
+            args = self.args(root)
+            args.video = False
+            with self.assertRaises(ValueError):
+                launcher.run(args)
+            self.assertFalse(args.output.exists())
+
+    def test_owned_video_cleanup_normal_timeout_and_kill(self):
+        """@brief Bound termination to the spawned process object; record forced shutdown."""
+        for waits, forced in (
+            ([0], False),
+            ([subprocess.TimeoutExpired("video", 1), 2], True),
+            (
+                [subprocess.TimeoutExpired("video", 1), subprocess.TimeoutExpired("video", 2), 3],
+                True,
+            ),
+        ):
+            with tempfile.TemporaryDirectory() as directory:
+                args = self.args(Path(directory))
+                args.output.mkdir()
+                process = MagicMock()
+                process.wait.side_effect = waits
+                with patch.object(launcher.subprocess, "Popen", return_value=process):
+                    child = launcher.VideoProcess(args)
+                result = child.close()
+                self.assertEqual(result["forced_stop"], forced)
+                self.assertTrue(child.stdout.closed)
+                if len(waits) == 3:
+                    process.kill.assert_called_once()
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory))
+            args.output.mkdir()
+            with (
+                patch.object(launcher.subprocess, "Popen", side_effect=OSError("spawn")),
+                self.assertRaises(OSError),
+            ):
+                launcher.VideoProcess(args)
+
+    def test_combined_start_after_active_and_result(self):
+        """@brief Video begins through AV-ready callback; worker shutdown remains explicit."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--audio"])
+            child = MagicMock()
+            child.process.pid = 123
+            child.close.return_value = {"exit_code": 0, "forced_stop": False}
+
+            def av(options, event, ready, health):
+                event("active")
+                ready()
+                child.process.poll.return_value = None
+                health()
+                return {"audio_worker": {"shutdown_complete": True}}
+
+            with (
+                patch.object(launcher, "run_av", side_effect=av),
+                patch.object(launcher, "VideoProcess", return_value=child),
+            ):
+                result = launcher.run(args)
+            child.close.assert_called_once_with(grace=5)
+            self.assertEqual(result["logging"]["dropped"], 0)
+            self.assertFalse(result["end_to_end_verified"])
+            self.assertTrue((args.output / "session-summary.json").exists())
+
+    def test_failure_retains_summary_and_stops_owned_video(self):
+        """@brief Capture/session errors preserve logs and do not leave an owned sender running."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--audio"])
+            child = MagicMock()
+            child.process.pid = 123
+            child.close.return_value = {"exit_code": 2, "forced_stop": True}
+
+            def failed(options, event, ready, health):
+                ready()
+                child.process.poll.return_value = 2
+                health()
+                raise RuntimeError("capture failed")
+
+            with (
+                patch.object(launcher, "run_av", side_effect=failed),
+                patch.object(launcher, "VideoProcess", return_value=child),
+                self.assertRaises(RuntimeError),
+            ):
+                launcher.run(args)
+            child.close.assert_called_once_with(grace=0)
+            result = json.loads((args.output / "session-summary.json").read_text())
+            self.assertIn("Owned video sender exited", result["error"])
+
+    def test_video_only_and_cli_exit_status(self):
+        """@brief Video-only needs no AV owner; CLI exposes incomplete cleanup as failure."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory))
+            child = MagicMock()
+            child.process.pid = 123
+            child.close.return_value = {"exit_code": 0, "forced_stop": False}
+            with (
+                patch.object(launcher, "VideoProcess", return_value=child),
+                patch.object(launcher, "run_av") as av,
+            ):
+                launcher.run(args)
+            av.assert_not_called()
+            child.close.assert_called_once_with(grace=65)
+        argv = ["--receiver", "127.0.0.1", "--start-frame-id", "0", "--output", "unused", "--video"]
+        with (
+            patch.object(
+                launcher, "run", return_value={"av": {"audio_worker": {"shutdown_complete": False}}}
+            ),
+            patch("builtins.print"),
+        ):
+            self.assertEqual(launcher.main(argv), 1)
+        with (
+            patch.object(launcher, "run", side_effect=ValueError("invalid")),
+            patch("sys.stderr"),
+            self.assertRaises(SystemExit),
+        ):
+            launcher.main(argv)
+
+    def test_route_preflight_and_partial_file_cleanup(self):
+        """@brief Reject wrong source routes and close stdout if stderr cannot be opened."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory))
+            probe = MagicMock()
+            probe.__enter__.return_value = probe
+            probe.getsockname.return_value = ("192.0.2.1", 123)
+            with (
+                patch.object(launcher.socket, "socket", return_value=probe),
+                self.assertRaises(ValueError),
+            ):
+                launcher.run(args)
+            self.assertFalse(args.output.exists())
+            args.output.mkdir()
+            output = MagicMock()
+            with (
+                patch.object(Path, "open", side_effect=[output, OSError("stderr exists")]),
+                self.assertRaises(OSError),
+            ):
+                launcher.VideoProcess(args)
+            output.close.assert_called_once()
+
+    def test_av_only_and_entrypoint(self):
+        """@brief AV-only skips route/capture and command entrypoint stays dry without side effects."""
+        import runpy
+
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--audio"])
+            args.video = False
+
+            def av_only(options, event, ready, health):
+                ready()
+                health()
+                return {"cleanup_errors": []}
+
+            with patch.object(launcher, "run_av", side_effect=av_only):
+                result = launcher.run(args)
+            self.assertNotIn("video", result)
+        with tempfile.TemporaryDirectory() as directory, patch("builtins.print"):
+            argv = [
+                "session_launcher.py",
+                "--receiver",
+                "127.0.0.1",
+                "--audio",
+                "--dry-run",
+                "--start-frame-id",
+                "0",
+                "--output",
+                str(Path(directory) / "dry"),
+            ]
+            with patch("sys.argv", argv), self.assertRaises(SystemExit) as stopped:
+                runpy.run_path(launcher.__file__, run_name="__main__")
+            self.assertEqual(stopped.exception.code, 0)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -17,6 +17,7 @@ from types import SimpleNamespace
 import av
 
 from host import clip_frames
+from msv1 import MAX_FRAME
 from stream_sender import run
 
 REVISION = "75f8497b6ffefadd8c0403728b93ccfbbfa02f52"
@@ -144,6 +145,8 @@ def run_reference(args, source=None):
         max_age_ms=args.max_age_ms,
         quality=args.quality,
         min_quality=args.min_quality,
+        max_jpeg_bytes=getattr(args, "max_jpeg_bytes", MAX_FRAME),
+        jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
         frames=args.frames,
     )
     try:
@@ -180,11 +183,27 @@ def main(argv=None):
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
+    parser.add_argument(
+        "--max-jpeg-bytes",
+        type=int,
+        default=MAX_FRAME,
+        help="Maximum complete JPEG bytes; must match receiver capacity",
+    )
+    parser.add_argument(
+        "--jpeg-retry-quality-drop",
+        type=int,
+        default=0,
+        help="Retry an oversized JPEG once at lower quality; 0 disables",
+    )
     args = parser.parse_args(argv)
     if (args.loop and not args.clip) or (args.desktop_backend != "imagegrab" and not args.desktop):
         parser.error("--loop requires --clip; --desktop-backend requires --desktop")
     if not 1 <= args.frames <= 108000:
         parser.error("Frame count must be 1..108000")
+    if not 1 <= args.max_jpeg_bytes <= MAX_FRAME:
+        parser.error(f"Maximum JPEG bytes must be 1..{MAX_FRAME}")
+    if not 0 <= args.jpeg_retry_quality_drop <= 94:
+        parser.error("JPEG retry quality drop must be 0..94")
     try:
         result = run_reference(args)
     except (OSError, ValueError, av.FFmpegError, subprocess.SubprocessError) as error:

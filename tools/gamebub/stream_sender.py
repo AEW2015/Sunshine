@@ -17,11 +17,12 @@ from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
 from event_log import EventLog
-from host import canvas, clip_frames
+from host import WIDTH, canvas, clip_frames, shift_canvas_right
 from msv1 import (
     FEEDBACK,
     MAX_FRAME,
     VIDEO,
+    JpegCapacityError,
     Pacer,
     PartialSendError,
     encode_receiver_jpeg,
@@ -262,7 +263,20 @@ class ReceiverCounterTracker:
 class Session:
     """@brief Bounded experimental JPEG sender and peer feedback collector."""
 
-    def __init__(self, sock, log, fps, mbps, max_age_ms, quality, min_quality, packet_timing=False):
+    def __init__(
+        self,
+        sock,
+        log,
+        fps,
+        mbps,
+        max_age_ms,
+        quality,
+        min_quality,
+        packet_timing=False,
+        *,
+        max_jpeg_bytes=MAX_FRAME,
+        jpeg_retry_quality_drop=0,
+    ):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
         @param sock Connected nonblocking datagram socket for the test peer.
@@ -273,6 +287,8 @@ class Session:
         @param quality Initial and maximum JPEG quality.
         @param min_quality Minimum adaptation quality.
         @param packet_timing Record per-datagram timing in the bounded event log.
+        @param max_jpeg_bytes Maximum complete JPEG bytes for this receiver session.
+        @param jpeg_retry_quality_drop One optional quality reduction after size rejection.
         """
         if (
             type(fps) is not int
@@ -282,10 +298,16 @@ class Session:
             or not math.isfinite(max_age_ms)
             or max_age_ms < 0.000001
             or not 1 <= min_quality <= quality <= 95
+            or type(max_jpeg_bytes) is not int
+            or not 1 <= max_jpeg_bytes <= MAX_FRAME
+            or type(jpeg_retry_quality_drop) is not int
+            or not 0 <= jpeg_retry_quality_drop <= 94
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
         self.packet_timing = packet_timing
+        self.max_jpeg_bytes = max_jpeg_bytes
+        self.jpeg_retry_quality_drop = jpeg_retry_quality_drop
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.quality = QualityController(quality, min_quality)
@@ -303,24 +325,90 @@ class Session:
         self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
         self.feedback_thread.start()
-        self.pipeline = VideoPipeline(self._encode, self._send, self.age_ns, MAX_FRAME)
+        self.pipeline = VideoPipeline(
+            self._encode, self._send, self.age_ns, max_jpeg_bytes, encode_frame=self._encode_frame
+        )
 
     def _event(self, kind, **fields):
         """@brief Serialize one event under the session lock and return enqueue status."""
         return self.log.submit({"event": kind, **fields})
 
-    def _encode(self, image):
-        """@brief Encode a frame and slowly adapt quality to the per-frame wire budget."""
+    def _encode_frame(self, frame):
+        """@brief Encode with frame identity and the original monotonic age deadline."""
+        return self._encode(
+            frame.image,
+            frame.captured_ns + self.age_ns,
+            frame_id=frame.frame_id,
+            capture_us=frame.capture_us,
+        )
+
+    def _encode(self, image, deadline_ns=None, *, frame_id=None, capture_us=None):
+        """@brief Encode within capacity, optionally retry once, and adapt quality.
+
+        A successful retry lowers the next-frame quality to at most the retry
+        quality; concurrent congestion is never undone. Ordinary encoder errors
+        are not retried. The pipeline supplies the original frame deadline.
+
+        @param image Owned RGB canvas.
+        @param deadline_ns Absolute monotonic deadline, or None for direct encoding.
+        @param frame_id Optional frame identifier for log correlation.
+        @param capture_us Optional capture timestamp for log correlation.
+        @return Validated complete JPEG within the configured receiver capacity.
+        @throws TimeoutError If the frame expires before or during encoding.
+        """
         with self.lock:
             quality = self.quality.value
         started = time.perf_counter_ns()
+        fields = {"frame_id": frame_id, "capture_us": capture_us}
+        retry = False
+
+        def check_deadline():
+            """@brief Avoid starting a retry or publishing an already expired result."""
+            if deadline_ns is not None and time.perf_counter_ns() > deadline_ns:
+                raise TimeoutError("Frame expired during JPEG encoding")
+
         try:
-            jpeg = encode_receiver_jpeg(image, quality)
+            check_deadline()
+            try:
+                jpeg = encode_receiver_jpeg(image, quality, self.max_jpeg_bytes)
+            except JpegCapacityError as initial:
+                with self.lock:
+                    self.counts["oversize_initial"] += 1
+                    self.quality.congested()
+                    self.recovery_eligible = False
+                    self._event(
+                        "oversize_initial",
+                        quality=quality,
+                        bytes=initial.actual_bytes,
+                        max_jpeg_bytes=self.max_jpeg_bytes,
+                        **fields,
+                    )
+                retry_quality = max(self.quality.minimum, quality - self.jpeg_retry_quality_drop)
+                if not self.jpeg_retry_quality_drop or retry_quality >= quality:
+                    raise
+                check_deadline()
+                retry = True
+                quality = retry_quality
+                with self.lock:
+                    self.counts["jpeg_retries"] += 1
+                    self._event("jpeg_retry", quality=quality, **fields)
+                jpeg = encode_receiver_jpeg(image, quality, self.max_jpeg_bytes)
+                with self.lock:
+                    self.quality.value = min(self.quality.value, quality)
+                    self.quality.headroom_frames = 0
+            check_deadline()
         except (OverflowError, OSError, ValueError) as error:
             with self.lock:
-                self.quality.congested()
+                if isinstance(error, JpegCapacityError):
+                    self.counts["oversize_dropped"] += 1
+                elif isinstance(error, TimeoutError):
+                    self.counts["encode_expired"] += 1
+                else:
+                    self.quality.congested()
+                if retry:
+                    self.counts["jpeg_retry_failures"] += 1
                 self.recovery_eligible = False
-                self._event("encode_error", quality=quality, error=str(error))
+                self._event("encode_error", quality=quality, error=str(error), **fields)
             raise
         wire = len(jpeg) + ((len(jpeg) + 1023) // 1024) * VIDEO.size
         with self.lock:
@@ -338,6 +426,7 @@ class Session:
                 quality=quality,
                 bytes=len(jpeg),
                 encode_ms=(time.perf_counter_ns() - started) / 1e6,
+                **fields,
             )
         return jpeg
 
@@ -753,6 +842,9 @@ def run(args, source=None):
     @param source Optional iterator of images for tests; None uses clip or desktop.
     @return Run summary without any claim of receiver decode or display.
     """
+    shift_right_px = getattr(args, "shift_right_px", 0)
+    if type(shift_right_px) is not int or not 0 <= shift_right_px < WIDTH:
+        raise ValueError("Right shift must be an integer from 0 to 719 pixels")
     dxgi = (
         source is None
         and not args.clip
@@ -791,6 +883,8 @@ def run(args, source=None):
             args.quality,
             args.min_quality,
             packet_timing=getattr(args, "packet_timing", False),
+            max_jpeg_bytes=getattr(args, "max_jpeg_bytes", MAX_FRAME),
+            jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -820,6 +914,9 @@ def run(args, source=None):
                 else "desktop_imagegrab",
                 start_frame_id=getattr(args, "start_frame_id", 0),
                 packet_timing=bool(getattr(args, "packet_timing", False)),
+                max_jpeg_bytes=session.max_jpeg_bytes,
+                jpeg_retry_quality_drop=session.jpeg_retry_quality_drop,
+                shift_right_px=shift_right_px,
             )
         started = time.perf_counter_ns()
         slot = 0
@@ -852,6 +949,8 @@ def run(args, source=None):
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
                 prepared = canvas(image, Image.Resampling[filter_name.upper()])
+                if shift_right_px:
+                    prepared = shift_canvas_right(prepared, shift_right_px)
                 frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
                 session.pipeline.submit(Frame(frame_id, now, stamp_us, prepared))
                 with session.lock:
@@ -906,6 +1005,24 @@ def main(argv=None):
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
+    parser.add_argument(
+        "--shift-right-px",
+        type=int,
+        default=0,
+        help="Shift content inside 720x480: black left columns and cropped right edge (0..719)",
+    )
+    parser.add_argument(
+        "--max-jpeg-bytes",
+        type=int,
+        default=MAX_FRAME,
+        help="Maximum complete JPEG bytes; must match receiver capacity",
+    )
+    parser.add_argument(
+        "--jpeg-retry-quality-drop",
+        type=int,
+        default=0,
+        help="Retry an oversized JPEG once at lower quality; 0 disables",
+    )
     args = parser.parse_args(argv)
     if args.desktop_backend != "imagegrab" and not args.desktop:
         parser.error("--desktop-backend requires --desktop")
@@ -916,6 +1033,9 @@ def main(argv=None):
         or not 1 <= args.frames <= 108000
         or not 1 <= args.fps <= 30
         or not 1 <= args.min_quality <= args.quality <= 95
+        or not 0 <= args.shift_right_px < WIDTH
+        or not 1 <= args.max_jpeg_bytes <= MAX_FRAME
+        or not 0 <= args.jpeg_retry_quality_drop <= 94
         or any(not math.isfinite(v) or v <= 0 for v in (args.mbps, args.max_age_ms))
     ):
         parser.error("Invalid port, frame count, fps, quality, bitrate or deadline")

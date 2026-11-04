@@ -5,6 +5,9 @@ description = "Offline Game Bub Windows capture and JPEG conformance laboratory"
 requires-python = ">=3.11,<3.15"
 dependencies = ["pillow>=10.2", "av>=16"]
 
+[project.optional-dependencies]
+windows-audio = ["pyaudiowpatch>=0.2.12.7; sys_platform == 'win32'"]
+
 [dependency-groups]
 dev = ["coverage>=7", "ruff>=0.14"]
 
@@ -13,7 +16,7 @@ line-length = 100
 
 [tool.coverage.run]
 branch = true
-source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline", "stream_sender", "controller", "quality", "event_log", "reference_loopback", "quality_budget", "analyze_sender_log", "rate_sweep"]
+source = ["host", "make_assets", "realtime", "seed_pairing", "msv1", "pipeline", "stream_sender", "controller", "quality", "event_log", "reference_loopback", "quality_budget", "analyze_sender_log", "rate_sweep", "windows_audio", "audio_codec", "windows_gamepad", "make_audio_assets", "av_protocol", "av_session", "verify_av_vectors", "gamepad_backend", "gamepad_client", "live_audio", "live_session", "session_launcher", "prepare_v20_fixtures", "verify_v20_native", "prepare_v20_body_fixtures", "verify_v20_body", "prepare_v20_encoder_cases", "verify_v20_encoder"]
 
 [tool.coverage.report]
 show_missing = true

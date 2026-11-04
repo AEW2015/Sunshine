@@ -79,6 +79,30 @@ def canvas(
     return result
 
 
+def shift_canvas_right(image: Image.Image, pixels: int) -> Image.Image:
+    """@brief Translate a prepared canvas right, filling left with black and cropping right.
+
+    This moves pixels inside the encoded frame; it does not move the receiver's
+    panel viewport or change dimensions, aspect ratio or the JPEG profile.
+
+    @param image Prepared RGB 720x480 canvas; never mutated or retained.
+    @param pixels Rightward translation in whole pixels, from 0 to 719.
+    @return A new owned RGB 720x480 image, including for a zero-pixel shift.
+    @throws ValueError If the canvas or shift is outside the supported bounds.
+    """
+    if (
+        not isinstance(image, Image.Image)
+        or image.mode != "RGB"
+        or image.size != (WIDTH, HEIGHT)
+        or type(pixels) is not int
+        or not 0 <= pixels < WIDTH
+    ):
+        raise ValueError("Expected RGB 720x480 canvas and right shift 0..719")
+    result = Image.new("RGB", (WIDTH, HEIGHT))
+    result.paste(image, (pixels, 0))
+    return result
+
+
 @cache
 def pattern_indices() -> Image.Image:
     """@brief Cache indexed fine-detail pixels so fixture rendering does not dominate timing.

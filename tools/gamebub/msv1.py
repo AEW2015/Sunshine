@@ -79,13 +79,33 @@ class ValidatedJpeg(bytes):
         return super().__new__(cls, data)
 
 
-def encode_receiver_jpeg(image, quality):
+class JpegCapacityError(ValueError):
+    """@brief Report an encoded JPEG that exceeds a caller's byte capacity.
+
+    @param actual_bytes Encoded JPEG size in bytes.
+    @param max_bytes Maximum permitted JPEG size in bytes.
+    """
+
+    def __init__(self, actual_bytes: int, max_bytes: int):
+        """@brief Store the encoded size and configured capacity.
+
+        @param actual_bytes Encoded JPEG size in bytes.
+        @param max_bytes Maximum permitted JPEG size in bytes.
+        """
+        self.actual_bytes = actual_bytes
+        self.max_bytes = max_bytes
+        super().__init__(f"Encoded JPEG is {actual_bytes} bytes; capacity is {max_bytes} bytes")
+
+
+def encode_receiver_jpeg(image, quality, max_bytes=MAX_FRAME):
     """@brief Encode and validate one exact receiver-profile JPEG.
 
     @param image RGB 720x480 source canvas.
     @param quality JPEG quality from 1 to 95.
+    @param max_bytes Maximum encoded size, from 1 to MAX_FRAME bytes.
     @return Immutable validated JPEG, ready for MSV1 packetization.
-    @throws ValueError If image, quality or actual JPEG format is unsupported.
+    @throws ValueError If image, quality, capacity or actual JPEG format is unsupported.
+    @throws JpegCapacityError If encoded JPEG exceeds max_bytes.
     """
     if (
         not isinstance(image, Image.Image)
@@ -93,8 +113,10 @@ def encode_receiver_jpeg(image, quality):
         or image.size != (WIDTH, HEIGHT)
         or type(quality) is not int
         or not 1 <= quality <= 95
+        or type(max_bytes) is not int
+        or not 1 <= max_bytes <= MAX_FRAME
     ):
-        raise ValueError("Expected RGB 720x480 and JPEG quality 1..95")
+        raise ValueError("Expected RGB 720x480, JPEG quality 1..95 and capacity 1..MAX_FRAME")
     output = BytesIO()
     image.save(
         output,
@@ -105,7 +127,12 @@ def encode_receiver_jpeg(image, quality):
         progressive=False,
         restart_marker_blocks=0,
     )
-    return ValidatedJpeg(output.getvalue())
+    data = output.getvalue()
+    if len(data) > max_bytes:
+        raise JpegCapacityError(len(data), max_bytes)
+    # The encoder input is fixed at 720x480, bounding its raw output work; check
+    # the actual encoded length before the stricter MAX_FRAME validator runs.
+    return ValidatedJpeg(data)
 
 
 def frame_datagrams(jpeg: bytes, frame_id: int, capture_us: int, payload_size: int = MAX_PAYLOAD):

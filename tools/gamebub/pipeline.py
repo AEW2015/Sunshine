@@ -36,7 +36,9 @@ class VideoPipeline:
     run concurrently. Callbacks must not retain or mutate frame data after returning.
     """
 
-    def __init__(self, encode, send, max_age_ns, max_encoded_bytes, clock=perf_counter_ns):
+    def __init__(
+        self, encode, send, max_age_ns, max_encoded_bytes, clock=perf_counter_ns, encode_frame=None
+    ):
         """@brief Start workers with bounded queues and injectable callbacks/clock.
 
         @param encode Callable accepting an RGB canvas and returning JPEG bytes.
@@ -44,10 +46,13 @@ class VideoPipeline:
         @param max_age_ns Maximum age before encode and send, in monotonic nanoseconds.
         @param max_encoded_bytes Maximum complete encoded frame size.
         @param clock Monotonic nanosecond clock shared with submitted timestamps.
+        @param encode_frame Optional callable accepting a complete Frame for deadline-aware
+            encoding; when omitted, encode is called with the frame's image as before.
         """
         if any(type(v) is not int or v <= 0 for v in (max_age_ns, max_encoded_bytes)):
             raise ValueError("Pipeline limits must be positive integers")
         self.encode, self.send, self.clock = encode, send, clock
+        self.encode_frame = encode_frame
         self.max_age_ns, self.max_encoded_bytes = max_age_ns, max_encoded_bytes
         self.condition = Condition()
         self.raw = self.encoded = None
@@ -111,7 +116,11 @@ class VideoPipeline:
                     self.counts["stale_before_encode"] += 1
                 continue
             try:
-                payload = self.encode(frame.image)
+                payload = (
+                    self.encode_frame(frame)
+                    if self.encode_frame is not None
+                    else self.encode(frame.image)
+                )
                 if not isinstance(payload, bytes) or not 0 < len(payload) <= self.max_encoded_bytes:
                     raise ValueError("Encoded frame outside configured bounds")
             except Exception as error:  # noqa: BLE001 - keep worker alive after callback failures

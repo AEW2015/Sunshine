@@ -75,9 +75,18 @@ class ReferenceLoopbackTests(unittest.TestCase):
         for invalid in (
             [*args, "--desktop-backend", "ddagrab"],
             ["--reference-repo", "unused", "--desktop", "--log", "unused", "--loop"],
+            [*args, "--max-jpeg-bytes", "0"],
+            [*args, "--max-jpeg-bytes", "262145"],
+            [*args, "--jpeg-retry-quality-drop", "-1"],
+            [*args, "--jpeg-retry-quality-drop", "95"],
         ):
-            with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit):
+            with (
+                patch("reference_loopback.run_reference") as run_reference,
+                patch("sys.stderr", new_callable=io.StringIO),
+                self.assertRaises(SystemExit),
+            ):
                 reference.main(invalid)
+            run_reference.assert_not_called()
         with (
             patch("reference_loopback.run_reference", side_effect=ValueError("bad")),
             patch("sys.stderr", new_callable=io.StringIO),
@@ -343,6 +352,8 @@ class ReferenceLoopbackTests(unittest.TestCase):
             frames=1,
             desktop_backend="ddagrab",
             packet_timing=True,
+            max_jpeg_bytes=180000,
+            jpeg_retry_quality_drop=12,
         )
         with (
             patch("reference_loopback.load_reference"),
@@ -352,6 +363,8 @@ class ReferenceLoopbackTests(unittest.TestCase):
             reference.run_reference(args)
         self.assertEqual(send.call_args.args[0].desktop_backend, "ddagrab")
         self.assertTrue(send.call_args.args[0].packet_timing)
+        self.assertEqual(send.call_args.args[0].max_jpeg_bytes, 180000)
+        self.assertEqual(send.call_args.args[0].jpeg_retry_quality_drop, 12)
         peer.close.assert_called_once()
 
 

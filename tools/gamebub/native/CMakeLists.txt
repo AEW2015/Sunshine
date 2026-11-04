@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.20)
+project(gamebub_v20_conformance LANGUAGES CXX)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+include(
+  "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/dependencies/nlohmann_json.cmake")
+add_executable(gamebub-v20-conformance conformance.cpp)
+target_compile_features(gamebub-v20-conformance PRIVATE cxx_std_20)
+target_link_libraries(gamebub-v20-conformance PRIVATE OpenSSL::Crypto
+                                                 nlohmann_json::nlohmann_json)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(gamebub-v20-conformance PRIVATE -Wall -Wextra -Werror)
+endif()
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_link_options(gamebub-v20-conformance PRIVATE -static)
+endif()

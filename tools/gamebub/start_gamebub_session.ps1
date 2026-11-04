@@ -1,0 +1,35 @@
+<#
+.SYNOPSIS
+Launch the finite experimental JPEG/audio/controller sender with explicit modes.
+.DESCRIPTION
+No installed Sunshine service or game settings are changed. Stop any existing
+AV session first. Logs never overwrite existing evidence directories.
+#>
+param(
+    [Parameter(Mandatory=$true)][string]$Receiver,
+    [string]$BindAddress = '192.168.0.47',
+    [ValidateRange(1,7200)][int]$Seconds = 60,
+    [Parameter(Mandatory=$true)][uint32]$StartFrameId,
+    [Parameter(Mandatory=$true)][string]$Output,
+    [switch]$Video,
+    [switch]$Audio,
+    [switch]$Gamepad,
+    [switch]$DryRun,
+    [ValidateSet('standard','elden-ring','mass-effect','wow')][string]$Profile = 'standard',
+    [ValidateRange(1,30)][int]$FPS = 5,
+    [ValidateRange(1,95)][int]$Quality = 25,
+    [double]$Mbps = 2,
+    [ValidateRange(0,1)][double]$Gain = 0.75
+)
+$ErrorActionPreference = 'Stop'
+$sessionPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
+$sessionArgs = @('-u',(Join-Path $PSScriptRoot 'session_launcher.py'),'--receiver',$Receiver,
+    '--bind',$BindAddress,'--seconds',$Seconds,'--start-frame-id',$StartFrameId,
+    '--output',$Output,'--profile',$Profile,'--fps',$FPS,'--quality',$Quality,
+    '--mbps',$Mbps,'--gain',$Gain)
+if ($Video) {$sessionArgs += '--video'}
+if ($Audio) {$sessionArgs += '--audio'}
+if ($Gamepad) {$sessionArgs += '--gamepad'}
+if ($DryRun) {$sessionArgs += '--dry-run'}
+& $sessionPython @sessionArgs
+exit $LASTEXITCODE

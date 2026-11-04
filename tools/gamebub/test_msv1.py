@@ -4,6 +4,7 @@ import contextlib
 import hashlib
 import io
 import json
+import random
 import socket
 import struct
 import tempfile
@@ -17,6 +18,8 @@ from PIL import Image
 from host import Profile, canvas, encode, pattern
 from msv1 import (
     FEEDBACK,
+    MAX_FRAME,
+    JpegCapacityError,
     Pacer,
     PartialSendError,
     ValidatedJpeg,
@@ -82,6 +85,31 @@ class ReceiverProtocolTests(unittest.TestCase):
             self.assertEqual(validate.call_count, 1)
             self.assertEqual(packets, list(frame_datagrams(reference, 1, 2)))
             self.assertEqual(validate.call_count, 2)
+
+    def test_receiver_encoder_reports_encoded_capacity(self):
+        """@brief Report real JPEG sizes before the protocol frame bound is validated."""
+        pixels = random.Random(42).randbytes(720 * 480 * 3)
+        image = Image.frombytes("RGB", (720, 480), pixels)
+        jpeg = encode_receiver_jpeg(image, 75)
+        self.assertLessEqual(len(jpeg), MAX_FRAME)
+        with self.assertRaises(JpegCapacityError) as raised:
+            encode_receiver_jpeg(image, 95)
+        self.assertGreater(raised.exception.actual_bytes, MAX_FRAME)
+        self.assertEqual(raised.exception.max_bytes, MAX_FRAME)
+
+        exact = encode_receiver_jpeg(image, 75, max_bytes=len(jpeg))
+        self.assertEqual(exact, jpeg)
+        with self.assertRaises(JpegCapacityError) as raised:
+            encode_receiver_jpeg(image, 75, max_bytes=len(jpeg) - 1)
+        self.assertEqual(raised.exception.actual_bytes, len(jpeg))
+        self.assertEqual(raised.exception.max_bytes, len(jpeg) - 1)
+
+    def test_receiver_encoder_rejects_invalid_capacity(self):
+        """@brief Require a strict integer capacity inside the receiver frame bound."""
+        image = canvas(pattern(0))
+        for max_bytes in (0, -1, MAX_FRAME + 1, True, 1.0, "100"):
+            with self.subTest(max_bytes=max_bytes), self.assertRaises(ValueError):
+                encode_receiver_jpeg(image, 75, max_bytes)
 
     def test_validated_jpeg_and_encoder_reject_invalid_inputs(self):
         """@brief Reject mutable or invalid bytes, wrong canvas modes and invalid quality."""

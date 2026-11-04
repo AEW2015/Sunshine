@@ -1277,6 +1277,9 @@ class StreamSenderTests(unittest.TestCase):
                     "source_backend": "provided_iterator",
                     "start_frame_id": 0xFFFFFFFE,
                     "packet_timing": True,
+                    "max_jpeg_bytes": 262144,
+                    "jpeg_retry_quality_drop": 0,
+                    "shift_right_px": 0,
                 }
             ],
         )
@@ -1380,6 +1383,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_adaptation_and_network_errors(self):
         """@brief Congestion and encoder/socket failures lower quality within bounds."""
         s = Session.__new__(Session)
+        s.max_jpeg_bytes, s.jpeg_retry_quality_drop = 262144, 0
         s.lock, s.log, s.sock = threading.Lock(), MemoryEvents(), Mock()
         s.quality = QualityController(75, 20, recovery_frames=1)
         s.recovery_eligible = True
@@ -1475,6 +1479,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_quality_does_not_recover_on_old_feedback(self):
         """@brief Old ACKs do not permit quality recovery while the send worker is blocked."""
         s = Session.__new__(Session)
+        s.max_jpeg_bytes, s.jpeg_retry_quality_drop = 262144, 0
         s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(0, 10, 20)
         s.quality.congested()
@@ -1489,6 +1494,7 @@ class StreamSenderTests(unittest.TestCase):
     def test_quality_does_not_recover_before_first_send(self):
         """@brief An unstarted feedback gate cannot establish congestion recovery."""
         s = Session.__new__(Session)
+        s.max_jpeg_bytes, s.jpeg_retry_quality_drop = 262144, 0
         s.lock, s.log = threading.Lock(), MemoryEvents()
         s.quality, s.gate = QualityController(75, 20, recovery_frames=1), FeedbackGate(None)
         s.quality.congested()

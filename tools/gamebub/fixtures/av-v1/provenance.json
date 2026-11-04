@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/AEW2015/moonbub",
+  "revision": "dff5452871e911a60c8a278134e1f6fabdaa95e2",
+  "path": "host/av-v1/fixtures/av-v1",
+  "sha256": {
+    "vectors.json": "2e9e08054dacff5286cefbc71a34eb686a3aeab597ca860f952cf887dc5e9ab8",
+    "stereo-505.ima": "6f7b164913f0da782f7d21c1ba56f891849cebf890799602092f3db63f73a373",
+    "stereo-505-decoded.s16le": "85459adb008cf8af659afb72f6f03823940f1393bbc92a39840b9adfd62a81cc",
+    "stereo-505.wav": "3a32636242d50d2169c1f7317bc7f4c73f6c4e0febcd2385e8ea194d58b1492a"
+  }
+}

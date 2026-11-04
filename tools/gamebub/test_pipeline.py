@@ -216,6 +216,51 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(p.snapshot()["counts"]["sent"], 1)
         self.assertEqual(p.snapshot()["last_error"], "send: OSError: send")
 
+    def test_metadata_encoder_receives_frame_and_recovers_after_error(self):
+        """@brief Optional encoder gets capture metadata and callback errors keep the worker alive."""
+        received, sent = [], []
+
+        def encode_frame(frame):
+            """@brief Fail once, then encode the next complete metadata-bearing frame."""
+            received.append(frame)
+            if frame.frame_id == 1:
+                raise ValueError("retry deadline elapsed")
+            return str(frame.frame_id).encode()
+
+        pipeline = VideoPipeline(
+            lambda image: self.fail("legacy encoder should not be called"),
+            lambda frame, payload: sent.append((frame.frame_id, payload)) or True,
+            100,
+            10,
+            lambda: self.now,
+            encode_frame=encode_frame,
+        )
+        try:
+            for number in (1, 2):
+                self.assertTrue(pipeline.submit(self.frame(number, captured=90 + number)))
+                with pipeline.condition:
+                    self.assertTrue(
+                        pipeline.condition.wait_for(
+                            lambda number=number: (
+                                pipeline.counts["encode_failures"] + pipeline.counts["sent"]
+                                == number
+                            ),
+                            5,
+                        )
+                    )
+        finally:
+            pipeline.close()
+
+        self.assertEqual(
+            [(frame.frame_id, frame.captured_ns, frame.capture_us) for frame in received],
+            [(1, 91, 1), (2, 92, 2)],
+        )
+        self.assertEqual(sent, [(2, b"2")])
+        self.assertEqual(pipeline.snapshot()["counts"]["encode_failures"], 1)
+        self.assertEqual(
+            pipeline.snapshot()["last_error"], "encode: ValueError: retry deadline elapsed"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
