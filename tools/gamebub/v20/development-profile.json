@@ -1,0 +1,114 @@
+{
+  "schema": "gamebub-v20-development-profile-v1",
+  "name": "AR03 mandatory-HUD hardware development profile",
+  "wire_version": 3,
+  "geometry": {
+    "coded": [
+      720,
+      480
+    ],
+    "active": [
+      720,
+      405
+    ],
+    "scheduled_ids_per_second": 30
+  },
+  "complete_frame_cap": 49152,
+  "host_policy": {
+    "default_inner": "GM01",
+    "mandatory_exact_rgb565_regions": [
+      [
+        22,
+        54,
+        160,
+        24
+      ],
+      [
+        22,
+        82,
+        160,
+        24
+      ],
+      [
+        168,
+        360,
+        320,
+        24
+      ],
+      [
+        168,
+        390,
+        240,
+        24
+      ]
+    ],
+    "base_regions": [
+      [
+        16,
+        48,
+        192,
+        80
+      ],
+      [
+        160,
+        352,
+        400,
+        80
+      ]
+    ],
+    "bounded_roi_background_scales": [
+      [
+        8,
+        16
+      ],
+      [
+        8,
+        32
+      ],
+      [
+        16,
+        32
+      ],
+      [
+        32,
+        32
+      ]
+    ],
+    "fallback": "reject entire frame after all declared profiles fail; no omitted mandatory patch"
+  },
+  "decoder": {
+    "inverse": "two-pass Q14 biased floor; exact zero/DC and sparse GENERAL products",
+    "dequantized_input_signed_bits": 32,
+    "prediction": "add residual before clip to0..255",
+    "physical_reference_samples": "uint8 after clip",
+    "canonical_tag": "SHA256(le16(width)||le16(height)||Y_le_i16||Cb_le_i16||Cr_le_i16)[:16]",
+    "overlay": "display-only exact RGB565, never predictor/tag"
+  },
+  "protocol": {
+    "transport": "GF03 with TOKEN prefix; PC18/QC18 packet permits; FG19 exact frame grants; AF03 decoded reference confirmation",
+    "capability_negotiation": "required before runtime use; not implemented by this kit",
+    "reset_rekey": "required before production recovery; laboratory epoch1 only"
+  },
+  "status": {
+    "python_models": true,
+    "portable_scalar_c_inverse": true,
+    "fpga_decoder_rtl": false,
+    "mapped_resource_timing_fit": false,
+    "esp_isa_rf_calibration": false,
+    "physical_30fps": false
+  },
+  "gates": {
+    "complex_scene_forward_data_projection_Mbps_at30": 11.376,
+    "projection_excludes": "FG19/reverse credits/radio overhead",
+    "old_assumed_link_Mbps": 8,
+    "all_native_inline_service_profiles_miss_33ms": true
+  },
+  "implementation_documents": [
+    "README.md",
+    "SCHEMA.md",
+    "ACCEPTANCE.md",
+    "TASKS.md"
+  ],
+  "wire_contract": "wire-contract.json",
+  "golden_inverse": "golden-index.json"
+}
