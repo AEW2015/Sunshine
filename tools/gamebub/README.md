@@ -7,43 +7,42 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v16-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v16-20261103),
-paired with [Moonbub v16](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v16-20261103).
-Read the [v16 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v16-20261103/docs/custom-codec-prototype-v16-2026-11-03.md),
-[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v16-20261103/docs/gamebub-application-specific-codec-plan.md),
-and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v16-20261103/docs/dev-handoff-2026-11-03.md).
+[`handoff/gamebub-app-codec-v17-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v17-20261103),
+paired with [Moonbub v17](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v17-20261103).
+Read the [v17 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/custom-codec-prototype-v17-2026-11-03.md),
+[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/gamebub-application-specific-codec-plan.md),
+and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v17-20261103/docs/dev-handoff-2026-11-03.md).
 Earlier branches remain frozen.
 
-V16 supplies ten complete portable AR02 golden frames, twelve actual GF02
-chunks, exact reconstructed YUV banks/display words/AF02 feedback, and ten
-malformed or binding-negative vectors. This gives native/FPGA developers a
-shared contract for the separately negotiated application-specific codec.
-It is not an independently implemented decoder or an installed Sunshine mode.
+V17 implements an actual AR03/AF03 bank-local refresh profile. Independent keys
+replace bank 0 while confirmed bank-1 P frames can continue. Exact publication
+ACKs, typed leases, destination reservations and expiry precedence remain. On
+180 distinct regression source IDs at 720×480 coded / 720×405 active, periodic
+refresh improves 161→178 eventual presentations with all four exact UI patches.
+The repeat matches packet/source IDs. The rolling five-second count 151 is phase,
+not a capture rate above 30 Hz; maximum presentation gaps remain 66.667 ms.
 
-Actual GM/SR packet coefficient traces now drive explicit DSP-operation,
-publication-hash, capacity and shared-memory/scanout planning. Hypothetical
-arithmetic issue rates and average bus service do not prove physical DSP fit,
-FPGA clocks, line deadlines or 30 fps. A bounded stripe-tag experiment tests
-canonical hash ordering; hardware fusion still needs implementation.
+Prospective host pacing bounds an active body, latest pending candidate, packet
+credits, mailbox and feedback ledger. Credit framing is paid: 56-byte header and
+1,008-byte payload retain a 1,064-byte datagram within the existing 1,065-byte DMA
+allocation. Zero modeled mailbox overflow trades throughput/admission for bounded
+backlog/occupancy. Dropping encoded reference publications can break later P frames, so these
+size-only traces are not decoded-video proof. Consumed packet credits differ
+from AF03 decoded YUV publication ACKs. Host candidate/commit integration is next.
 
-Full-resolution 720×480 coded / 720×405 active GM+UI refresh tests retain all
-four exact source RGB565 regions. Five matched independent refresh keys shrink
-16.07% with a coarser background, but change source quality and future references;
-the coarse-30 case does not save net wire bytes. Periodic refresh remains below
-30 modeled IDs/s (26.6–27.0 for refresh-30; 29.2 for refresh-90). Initial-only
-repeats at 29.8 versus v15's conditional 30.0, showing limited Python margin.
+A separate memory study adds per-burst arbitration, refresh/row/turnaround/stall
+costs, bounded local staging and epoch-tagged panel prefetch. It distinguishes
+logical front-ID cadence from complete clean panel epochs. Repeated coefficient
+traffic templates do not represent distinct decoded gameplay or fitted hardware.
 
-The paired Moonbub branch holds Python sources, portable fixture schema,
-source-pinned evidence, tests and `experiments/verify_prototype_v16.py`.
-Next port bounded integer decoding against those vectors, qualify stripe/tag
-ordering and memory/scanline service, then design bank-local or sliced refresh.
-The dedicated ESP32 gateway model bounds queues and makes CPU, RF, DMA/driver,
-UI contention and RAM reserves explicit assumptions. Existing firmware is MSV1
-JPEG with no enabled PSRAM, not an AR02/GF02 implementation. Raw QSPI clock and
-Python timings do not qualify ESP32 goodput. Native concurrency, capture,
-physical links/memory, recovery and target 30 fps remain unproved. This branch publishes host handoff references only; the installed
-service and encoder are unchanged. AR02/AF02 are unsupported by installed
-JPEG/GM01/standard Moonlight peers. V13 below is historical.
+The paired branch carries sources, retained evidence, tests, independent audit
+and `experiments/verify_prototype_v17.py`. These are separate conditional Python
+models, not one joint native system. Current ESP32 firmware remains MSV1 JPEG;
+AR03/credit forwarding is unimplemented. Calibrate actual CPU/CRC/DMA/heap, Wi-Fi
+batching/RTT and FIFO/SDRAM service, then qualify mapped addresses, resources,
+clocks and scanline deadlines before claiming physical 30 fps. This Sunshine branch
+publishes host handoff references only; the installed service is unchanged.
+V13 below is historical.
 
 V13 implements real cap-before-commit source reuse: native combat preparation
 falls 20.30→11.54 ms, while the distinct second sample pays 0.67% overhead.
