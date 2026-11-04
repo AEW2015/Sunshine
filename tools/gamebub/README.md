@@ -7,43 +7,41 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v18-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v18-20261103),
-paired with [Moonbub v18](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v18-20261103).
-Read the [v18 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/custom-codec-prototype-v18-2026-11-03.md),
-[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/gamebub-application-specific-codec-plan.md),
-and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v18-20261103/docs/dev-handoff-2026-11-03.md).
-Earlier branches remain frozen; this branch changes host handoff documentation only.
+[`handoff/gamebub-app-codec-v19-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v19-20261103),
+paired with [Moonbub v19](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v19-20261103).
+Read the [v19 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v19-20261103/docs/custom-codec-prototype-v19-2026-11-03.md),
+[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v19-20261103/docs/gamebub-application-specific-codec-plan.md),
+and [developer handoff](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v19-20261103/docs/dev-handoff-2026-11-03.md).
+Earlier branches remain frozen. This branch updates handoff documentation only;
+Sunshine native code and the installed service are unchanged.
 
-V18 splits actual AR03 candidate construction from identity/bank commit. A candidate
-owns its source reference; admission rejection pays construction/discard without
-sending bytes or changing publication identity. Native controls give 42 byte/pixel
-identical commits, six transport discards and four cap rejections.
+V19 models actual FG19 receiver frame-slot grants before committing AR03 candidates.
+Five data tokens reserve one physical mailbox position for FG19/QC18 control.
+FINISH is sent after packet permits return; FINISHED frees the control token, while
+separate RELEASE follows receiver ingress/read/decode drain. Source reference
+publication still requires AF03. Exact epoch/frame/nonce/slot/body identity, safe
+cancellation, stale replies and bounded unknown-outcome stops are tested. Every
+FG19 message pays 36 wire bytes plus 28 IPv4/UDP bytes. No installed MSV1 firmware
+supports this prospective protocol. Fixed-service and partition-only controls
+expose policy overhead; remeasured Python outcomes are not causal speedup claims.
 
-One finite controller now carries actual AR03 through precommit admission, individual
-GF03 v3 fragments, PC18 consumed-packet credits/QC18 queries, reassembly, decode and
-AF03 bank publication. Its prospective 1,008-byte payload + 31-byte GF header +
-16-byte identity prefix gives a maximum 1,055-byte UDP datagram within the existing
-1,065-byte DMA allocation. PC18 is 29 bytes, QC18 28 bytes; IPv4/UDP costs are paid.
-Six data tokens and one query control token bound ownership. Consumed credits do
-not publish decoded references. The installed MSV1 JPEG endpoint does not support
-this new protocol or its proposed true-FIFO interface.
+The paired sparse decoder study proves 97,308 AR03 blocks, reconstructed YUV and
+selected UI pixels against frozen vectors. Sparse GENERAL inverse saves 84.64% of
+products beyond existing zero/DC bypass; conditional whole-model service saves 4.27%.
+Compact YUV8 storage preserves canonical int16 reference tags and saves another 20.18%.
+These optimizations preserve experimental AR03 syntax but do not implement an
+installed decoder. All ten native conditional decoder profiles miss 33.33 ms.
 
-Six full-resolution 90-frame native regressions and two 48-frame fault controls
-cover 636 captures; all finish with bounded state drained and zero selected UI
-word errors. The 150-ms / 8-ms-batch case presents 70/90 with 15 paid precommit
-rejections and no receiver NACKs. Native diagnostic windows span 19.5–29 IDs/s;
-no sustained physical 30 fps is proved. Remeasured Python costs change scheduling,
-so profile ranking is not a controlled speedup comparison. AR03 trace fixtures
-retain 16 packets, decoded references, 97,308 coefficient blocks and 53 atomic
-negative cases; native peak stripe token demand reaches 9.05× the uniform mean.
-
-Next reserve receiver capacity, connect actual traces to incremental decode and
-SDRAM/scanline scheduling, then calibrate bounded native ESP32 CRC/copy/DMA/heap,
-Wi-Fi RTT/batching, QSPI/FIFO and FPGA memory/resource timing. Port behind explicit
-negotiation/reset; preserve the working JPEG hardware baseline. Run the paired
-`experiments/verify_prototype_v18.py` for retained evidence and independent audit.
-Python CPU/ESP32 budgets are conditional; this is not ISA, RF or fitted-FPGA proof.
-The Sunshine native encoder and installed service are unchanged.
+Some complex-scene frames omit a requested HUD patch to meet the 49,152-byte cap;
+selected-patch exactness is not full HUD coverage. Reserve mandatory HUD bytes before
+adapting background quality in the next encoder policy.
+Next fuse ordered canonical tagging and compact color/output, test a smaller
+compressed refill cache with explicit memory arbitration, port bounded exact kernels,
+and calibrate native host/ESP32 CPU/DMA/heap/RF/QSPI plus FPGA mapped memory/resource/
+timing. The current local planning footprint is 100,112 bytes with a 49,152-byte packet
+cache; control/parser state and external banks are outside it. It is not BRAM fit.
+Run paired `experiments/verify_prototype_v19.py` for hashes, vectors, deterministic
+service checks and independent audit. Preserve the working JPEG hardware baseline.
 V13 below is historical.
 
 V13 implements real cap-before-commit source reuse: native combat preparation
