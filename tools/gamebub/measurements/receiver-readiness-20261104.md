@@ -144,3 +144,30 @@ is not an achieved result.
 The source refs above were fetched as remote-tracking refs in the isolated
 artifact repository without checkout/reset. Installed service/device state is
 **unknown** from this audit.
+
+## 2026-11-04 addendum: latest published receiver studies
+
+A fresh `git ls-remote --heads origin` in the no-checkout MoonBub artifact
+repository found no v25+ handoff. The latest versioned sources remain v24
+(`4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189`), v23
+(`507ceb54c97e6a19b8bb21f5ab416dd3eb671e18`), and v22
+(`463b9279870d6654f00d21a87aed9d4fff6fa623`). It also found v21 display-cache
+study `de8b9e78754880a7309d56f1137f0edc8f43e4a2`. V21 explicitly describes
+itself as a Python study/specification that installs no native endpoint; its
+CB21 carriage is an offline fixture format. V24's CP23/JA23/RS24 evidence
+remains software/model evidence: it does not provide RTL, a fitted physical
+decoder, an installed recovery service, or physical throughput results.
+Neither study supplies fresh installed-device evidence. The readiness decision
+above is unchanged.
+
+**First functional custom hardware test:** not yet evidenced as startable. An
+FPGA-only local fixture needs a complete functional decoder image, local
+injection of known-frame bytes, expected decode/display/release observations,
+and an agreed owner and safe-stop procedure; it does not require a network
+endpoint. A Windows-to-MoonBub test additionally needs a compatible custom
+sender and host/ESP receiver endpoint with an assigned port, tested using the
+actual known-frame bytes, plus a mutually agreed bounded profile, observations,
+ownership, and safe-stop/reset procedure. A single frame does not require
+throughput qualification; the 30 fps claim still needs subsequent full-path
+measurements. Current installed device/image and the prior JPEG/AV demo's status
+remain unverified here. No ETA can be inferred from the published sources.

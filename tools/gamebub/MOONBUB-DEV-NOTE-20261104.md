@@ -2,10 +2,24 @@
 
 Date: 2026-11-04
 
-Latest checkpoint: Windows now has offline RS24 wire conformance against
+Host-control follow-up: [Windows now replays RS24 host phases and retries](measurements/v24-host-reset-20261104.md),
+including all eight single-loss positions, lost GO_ACK and modeled reboot epochs.
+Real packet/frame accounting tests retain owners after PC18/FINISHED. Drain is
+still an explicit model input, and published traces have no owner snapshots.
+Please provide full owner/drain/write/vblank transcripts and a deployable local
+decoder fixture before we describe custom hardware testing as ready. A local
+FPGA fixture can precede networking; a Windows test additionally needs the
+compatible CP23 media sender and an agreed ESP endpoint/port.
+
+Current verification: 97 native GameBub tests pass; the Python suite completes
+383 tests with five skips; the 20 encoder golden cases still match. The new
+host/replay headers reach full executable-line coverage across the native-test
+and Debug CLI translation units; this is not full branch or physical coverage.
+
+Previous wire checkpoint: Windows added offline RS24 wire conformance against
 MoonBub `4025d355`: all 124 frozen controls reproduce exactly and 5,704
 single-byte corruptions are rejected. This is syntax/byte verification only;
-no reset state machine or CP23 media endpoint is enabled. See
+no live reset or CP23 media endpoint is enabled. See
 [the checkpoint](measurements/v24-reset-wire-20261104.md) for reproduction and
 the next state/ownership gates. The implementation/test counts below describe
 the earlier encoder checkpoint, not the complete current tree.

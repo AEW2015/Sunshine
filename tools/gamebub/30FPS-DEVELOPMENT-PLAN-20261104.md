@@ -197,16 +197,23 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+Windows now has [bounded host reset-control replay](measurements/v24-host-reset-20261104.md)
+for the pinned nominal/loss/reboot campaigns and explicit modeled owner gates.
+The published traces omit owner/drain facts, so this is not complete ownership
+or receiver-reset replay. CP23/JA23 media, fresh-epoch key/full-HUD enforcement,
+durable recovery and the physical decoder/endpoint gates remain open.
+
 Windows has since added an offline RS24 parser/serializer and pinned-byte
 replay of all 124 v24 controls. See [the checkpoint and reproduction steps](measurements/v24-reset-wire-20261104.md).
 This closes the wire-syntax subtask only. Full reset/ownership transition replay,
 CP23/JA23 media conformance and a compatible custom hardware endpoint remain open.
 The WoW demo is stopped; its incomplete measurement is [recorded separately](measurements/wow-demo-20261104.md).
 
-The receiver now reports JPEG/AV as its only available hardware path and is
-starting a v22 app-only regression with the FPGA unchanged. Wait for its fresh
-post-update identity/readiness/counters before a short existing-path control run.
-No deployable GM01 fixture image, custom receiver or custom port is reported.
+The last receiver report identifies JPEG/AV as its only available hardware path.
+A v22 app-only demo was attempted; the stopped demo does not establish current
+installed identity or readiness. Confirm source binding, image and fresh counters
+before another controlled existing-path run. No deployable custom fixture image,
+custom receiver or custom port is reported by the latest source audit.
 
 A newer offline study at MoonBub `4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189`
 adds CP23/JA23/RS24 profile/reset modeling with explicit drain/write/vblank
@@ -233,6 +240,7 @@ gameplay/capture or live custom endpoint gates.
   adopts the custom-first order and identifies the missing full pipeline and
   ownership-model events. This does not confirm a live contract or hardware readiness.
 - [ ] Pin the jointly confirmed contract and transcript set.
+- [x] Replay pinned RS24 host control transitions, retries and reboot epochs offline.
 - [ ] Receive reproducibly published receiver source/artifact manifests and
   full-state model transcripts with explicit drain events.
 - [ ] Implement Windows ownership replay while profiling sustained native encode.

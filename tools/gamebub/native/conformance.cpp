@@ -16,6 +16,7 @@
 #include "encoder_case.h"
 #include "packet_model.h"
 #include "recovery_case.h"
+#include "recovery_replay.h"
 #include "transport_case.h"
 #include "v20.h"
 
@@ -27,6 +28,15 @@
  */
 int main(int argc, char **argv) {
   using namespace gamebub::v20;
+  if (argc == 3 && std::string_view(argv[1]) == "--recovery-replay") {
+    try {
+      std::cout << gamebub::v24::recovery_replay::run(argv[2]).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Recovery replay rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
   if (argc == 3 && std::string_view(argv[1]) == "--recovery-contract") {
     try {
       std::cout << gamebub::v24::recovery_case::run(argv[2]).dump() << '\n';
@@ -149,6 +159,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
   return 2;
 }
