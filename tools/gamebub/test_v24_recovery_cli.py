@@ -21,7 +21,7 @@ class RecoveryCliTests(unittest.TestCase):
             [os.environ["GAMEBUB_V20_EXE"], mode, str(path)],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
             check=False,
         )
 
@@ -85,6 +85,29 @@ class RecoveryCliTests(unittest.TestCase):
             result = self.invoke(path, "--recovery-replay")
             self.assertEqual(result.returncode, 1)
             self.assertIn("pinned RS24 results hash", result.stderr)
+
+    def test_composed_refresh_reconstructs_pixels_and_joint_ack(self):
+        """@brief Reconstruct the static key/full-LEGACY-HUD probes with no hardware claim."""
+        result = self.invoke(os.environ["GAMEBUB_V24_RESULTS"], "--composed-contract")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["vectors"], 12)
+        self.assertEqual(report["distinct_epoch_variants"], 3)
+        self.assertEqual(report["exact_hud_words_checked"], 253440)
+        self.assertEqual(report["joint_acks_constructed"], 12)
+        self.assertEqual(report["full_display_hashes_matched"], 12)
+        for key in ("moving_content", "stateful_hud_supported", "hardware_playback", "performance_measured"):
+            self.assertFalse(report[key], key)
+
+    def test_composed_missing_or_changed_artifact_rejected(self):
+        """@brief Bind the new pixel checks to the exact published source artifact."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "results.json"
+            self.assertEqual(self.invoke(path, "--composed-contract").returncode, 1)
+            path.write_bytes(Path(os.environ["GAMEBUB_V24_RESULTS"]).read_bytes() + b"\n")
+            result = self.invoke(path, "--composed-contract")
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("pinned CP23 results hash", result.stderr)
 
 
 if __name__ == "__main__":

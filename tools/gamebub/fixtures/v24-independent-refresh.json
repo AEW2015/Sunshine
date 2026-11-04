@@ -1,0 +1,31 @@
+{
+  "schema": "gamebub-v24-independent-refresh-fixture-v1",
+  "source_commit": "4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189",
+  "source_results_sha256": "93f91047a7b2ae82e866ac35de54d673ca228fa7331ea3d39fc3a62699dec802",
+  "packet": "v24-independent-refresh-epoch1.cp23",
+  "packet_sha256": "a44fcd4a62027dc9c609c4b64a68145ee9f915880a7ec312ade811525eceb24b",
+  "packet_bytes": 5166,
+  "ack": "v24-independent-refresh-epoch1.ja23",
+  "ack_sha256": "d9372f51eb797f5c369d359ca700c6ae36c6a7a499bf600ef78018696f5fa530",
+  "ack_bytes": 134,
+  "epoch": 1,
+  "frame": 0,
+  "coded": [
+    720,
+    480
+  ],
+  "declared_active": [
+    720,
+    405
+  ],
+  "source_uniform_rgb": [
+    44,
+    96,
+    156
+  ],
+  "expected_hud_rgb565": 11027,
+  "expected_exact_hud_words": 21120,
+  "source_model_display_rgb565_sha256": "27842473cfb9a4c186041341e56ad3572d7ad34ea761c3d2fbdf6eadad1382d4",
+  "scope": "Static synthetic independent key plus full LEGACY HUD; model oracle, no hardware or performance claim",
+  "transport_endpoint": null
+}

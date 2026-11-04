@@ -197,6 +197,13 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+Windows now also reconstructs the [static CP23 independent-refresh subset](measurements/v24-composed-refresh-20261104.md):
+AR03 key base, all four nonreferenced LEGACY HUD regions, exact complete image
+hash and independently constructed JA23. Checked-in packet/ACK assets make a
+local first-frame handoff concrete. This is not HD22/P-frame state conformance,
+live transport or a performance result. The receiver's decoder/loader remains
+the first local hardware dependency; networked testing needs both endpoints.
+
 Windows now has [bounded host reset-control replay](measurements/v24-host-reset-20261104.md)
 for the pinned nominal/loss/reboot campaigns and explicit modeled owner gates.
 The published traces omit owner/drain facts, so this is not complete ownership
@@ -241,6 +248,7 @@ gameplay/capture or live custom endpoint gates.
   ownership-model events. This does not confirm a live contract or hardware readiness.
 - [ ] Pin the jointly confirmed contract and transcript set.
 - [x] Replay pinned RS24 host control transitions, retries and reboot epochs offline.
+- [x] Verify the independent key/full-LEGACY-HUD CP23 subset and prepare exact first-frame assets.
 - [ ] Receive reproducibly published receiver source/artifact manifests and
   full-state model transcripts with explicit drain events.
 - [ ] Implement Windows ownership replay while profiling sustained native encode.

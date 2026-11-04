@@ -2,6 +2,24 @@
 
 Date: 2026-11-04
 
+First-frame follow-up: [Windows reconstructs the CP23 independent-refresh subset](measurements/v24-composed-refresh-20261104.md).
+All twelve frozen outputs (three epoch variants of one static scene) reproduce
+the full RGB565 image hash and exact JA23. Every mandatory HUD word also matches
+the independently calculated source RGB565 value. The exact 5,166-byte CP23,
+134-byte expected JA23 and source/hash manifest are checked in under
+`tools/gamebub/fixtures/v24-independent-refresh*`.
+
+Current verification: 113 native GameBub tests pass; Python completes 385 tests
+with five skips; all 20 encoder golden cases remain exact. This validates the
+static independent-refresh subset in software, not a live sender or 30 fps.
+
+Please provide a compatible complete FPGA decoder image/hash and local loader
+for this fixture, with installed readback and decode/display/release evidence.
+If the decoder accepts another envelope, agree an explicit component fixture
+and label its narrower scope. This local check needs no network and no 30 fps
+qualification. Windows-networked CP23, stateful HD22/HUD and live reference
+publication remain unimplemented; the existing JPEG/AV ports are unchanged.
+
 Host-control follow-up: [Windows now replays RS24 host phases and retries](measurements/v24-host-reset-20261104.md),
 including all eight single-loss positions, lost GO_ACK and modeled reboot epochs.
 Real packet/frame accounting tests retain owners after PC18/FINISHED. Drain is
@@ -11,7 +29,7 @@ decoder fixture before we describe custom hardware testing as ready. A local
 FPGA fixture can precede networking; a Windows test additionally needs the
 compatible CP23 media sender and an agreed ESP endpoint/port.
 
-Current verification: 97 native GameBub tests pass; the Python suite completes
+Prior host-control verification: 97 native GameBub tests passed; the Python suite completed
 383 tests with five skips; the 20 encoder golden cases still match. The new
 host/replay headers reach full executable-line coverage across the native-test
 and Debug CLI translation units; this is not full branch or physical coverage.
