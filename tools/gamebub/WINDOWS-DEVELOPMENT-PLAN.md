@@ -1,5 +1,11 @@
 # Game Bub: Sunshine and Windows development plan
 
+Current custom-codec work follows the
+[30 fps development plan (2026-11-04)](30FPS-DEVELOPMENT-PLAN-20261104.md).
+Use the accompanying [MoonBub agent prompt](MOONBUB-30FPS-PROMPT-20261104.md)
+for receiver/FPGA coordination. The earlier JPEG work and measurements below
+remain historical evidence.
+
 Status: proposed work; unchecked items are not completed or verified.
 Prepared 2026-11-03 following the `study/30fps-sim-20261102` audit.
 
