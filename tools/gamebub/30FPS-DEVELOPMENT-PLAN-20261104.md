@@ -27,6 +27,27 @@ baseline. Build and test the candidate separately. Never label custom data
 H.264 or JPEG. All Windows native build/test commands use MSYS2 UCRT64 and
 `cmake-build-*` directories; see [build instructions](V20-DEVELOPMENT.md).
 
+### Receiver coordination update, 2026-11-04
+
+The receiver team's supplied coordinated plan adopts this development order.
+It reports that the custom FPGA work is currently an exact reconstruction
+component, not a complete parser/entropy/bank/tag/patch/scanout decoder or
+qualified bitstream. Its C gateway helpers are not a deployed custom endpoint.
+The v22 ESP application is built but unflashed. These are receiver-reported
+capabilities; Windows has not independently probed or reproduced them.
+
+Consequently, complete custom FPGA-only throughput, concurrent receiver
+throughput and the limiting performance stage remain unknown. A live custom
+fixture test must wait for complete, source-bound implementations on both ends.
+Receiver sources/artifact manifests must be reproducibly published before
+Windows depends on a replacement revision. Coordinate hardware changes and
+stream windows explicitly; this update schedules no flash or sender run.
+
+The receiver also identifies missing physical-drain events in the 1,725-message
+histories. Message replay alone cannot prove full ownership state. Gate 2 now
+requires explicit model events and agreed expected states in addition to those
+wire logs; simulated drain events must never be presented as hardware evidence.
+
 ## Work packages and exit gates
 
 | Order | Owner | Deliverable | Exit gate |
@@ -54,10 +75,16 @@ decoded-reference publication. FINISHED must not free frame storage; RELEASE
 must follow real drain; only validated AF03 publishes the reference. Preserve
 the agreed transaction/token/slot bounds. Unknown outcomes retain ownership
 until defined recovery proves it safe to release.
+Do not invent an ACK-of-FINISHED packet. Any change to the pinned kit requires
+a jointly versioned contract and vectors rather than a unilateral extension.
 
 ### 2. Implement and test ownership before network streaming
 
-Replay the pinned 1,725-message transcript and verify exact expected state.
+Replay the pinned 1,725-message histories for wire parsing and ordering checks.
+Separately agree a complete state transcript containing explicit ingress,
+read/DMA/decode drain and publication events, expected state after transitions,
+and provenance distinguishing model events from physical observations. Verify
+full ownership against that transcript; do not infer drain from a message log.
 Add deterministic loss, duplication, reordering, delayed replies, wrong
 kind/slot/epoch/tag, sequence rollover boundaries, CRC/truncation, exhausted
 credit, cancellation and disconnect/restart tests. Assert bounded memory,
@@ -170,8 +197,12 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
-- [ ] Send [the receiver prompt](MOONBUB-30FPS-PROMPT-20261104.md).
+- [x] Receive and reconcile the receiver team's coordinated plan; their response
+  adopts the custom-first order and identifies the missing full pipeline and
+  ownership-model events. This does not confirm a live contract or hardware readiness.
 - [ ] Pin the jointly confirmed contract and transcript set.
+- [ ] Receive reproducibly published receiver source/artifact manifests and
+  full-state model transcripts with explicit drain events.
 - [ ] Implement Windows ownership replay while profiling sustained native encode.
 - [ ] Obtain FPGA-only and concurrent receiver throughput measurements.
 - [ ] Proceed to a short hardware fixture only when both ends implement the same
