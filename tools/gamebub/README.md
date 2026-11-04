@@ -7,11 +7,31 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v12-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v12-20261103),
-paired with [Moonbub v12](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v12-20261103).
+[`handoff/gamebub-app-codec-v13-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v13-20261103),
+paired with [Moonbub v13](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v13-20261103).
 Earlier handoffs remain frozen. Read the
-[v12 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v12-20261103/docs/custom-codec-prototype-v12-2026-11-03.md)
-and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v12-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+[v13 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v13-20261103/docs/custom-codec-prototype-v13-2026-11-03.md)
+and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v13-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+
+V13 implements real cap-before-commit source reuse: native combat preparation
+falls 20.30→11.54 ms, while the distinct second sample pays 0.67% overhead.
+Four-entry exact RGB565 region reuse cuts combat selector time 5.78→1.68 ms
+and records 176 hits while the full image changes, with identical full packets.
+Motion screening avoids costly real-source BM search at the cost of giving up
+small byte savings. Both cache optimizations are conditional, not universal gains.
+
+The measured-stage finite source-cache/fast-decoder run still falls short: the
+180-distinct-frame UI comparison improves 119→121 strict and 121→123 eventual
+presentations. A separate bounded-credit study integrates all three optimizations
+and compares two versus three host transactions with unchanged two-slot receiver
+ingress and three framebuffer roles. None of the Python models qualifies target
+hardware memory, live transport or sustained physical 30 fps.
+
+The new implementation, results, tests and `experiments/verify_prototype_v13.py`
+live in the paired Moonbub branch. This fork carries the host handoff reference,
+not an integrated native Sunshine mode. Use the
+[current plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v13-20261103/docs/gamebub-application-specific-codec-plan.md)
+for native-port, protocol and memory-service gates. V12 below is historical.
 
 V12 keeps the primary 720×480 / 30 fps requirement. Measured exact zero/DC bypass
 plus cached tables cuts full Python GM01/HG01 receive by approximately 8–11% with
