@@ -171,3 +171,30 @@ ownership, and safe-stop/reset procedure. A single frame does not require
 throughput qualification; the 30 fps claim still needs subsequent full-path
 measurements. Current installed device/image and the prior JPEG/AV demo's status
 remain unverified here. No ETA can be inferred from the published sources.
+
+## Later 2026-11-04 audit: v25 motion-codec study
+
+A subsequent ref refresh found `study/gamebub-motion-codec-v25-20261104` at
+`3d881382f022e95808f72cea2f2842a73343544f`. Its CP25/JA25 and GM25/HD25 formats
+are incompatible with the current CP23/JA23 baseline. The reported compression
+and quality changes are Python-study evidence, not an installed FPGA decoder,
+loader, endpoint/port or physical 30 fps result. Old JPEG image artifacts do not
+establish v25 implementation. The earlier no-v25 finding above is historical.
+
+The first hardware profile now needs explicit coordination with the FPGA team.
+Windows retains tested CP23 fixtures and adds offline HD22 exact-word checks;
+it has not selected or enabled CP25. See [the profile gate and concrete request](hd22-baseline-v25-gate-20261104.md).
+Hardware scheduling still requires a compatible complete image/local loader,
+or both matching endpoints for a networked test. A local first frame can precede
+networking and 30 fps; fresh installed-image/readback evidence remains absent.
+
+The AV branch now also publishes `4a927ab36963a3dab7ee4bf0cef363fe4260f4a9`:
+the app-only v24 diagnostics candidate passed build/package checks but is
+unflashed. The retained v22/build50 demo had a reboot and changed configuration,
+so its counters do not establish a clean 15 fps result. Its future application
+regression window is separate from codec v24/v25 work.
+
+The private AR03 KEY/tag diagnostic has simulated sample/tag evidence but its
+isolated 100 MHz synthesis misses setup by 2.961 ns, with board routing/interface
+and restricted CSR-control integration open. This identifies concrete first-board
+gates beyond simply requesting an image. See [the updated diagnostic handoff](hd22-baseline-v25-gate-20261104.md#new-receiver-diagnostic-evidence).

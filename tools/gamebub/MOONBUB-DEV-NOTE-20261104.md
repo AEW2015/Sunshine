@@ -2,6 +2,24 @@
 
 Date: 2026-11-04
 
+Profile question: the new v25 study at `3d881382` introduces incompatible
+CP25/JA25 with GM25/HD25. Which profile is the FPGA team building for the first
+complete fixture? Please send image/hash/readback and local loader status for
+that profile. Windows keeps its tested CP23 baseline while this is coordinated.
+The [new HD22 decoder/replay checkpoint](measurements/hd22-baseline-v25-gate-20261104.md)
+adds exact reference-dependent patch decoding, not a live whole-frame receiver.
+
+Current checks: 121 native GameBub tests pass; Python completes 393 tests with
+five skips. Seven retained HD22 goldens match all 26,880 words, independent unit
+oracles cover COPY, and the original 20 encoder golden cases remain exact.
+
+Latest hardware evidence at MoonBub `4a927ab`: app-only v24 diagnostics are built
+but unflashed; the FPGA private KEY/tag simulation passed, while its isolated
+100 MHz timing, routed board/interface and restricted CSR-control gates remain
+open. Windows can support a 20-second 5 fps JPEG diagnostic control once the
+receiver operator confirms the installed candidate, binding and fresh counters.
+That window is separate from custom-codec first-frame and 30 fps qualification.
+
 First-frame follow-up: [Windows reconstructs the CP23 independent-refresh subset](measurements/v24-composed-refresh-20261104.md).
 All twelve frozen outputs (three epoch variants of one static scene) reproduce
 the full RGB565 image hash and exact JA23. Every mandatory HUD word also matches
@@ -9,7 +27,7 @@ the independently calculated source RGB565 value. The exact 5,166-byte CP23,
 134-byte expected JA23 and source/hash manifest are checked in under
 `tools/gamebub/fixtures/v24-independent-refresh*`.
 
-Current verification: 113 native GameBub tests pass; Python completes 385 tests
+Prior independent-refresh verification: 113 native GameBub tests passed; Python completed 385 tests
 with five skips; all 20 encoder golden cases remain exact. This validates the
 static independent-refresh subset in software, not a live sender or 30 fps.
 

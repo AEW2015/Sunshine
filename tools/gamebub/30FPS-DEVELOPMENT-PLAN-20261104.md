@@ -197,6 +197,12 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+A new [v25 motion-codec study changes the media grammar](measurements/hd22-baseline-v25-gate-20261104.md).
+Coordinate CP23 versus CP25 for the first complete hardware fixture before
+porting or deploying the new profile. Its source does not establish a complete
+FPGA decoder or endpoint. The native HD22 patch decoder and exact-word replay
+extend the current baseline; whole HC22/CP23 transactions remain separate.
+
 Windows now also reconstructs the [static CP23 independent-refresh subset](measurements/v24-composed-refresh-20261104.md):
 AR03 key base, all four nonreferenced LEGACY HUD regions, exact complete image
 hash and independently constructed JA23. Checked-in packet/ACK assets make a
