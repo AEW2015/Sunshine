@@ -197,6 +197,13 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+Windows offline progress now includes exact native transport wire codecs,
+the 1,725-message wire campaign, a bounded sender intent/reply helper and
+continuous generated-motion profiling with frame-local analysis reuse. See
+[the implementation and measurements](measurements/v20-transport-and-generated-profile-20261104.md).
+These do not close full ownership/recovery, localhost fault-soak, fresh moving
+gameplay/capture or live custom endpoint gates.
+
 - [x] Receive and reconcile the receiver team's coordinated plan; their response
   adopts the custom-first order and identifies the missing full pipeline and
   ownership-model events. This does not confirm a live contract or hardware readiness.

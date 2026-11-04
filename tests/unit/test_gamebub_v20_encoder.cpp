@@ -69,7 +69,8 @@ TEST(GamebubV20Encoder, ColorConversionUsesClippedIntegerPixelsBeforeChromaBoxAv
   EXPECT_EQ(planes[1], (std::vector<std::int16_t> {128}));
   EXPECT_EQ(planes[2], (std::vector<std::int16_t> {128}));
   EXPECT_THROW(e::rgb_to_planes(std::span(rgb).first(11), 2, 2), std::invalid_argument);
-  EXPECT_THROW(e::rgb_to_planes(rgb, 3, 2), std::invalid_argument);
+  const std::array<std::uint8_t, 18> odd_geometry {};
+  EXPECT_THROW(e::rgb_to_planes(odd_geometry, 3, 2), std::invalid_argument);
 }
 
 TEST(GamebubV20Encoder, ForwardSeparatesBothQ14RoundingPassesAndRejectsInvalidResiduals) {
@@ -235,4 +236,125 @@ TEST(GamebubV20Encoder, RejectsAbsentOriginalRgbAndInvalidReferenceIdentitiesBef
   EXPECT_THROW(e::encode_inner(request), std::invalid_argument);
   request.reference = std::make_shared<const b::Bank>(b::Bank {0, {}, {}});
   EXPECT_THROW(e::encode_inner(request), std::invalid_argument);
+}
+
+TEST(GamebubV20Encoder, FrameAnalysisMatchesUncachedBytesAndTagsForEveryMapAndPublicationKind) {
+  auto request = key_request();
+  std::vector<std::uint8_t> rgb(c::width * c::height * 3);
+  for (std::size_t i = 0; i < rgb.size(); ++i) {
+    rgb[i] = static_cast<std::uint8_t>((i * 37 + i / 29) % 256);
+  }
+  request.source = std::make_shared<const c::Source>(rgb);
+  b::Planes planes;
+  planes[0].assign(c::width * c::height, 128);
+  planes[1].assign(c::width * c::height / 4, 128);
+  planes[2] = planes[1];
+  for (unsigned kind = 0; kind < 3; ++kind) {
+    request.key = kind == 0;
+    request.promoted = kind == 2;
+    request.reference = request.key ? nullptr : std::make_shared<const b::Bank>(b::Bank {0, b::canonical_tag(planes, c::width, c::height), planes});
+    request.reference_slot = request.key ? 255 : 0;
+    request.destination_slot = request.key ? 0 : request.promoted ? 1 :
+                                                                    255;
+    const auto analysis = e::analyze(request);
+    EXPECT_EQ(analysis->coefficient_bytes(), 2073600U);
+    EXPECT_EQ(analysis->plane(0).size(), 5400U);
+    EXPECT_EQ(analysis->plane(1).size(), 1350U);
+    EXPECT_EQ(analysis->plane(2).size(), 1350U);
+    EXPECT_THROW(analysis->plane(3), std::invalid_argument);
+    for (auto map : c::maps) {
+      request.map = map;
+      const auto uncached = e::encode_inner(request);
+      const auto cached = e::encode_analyzed(request, *analysis);
+      EXPECT_EQ(cached.inner, uncached.inner);
+      EXPECT_EQ(cached.stored_tag, uncached.stored_tag);
+    }
+  }
+}
+
+TEST(GamebubV20Encoder, FrameAnalysisRejectsIdentityChangesAndMutatedReferenceAliases) {
+  auto request = key_request();
+  const auto key_analysis = e::analyze(request);
+  auto changed = request;
+  changed.source = key_request().source;
+  EXPECT_THROW(e::encode_analyzed(changed, *key_analysis), std::invalid_argument);
+  changed = request;
+  ++changed.epoch;
+  EXPECT_THROW(e::encode_analyzed(changed, *key_analysis), std::invalid_argument);
+  changed = request;
+  ++changed.frame_id;
+  EXPECT_THROW(e::encode_analyzed(changed, *key_analysis), std::invalid_argument);
+  changed = request;
+  changed.reference_slot = 0;
+  EXPECT_THROW(key_analysis->require_identity(changed), std::invalid_argument);
+  changed = request;
+  changed.destination_slot = 1;
+  EXPECT_THROW(key_analysis->require_identity(changed), std::invalid_argument);
+  changed = request;
+  changed.key = false;
+  EXPECT_THROW(key_analysis->require_identity(changed), std::invalid_argument);
+  changed = request;
+  changed.promoted = true;
+  EXPECT_THROW(key_analysis->require_identity(changed), std::invalid_argument);
+  b::Planes planes;
+  planes[0].assign(c::width * c::height, 128);
+  planes[1].assign(c::width * c::height / 4, 128);
+  planes[2] = planes[1];
+  auto aliased = std::make_shared<b::Bank>(b::Bank {0, b::canonical_tag(planes, c::width, c::height), planes});
+  request.reference = aliased;
+  request.reference_slot = 0;
+  request.destination_slot = 255;
+  request.key = false;
+  const auto prediction = e::analyze(request);
+  changed = request;
+  changed.reference = std::make_shared<const b::Bank>(*aliased);
+  EXPECT_THROW(e::encode_analyzed(changed, *prediction), std::invalid_argument);
+  aliased->planes[0][0] = 129;
+  EXPECT_THROW(e::encode_analyzed(request, *prediction), std::invalid_argument);
+  EXPECT_THROW(e::encode_inner(request), std::invalid_argument);
+  aliased->tag = b::canonical_tag(aliased->planes, c::width, c::height);
+  EXPECT_THROW(e::encode_analyzed(request, *prediction), std::invalid_argument);
+  aliased->planes = planes;
+  aliased->tag = b::canonical_tag(planes, c::width, c::height);
+  ++aliased->id;
+  EXPECT_THROW(e::encode_analyzed(request, *prediction), std::invalid_argument);
+}
+
+TEST(GamebubV20Encoder, FrameBuilderBoundsAttemptsAndReleasesOwnedSourceWithItsAnalysis) {
+  auto request = key_request();
+  std::weak_ptr<const c::Source> retained = request.source;
+  {
+    e::FrameBuilder builder;
+    EXPECT_EQ(builder.analysis_builds(), 0U);
+    EXPECT_EQ(builder.attempts(), 0U);
+    EXPECT_EQ(builder.coefficient_bytes(), 0U);
+    auto invalid = request;
+    invalid.source.reset();
+    EXPECT_THROW(builder(invalid), std::invalid_argument);
+    EXPECT_EQ(builder.analysis_builds(), 0U);
+    for (auto map : c::maps) {
+      request.map = map;
+      const auto actual = builder(request);
+      EXPECT_EQ(actual.inner, e::encode_inner(request).inner);
+    }
+    EXPECT_EQ(builder.analysis_builds(), 1U);
+    EXPECT_EQ(builder.attempts(), 4U);
+    EXPECT_EQ(builder.coefficient_bytes(), 2073600U);
+    EXPECT_THROW(builder(request), std::invalid_argument);
+    request.source.reset();
+    EXPECT_FALSE(retained.expired());
+  }
+  EXPECT_TRUE(retained.expired());
+  request = key_request();
+  e::FrameBuilder one_frame;
+  one_frame(request);
+  // A second prepare starts again at map0, even when frame/source identity is unchanged.
+  EXPECT_THROW(one_frame(request), std::invalid_argument);
+  ++request.frame_id;
+  request.map = c::maps[1];
+  EXPECT_THROW(one_frame(request), std::invalid_argument);
+  EXPECT_EQ(one_frame.attempts(), 1U);
+  request = key_request();
+  request.map = {16, 16};
+  EXPECT_THROW(e::analyze(request), std::invalid_argument);
 }

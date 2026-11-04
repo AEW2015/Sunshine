@@ -1,27 +1,55 @@
 /**
  * @file tools/gamebub/native/conformance.cpp
- * @brief Offline CLI replay for inverse arrays, envelopes and full AR03 body fixtures.
+ * @brief Offline fixture/wire replay and finite generated-motion encoder profiling.
  */
 
 // standard includes
 #include <bit>
+#include <charconv>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
 // local includes
 #include "body_case.h"
+#include "encoder_benchmark.h"
 #include "encoder_case.h"
+#include "transport_case.h"
 #include "v20.h"
 
 /**
- * @brief Replay bounded inverse files, outer packets or a full body case without sockets.
+ * @brief Replay bounded fixtures and profile generated-motion encoding without sockets.
  * @param argc Number of arguments.
- * @param argv --inverse input expected, --ar03 packet, --af03 packet or --body-case JSON.
+ * @param argv Mode plus fixture paths and optional finite benchmark frame count.
  * @return Zero for a matching offline replay, nonzero for malformed/mismatched input.
  */
 int main(int argc, char **argv) {
   using namespace gamebub::v20;
+  if (argc == 3 && std::string_view(argv[1]) == "--transport-contract") {
+    try {
+      std::cout << transport_case::run(argv[2]).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Transport contract rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
+  if (argc == 4 && (std::string_view(argv[1]) == "--encoder-benchmark" || std::string_view(argv[1]) == "--encoder-benchmark-cached")) {
+    try {
+      const std::string_view text(argv[3]);
+      unsigned frames = 0;
+      const auto parsed = std::from_chars(text.data(), text.data() + text.size(), frames);
+      body::require(parsed.ec == std::errc() && parsed.ptr == text.data() + text.size() && frames >= 1 && frames <= 1800, "benchmark frame count must be1..1800");
+      benchmark::Options options;
+      options.frames = frames;
+      options.reuse_analysis = std::string_view(argv[1]) == "--encoder-benchmark-cached";
+      std::cout << benchmark::run_case(argv[2], options).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Encoder benchmark rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
   if (argc == 3 && std::string_view(argv[1]) == "--encoder-case") {
     try {
       std::cout << encoder_case::run(argv[2]).dump() << '\n';
@@ -97,6 +125,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
   return 2;
 }

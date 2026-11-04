@@ -1,5 +1,10 @@
 # Game Bub host laboratory
 
+Current offline work adds [transport wire replay and continuous generated-motion
+profiling](measurements/v20-transport-and-generated-profile-20261104.md).
+These tools establish software wire/encoding evidence; the custom live receiver,
+complete ownership/recovery and physical 30 fps qualification remain open.
+
 The [consolidated finite-session launcher](SESSION-LAUNCHER.md) now provides
 explicit JPEG video, PC audio and controller modes, source-inactivity reporting
 and bounded capture shutdown. It passes fake-device and real localhost UDP

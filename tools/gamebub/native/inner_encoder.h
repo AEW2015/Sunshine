@@ -262,41 +262,146 @@ namespace gamebub::v20::encoder {
   }
 
   /**
-   * @brief Encode one complete GM01 candidate from original RGB8 and an exact confirmed bank.
-   * @param request Immutable candidate identity, source, reference and declared ROI map.
-   * @return Real encoded bytes and canonical reconstructed tag for key/promotion only.
-   * @note This offline builder does not open sockets, publish banks or claim a target frame rate.
+   * @brief Validate fixed-profile source/reference identity and current canonical samples.
+   * @param request Frame identity and immutable source/predictor inputs.
+   * @note Rechecking canonical samples preserves rejection of mutable Bank aliases.
    */
-  inline candidate::BuildResult encode_inner(const candidate::BuildRequest &request) {
-    constexpr unsigned w = candidate::width, h = candidate::height;
+  inline void validate_request(const candidate::BuildRequest &request) {
     constexpr auto no_id = std::numeric_limits<std::uint32_t>::max();
-    body::require(request.source && request.source->rgb8().size() == w * h * 3, "encoder requires original RGB8");
+    body::require(request.source && request.source->rgb8().size() == candidate::width * candidate::height * 3, "encoder requires original RGB8");
     body::require(request.epoch != no_id && request.frame_id != no_id, "encoder session/frame identity");
     body::require(request.key ? (!request.reference && !request.promoted && request.reference_slot == 255 && request.destination_slot == 0) : (request.reference && request.reference_slot < 2 && request.reference->id < request.frame_id && request.destination_slot == (request.promoted ? 1U : 255U)), "encoder reference profile");
     if (request.reference) {
-      body::require(body::canonical_tag(request.reference->planes, w, h) == request.reference->tag, "encoder exact reference tag");
+      body::require(body::canonical_tag(request.reference->planes, candidate::width, candidate::height) == request.reference->tag, "encoder exact reference tag");
+    }
+  }
+
+  /** @brief Immutable raw forward coefficients bound to exactly one source, predictor and frame. */
+  class Analysis {
+    candidate::BuildRequest identity_;  ///< Exact owned source/reference pointers and immutable frame fields.
+    std::uint32_t reference_id_ = 0;  ///< Original reference identity, guarding mutable aggregate aliases.
+    body::Tag reference_tag_ {};  ///< Original canonical reference tag.
+    std::array<std::vector<block_t>, 3> coefficients_;  ///< At most8100 blocks,2073600 retained coefficient bytes.
+
+  public:
+    /** @brief Analysis storage cannot be copied or replaced through a retained alias. */
+    Analysis(const Analysis &) = delete;
+    /** @brief Moving an aliased analysis must not empty its validated storage. */
+    Analysis(Analysis &&) = delete;
+    /** @brief Immutable analyzed inputs cannot be reassigned. */
+    Analysis &operator=(const Analysis &) = delete;
+    /** @brief Immutable analyzed inputs cannot be moved over. */
+    Analysis &operator=(Analysis &&) = delete;
+
+    /**
+     * @brief Pay source conversion and forward transforms once for one frame.
+     * @param request Exact input identity; map is validated but may vary on later attempts.
+     */
+    explicit Analysis(const candidate::BuildRequest &request):
+        identity_(request) {
+      validate_request(request);
+      body::require(std::find(candidate::maps.begin(), candidate::maps.end(), request.map) != candidate::maps.end(), "undeclared encoder map");
+      if (request.reference) {
+        reference_id_ = request.reference->id;
+        reference_tag_ = request.reference->tag;
+      }
+      const auto source = rgb_to_planes(request.source->rgb8(), candidate::width, candidate::height);
+      for (unsigned p = 0; p < 3; ++p) {
+        const unsigned pw = p ? candidate::width / 2 : candidate::width, ph = p ? candidate::height / 2 : candidate::height;
+        const unsigned bw = (pw + 7) / 8, bh = (ph + 7) / 8;
+        coefficients_[p].resize(bw * bh);
+        for (unsigned by = 0; by < bh; ++by) {
+          for (unsigned bx = 0; bx < bw; ++bx) {
+            block_t residual;
+            for (unsigned y = 0; y < 8; ++y) {
+              for (unsigned x = 0; x < 8; ++x) {
+                const auto pos = std::size_t(std::min(by * 8 + y, ph - 1)) * pw + std::min(bx * 8 + x, pw - 1);
+                residual[y * 8 + x] = source[p][pos] - (request.key ? 128 : request.reference->planes[p][pos]);
+              }
+            }
+            coefficients_[p][by * bw + bx] = forward(residual);
+          }
+        }
+      }
+    }
+
+    /**
+     * @brief Refuse cross-source/frame/profile reuse even when dimensions or pixel bytes match.
+     * @param request Current candidate identity; quantization map alone may differ.
+     */
+    void require_identity(const candidate::BuildRequest &request) const {
+      body::require(request.source.get() == identity_.source.get() && request.reference.get() == identity_.reference.get() && request.epoch == identity_.epoch && request.frame_id == identity_.frame_id && request.reference_slot == identity_.reference_slot && request.destination_slot == identity_.destination_slot && request.key == identity_.key && request.promoted == identity_.promoted, "encoder analysis identity mismatch");
+      if (request.reference) {
+        body::require(request.reference->id == reference_id_ && request.reference->tag == reference_tag_, "encoder analysis reference changed");
+      }
+    }
+
+    /**
+     * @brief Access one read-only analyzed plane with explicit index validation.
+     * @param index Plane0,1 or2.
+     * @return Complete natural-order raw coefficient blocks for that plane.
+     */
+    std::span<const block_t> plane(unsigned index) const {
+      body::require(index < coefficients_.size(), "encoder analysis plane");
+      return coefficients_[index];
+    }
+
+    /** @brief Return exact retained coefficient payload, excluding object/source/bank overhead. */
+    std::size_t coefficient_bytes() const {
+      return (coefficients_[0].size() + coefficients_[1].size() + coefficients_[2].size()) * sizeof(block_t);
+    }
+  };
+
+  /**
+   * @brief Allocate one immutable frame analysis without a global or cross-frame cache.
+   * @param request Original owned source/reference and exact candidate identity.
+   * @return Unique immutable analysis whose destruction releases all retained coefficients/inputs.
+   */
+  inline std::unique_ptr<const Analysis> analyze(const candidate::BuildRequest &request) {
+    return std::make_unique<const Analysis>(request);
+  }
+
+  /**
+   * @brief Encode unchanged GM01 quantization/reconstruction/entropy using optional frame analysis.
+   * @param request Immutable candidate identity, source, reference and declared ROI map.
+   * @param analysis Exact frame-bound raw coefficients, or null for the original uncached path.
+   * @return Real encoded bytes and canonical reconstructed tag for key/promotion only.
+   * @note This offline builder does not open sockets, publish banks or claim a target frame rate.
+   */
+  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis) {
+    constexpr unsigned w = candidate::width, h = candidate::height;
+    constexpr auto no_id = std::numeric_limits<std::uint32_t>::max();
+    validate_request(request);
+    if (analysis) {
+      analysis->require_identity(request);
     }
     const auto scales = scale_map(request.map);
-    const auto source = rgb_to_planes(request.source->rgb8(), w, h);
+    const auto source = analysis ? body::Planes {} : rgb_to_planes(request.source->rgb8(), w, h);
     body::Planes reconstruction;
     std::array<std::vector<std::uint8_t>, 3> payloads;
     for (unsigned p = 0; p < 3; ++p) {
       const unsigned pw = p ? w / 2 : w, ph = p ? h / 2 : h;
       const unsigned bw = (pw + 7) / 8, bh = (ph + 7) / 8;
+      const auto analyzed = analysis ? analysis->plane(p) : std::span<const block_t> {};
       std::vector<block_t> coefficients(bw * bh);
       if (request.key || request.promoted) {
         reconstruction[p].resize(pw * ph);
       }
       for (unsigned by = 0; by < bh; ++by) {
         for (unsigned bx = 0; bx < bw; ++bx) {
-          block_t residual;
-          for (unsigned y = 0; y < 8; ++y) {
-            for (unsigned x = 0; x < 8; ++x) {
-              const auto pos = std::size_t(std::min(by * 8 + y, ph - 1)) * pw + std::min(bx * 8 + x, pw - 1);
-              residual[y * 8 + x] = source[p][pos] - (request.key ? 128 : request.reference->planes[p][pos]);
+          block_t raw;
+          if (analysis) {
+            raw = analyzed[by * bw + bx];
+          } else {
+            block_t residual;
+            for (unsigned y = 0; y < 8; ++y) {
+              for (unsigned x = 0; x < 8; ++x) {
+                const auto pos = std::size_t(std::min(by * 8 + y, ph - 1)) * pw + std::min(bx * 8 + x, pw - 1);
+                residual[y * 8 + x] = source[p][pos] - (request.key ? 128 : request.reference->planes[p][pos]);
+              }
             }
+            raw = forward(residual);
           }
-          const auto raw = forward(residual);
           auto &quantized = coefficients[by * bw + bx];
           block_t dequantized;
           const auto scale = scales[(p ? by : by / 2) * 45 + (p ? bx : bx / 2)];
@@ -354,4 +459,72 @@ namespace gamebub::v20::encoder {
     }
     return result;
   }
+
+  /**
+   * @brief Preserve the original uncached encoder API and paid per-attempt source/forward work.
+   * @param request Exact source/reference, identity and one declared map.
+   * @return Complete real GM01 bytes and reconstructed publication tag.
+   */
+  inline candidate::BuildResult encode_inner(const candidate::BuildRequest &request) {
+    return encode_inner_impl(request, nullptr);
+  }
+
+  /**
+   * @brief Encode one map from exact immutable frame analysis, revalidating current bank samples.
+   * @param request Same bound source/reference/frame fields; only map may change.
+   * @param analysis Original frame analysis, never a previous frame's work.
+   * @return Bit-identical GM01 bytes/tag to the uncached path.
+   */
+  inline candidate::BuildResult encode_analyzed(const candidate::BuildRequest &request, const Analysis &analysis) {
+    return encode_inner_impl(request, &analysis);
+  }
+
+  /** @brief One bounded Policy.prepare callback that shares analysis across at most four maps. */
+  class FrameBuilder {
+    std::unique_ptr<const Analysis> analysis_;  ///< Exactly one frame-local analysis, freed with the callback.
+    unsigned attempts_ = 0;  ///< Successful encoded attempts; cannot exceed the declared four maps.
+
+  public:
+    /** @brief A new callback starts with no retained source, bank or analysis. */
+    FrameBuilder() = default;
+    /** @brief A retained callback cannot silently duplicate its frame storage. */
+    FrameBuilder(const FrameBuilder &) = delete;
+    /** @brief Retained identity cannot be moved away from a callback used by a policy. */
+    FrameBuilder(FrameBuilder &&) = delete;
+    /** @brief Callback analysis cannot be replaced by copy assignment. */
+    FrameBuilder &operator=(const FrameBuilder &) = delete;
+    /** @brief Callback analysis cannot be replaced by move assignment. */
+    FrameBuilder &operator=(FrameBuilder &&) = delete;
+
+    /**
+     * @brief Pay analysis on first build and reuse it only for subsequent matching map attempts.
+     * @param request Frame identity from one Policy.prepare lifetime.
+     * @return Actual GM01 bytes/tag; analysis cost is included in the first paid build.
+     */
+    candidate::BuildResult operator()(const candidate::BuildRequest &request) {
+      body::require(attempts_ < candidate::maps.size(), "encoder analysis attempt bound");
+      body::require(request.map == candidate::maps[attempts_], "encoder analysis map order or reused prepare");
+      if (!analysis_) {
+        analysis_ = analyze(request);
+      }
+      auto result = encode_analyzed(request, *analysis_);
+      ++attempts_;
+      return result;
+    }
+
+    /** @brief Return zero before first analysis and one while this frame's storage is retained. */
+    unsigned analysis_builds() const {
+      return analysis_ ? 1 : 0;
+    }
+
+    /** @brief Return successful actual encodes performed using the one retained analysis. */
+    unsigned attempts() const {
+      return attempts_;
+    }
+
+    /** @brief Return exact coefficient payload only; this is not a process peak-memory measurement. */
+    std::size_t coefficient_bytes() const {
+      return analysis_ ? analysis_->coefficient_bytes() : 0;
+    }
+  };
 }  // namespace gamebub::v20::encoder

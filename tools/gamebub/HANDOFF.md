@@ -1,5 +1,13 @@
 # ESP32/FPGA handoff
 
+Latest Windows offline transport/profiling work is described in
+[the implementation report](measurements/v20-transport-and-generated-profile-20261104.md).
+Native wire replay and a sender-only intent/reply helper are available;
+full packet-permit/drain/recovery ownership and a live custom endpoint remain
+open. Frame-local encoder analysis reuse is checked against the frozen golden
+cases without changing maps, packet bytes or independent candidate validation.
+Generated-motion software timings must not be reported as physical playback.
+
 Windows native body/policy update2026-11-04: all 20 frozen full-body AR03 cases
 match10368000 YUV samples,6912000 display words,211200 mandatory source HUD
 words, exact AF03 and post-bank state. Native candidate policy now enforces

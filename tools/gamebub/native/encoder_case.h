@@ -6,6 +6,7 @@
 
 // standard includes
 #include <chrono>
+#include <functional>
 
 // local includes
 #include "body_case.h"
@@ -137,7 +138,8 @@ namespace gamebub::v20::encoder_case {
           policy.seed_reference(slot, *banks[slot]);
         }
       }
-      const auto prepared = policy.prepare(source, request.frame_id, encoder::encode_patches, encoder::encode_inner, key, promoted);
+      encoder::FrameBuilder builder;
+      const auto prepared = policy.prepare(source, request.frame_id, encoder::encode_patches, std::ref(builder), key, promoted);
       body::require(prepared.accepted(), "native mandatory candidate rejected");
       exact(policy.packet(prepared), expected_packet, "mandatory AR03 candidate");
       const auto &expected_attempts = oracle.at("attempts");
@@ -159,6 +161,6 @@ namespace gamebub::v20::encoder_case {
         body::require(policy.readers(slot) == 0, "native encoder leaked reader");
       }
     }
-    return {{"scope", "native_encoder_fixture"}, {"label", metadata.at("label")}, {"id", request.frame_id}, {"inner_bytes", encoded.inner.size()}, {"selected_patch_count", selected.size()}, {"packet_bytes", direct_packet.size()}, {"inner_byte_exact", true}, {"patches_byte_exact", true}, {"ar03_byte_exact", true}, {"mandatory_policy_verified", mandatory}, {"policy_attempts", attempts}, {"frozen_decode", frozen_decode}, {"profiling_not_playback", true}};
+    return {{"scope", "native_encoder_fixture"}, {"label", metadata.at("label")}, {"id", request.frame_id}, {"inner_bytes", encoded.inner.size()}, {"selected_patch_count", selected.size()}, {"packet_bytes", direct_packet.size()}, {"inner_byte_exact", true}, {"patches_byte_exact", true}, {"ar03_byte_exact", true}, {"mandatory_policy_verified", mandatory}, {"mandatory_policy_analysis_reuse", mandatory}, {"policy_attempts", attempts}, {"frozen_decode", frozen_decode}, {"profiling_not_playback", true}};
   }
 }  // namespace gamebub::v20::encoder_case
