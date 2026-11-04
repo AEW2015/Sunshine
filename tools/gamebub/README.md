@@ -7,11 +7,38 @@ mode or a receiver playback claim.
 The installed Sunshine service and original checkout remain unchanged.
 
 The latest application-specific handoff is
-[`handoff/gamebub-app-codec-v13-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v13-20261103),
-paired with [Moonbub v13](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v13-20261103).
+[`handoff/gamebub-app-codec-v14-20261103`](https://github.com/AEW2015/Sunshine/tree/handoff/gamebub-app-codec-v14-20261103),
+paired with [Moonbub v14](https://github.com/AEW2015/moonbub/tree/handoff/gamebub-app-codec-v14-20261103).
 Earlier handoffs remain frozen. Read the
-[v13 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v13-20261103/docs/custom-codec-prototype-v13-2026-11-03.md)
-and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v13-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+[v14 results](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v14-20261103/docs/custom-codec-prototype-v14-2026-11-03.md)
+and [HEVC/AV1 FPGA plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v14-20261103/docs/gamebub-hevc-av1-fpga-plan.md).
+
+V14 implements actual AR01/AF01 acknowledged reconstructed-P references and
+separate SR01 zero/DC/full residual syntax at 720×480. Recent references reduce
+native mean bytes 25–29% versus a same-envelope immutable reference control;
+bounded background pruning saves about 13% with explicit quality/host-work costs.
+These gains are separate, not multiplied or combined in one implemented stream.
+
+Bank-specific overlap then reaches 30 modeled IDs/s in a five-second held-out
+window at 720×480. It delivers the same 179 source IDs as the immutable initial-key
+control, with 34.63% smaller mean bodies and 34.57% fewer forward GF02/UDP/IP bytes.
+This short base-video scenario has no SR01 or exact UI integration and does not
+prove physical/native 30 fps or a production refresh policy.
+
+Finite feedback experiments charge promotion reconstruction, tag generation,
+transport and publication. They expose the cost of all-pending drains, test a
+bank-specific alternative, and enforce expiry/deadline precedence during paid
+ACK and decoder completion. Two retained YUV banks plus scratch/output/pending
+storage still need a native memory and bandwidth implementation. No physical
+30 fps, ESP32 receiver or FPGA decoder fit is proved.
+
+The new Python sources, protocol contracts, tests and retained evidence live in
+the paired Moonbub branch, including `experiments/verify_prototype_v14.py`.
+This Sunshine fork contains the host handoff reference, not an integrated encoder
+mode. AR01/AF01/SR01 are experimental dialects unsupported by installed peers.
+Use the [current application-specific plan](https://github.com/AEW2015/moonbub/blob/handoff/gamebub-app-codec-v14-20261103/docs/gamebub-application-specific-codec-plan.md)
+for unifying residual/reference syntax, exact UI and native implementation.
+V13 below is historical.
 
 V13 implements real cap-before-commit source reuse: native combat preparation
 falls 20.30→11.54 ms, while the distinct second sample pays 0.67% overhead.
