@@ -1,5 +1,12 @@
 # Game Bub host laboratory
 
+The latest [packet-permit, fused-capture and checksum update](measurements/v20-packet-permits-fused-crc-20261104.md)
+adds bounded host bookkeeping and functional checks. For physical testing, use
+the [receiver readiness audit](measurements/receiver-readiness-20261104.md) and
+[first-window request](MOONBUB-HARDWARE-READINESS-REQUEST-20261104.md). A functional
+custom frame need not wait for 30 fps, but the selected complete receiver and
+matching lab path must be ready; installed hardware state is not inferred here.
+
 Current offline work adds [transport wire replay and continuous generated-motion
 profiling](measurements/v20-transport-and-generated-profile-20261104.md).
 These tools establish software wire/encoding evidence; the custom live receiver,

@@ -99,18 +99,28 @@ namespace gamebub::v20 {
            (static_cast<std::uint32_t>(bytes[offset + 3]) << 24);
   }
 
+  /** @brief Compile-time reflected IEEE polynomial table, exactly1024 immutable bytes. */
+  inline constexpr auto crc32_table = [] {
+    std::array<std::uint32_t, 256> table {};
+    for (unsigned index = 0; index < table.size(); ++index) {
+      std::uint32_t value = index;
+      for (unsigned bit = 0; bit < 8; ++bit) {
+        value = (value >> 1) ^ ((value & 1U) ? 0xedb88320U : 0);
+      }
+      table[index] = value;
+    }
+    return table;
+  }();
+
   /**
-   * @brief Calculate IEEE CRC32, matching Python zlib.crc32.
+   * @brief Calculate table-driven IEEE CRC32, matching Python zlib.crc32.
    * @param bytes Exact message prefix excluding its stored trailer.
    * @return Final unsigned CRC32.
    */
   inline std::uint32_t crc32(std::span<const std::uint8_t> bytes) {
     std::uint32_t value = 0xffffffffU;
     for (auto byte : bytes) {
-      value ^= byte;
-      for (unsigned bit = 0; bit < 8; ++bit) {
-        value = (value >> 1) ^ ((value & 1) ? 0xedb88320U : 0);
-      }
+      value = (value >> 8) ^ crc32_table[(value ^ byte) & 255U];
     }
     return value ^ 0xffffffffU;
   }

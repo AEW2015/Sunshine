@@ -262,13 +262,23 @@ TEST(GamebubV20Encoder, FrameAnalysisMatchesUncachedBytesAndTagsForEveryMapAndPu
     EXPECT_EQ(analysis->plane(1).size(), 1350U);
     EXPECT_EQ(analysis->plane(2).size(), 1350U);
     EXPECT_THROW(analysis->plane(3), std::invalid_argument);
+    e::FrameBuilder fused;
     for (auto map : c::maps) {
       request.map = map;
       const auto uncached = e::encode_inner(request);
       const auto cached = e::encode_analyzed(request, *analysis);
       EXPECT_EQ(cached.inner, uncached.inner);
       EXPECT_EQ(cached.stored_tag, uncached.stored_tag);
+      const auto captured = fused(request);
+      EXPECT_EQ(captured.inner, uncached.inner);
+      EXPECT_EQ(captured.stored_tag, uncached.stored_tag);
     }
+    EXPECT_FALSE(fused.failed());
+    EXPECT_EQ(fused.attempts(), 4U);
+    EXPECT_EQ(fused.coefficient_bytes(), 2073600U);
+    e::Analysis complete(request);
+    EXPECT_THROW(e::encode_inner_impl(request, nullptr, &complete), std::invalid_argument);
+    EXPECT_THROW(e::encode_inner_impl(request, &complete, &complete), std::invalid_argument);
   }
 }
 
@@ -318,6 +328,20 @@ TEST(GamebubV20Encoder, FrameAnalysisRejectsIdentityChangesAndMutatedReferenceAl
   aliased->tag = b::canonical_tag(planes, c::width, c::height);
   ++aliased->id;
   EXPECT_THROW(e::encode_analyzed(request, *prediction), std::invalid_argument);
+
+  aliased->id = 0;
+  request.map = c::maps[0];
+  e::FrameBuilder fused;
+  EXPECT_NO_THROW(fused(request));
+  request.map = c::maps[1];
+  aliased->planes[0][0] = 129;
+  EXPECT_THROW(fused(request), std::invalid_argument);
+  EXPECT_TRUE(fused.failed());
+  EXPECT_EQ(fused.analysis_builds(), 1U);
+  EXPECT_EQ(fused.coefficient_bytes(), 0U);
+  EXPECT_EQ(fused.attempts(), 1U);
+  aliased->planes = planes;
+  EXPECT_THROW(fused(request), std::invalid_argument);
 }
 
 TEST(GamebubV20Encoder, FrameBuilderBoundsAttemptsAndReleasesOwnedSourceWithItsAnalysis) {
@@ -328,10 +352,14 @@ TEST(GamebubV20Encoder, FrameBuilderBoundsAttemptsAndReleasesOwnedSourceWithItsA
     EXPECT_EQ(builder.analysis_builds(), 0U);
     EXPECT_EQ(builder.attempts(), 0U);
     EXPECT_EQ(builder.coefficient_bytes(), 0U);
+    e::FrameBuilder invalid_builder;
     auto invalid = request;
     invalid.source.reset();
-    EXPECT_THROW(builder(invalid), std::invalid_argument);
-    EXPECT_EQ(builder.analysis_builds(), 0U);
+    EXPECT_THROW(invalid_builder(invalid), std::invalid_argument);
+    EXPECT_TRUE(invalid_builder.failed());
+    EXPECT_EQ(invalid_builder.analysis_builds(), 0U);
+    EXPECT_EQ(invalid_builder.coefficient_bytes(), 0U);
+    EXPECT_THROW(invalid_builder(request), std::invalid_argument);
     for (auto map : c::maps) {
       request.map = map;
       const auto actual = builder(request);
@@ -340,9 +368,13 @@ TEST(GamebubV20Encoder, FrameBuilderBoundsAttemptsAndReleasesOwnedSourceWithItsA
     EXPECT_EQ(builder.analysis_builds(), 1U);
     EXPECT_EQ(builder.attempts(), 4U);
     EXPECT_EQ(builder.coefficient_bytes(), 2073600U);
-    EXPECT_THROW(builder(request), std::invalid_argument);
     request.source.reset();
     EXPECT_FALSE(retained.expired());
+    EXPECT_THROW(builder(request), std::invalid_argument);
+    EXPECT_TRUE(builder.failed());
+    EXPECT_EQ(builder.analysis_builds(), 1U);
+    EXPECT_EQ(builder.coefficient_bytes(), 0U);
+    EXPECT_TRUE(retained.expired());
   }
   EXPECT_TRUE(retained.expired());
   request = key_request();
@@ -350,6 +382,8 @@ TEST(GamebubV20Encoder, FrameBuilderBoundsAttemptsAndReleasesOwnedSourceWithItsA
   one_frame(request);
   // A second prepare starts again at map0, even when frame/source identity is unchanged.
   EXPECT_THROW(one_frame(request), std::invalid_argument);
+  EXPECT_TRUE(one_frame.failed());
+  EXPECT_EQ(one_frame.coefficient_bytes(), 0U);
   ++request.frame_id;
   request.map = c::maps[1];
   EXPECT_THROW(one_frame(request), std::invalid_argument);

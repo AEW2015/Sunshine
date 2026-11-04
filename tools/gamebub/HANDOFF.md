@@ -1,5 +1,14 @@
 # ESP32/FPGA handoff
 
+New Windows checkpoint: [packet permits, fused first-map capture and table CRC](measurements/v20-packet-permits-fused-crc-20261104.md).
+The current receiver report says JPEG/AV is the only available hardware path;
+its v22 app-only regression is starting with the FPGA unchanged. Wait for fresh
+post-update identity/readiness/counters before sending. There is no deployable
+custom GM01 image, live custom receiver or assigned custom port in that report.
+Use [the first-window request](MOONBUB-HARDWARE-READINESS-REQUEST-20261104.md).
+The new v24 CP23/JA23/RS24 model is a joint-review input, not assumed compatible
+with the pinned Windows v20 helpers or proof of an installed recovery service.
+
 Latest Windows offline transport/profiling work is described in
 [the implementation report](measurements/v20-transport-and-generated-profile-20261104.md).
 Native wire replay and a sender-only intent/reply helper are available;

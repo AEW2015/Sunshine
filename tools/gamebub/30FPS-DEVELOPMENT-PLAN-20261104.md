@@ -197,6 +197,25 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+The receiver now reports JPEG/AV as its only available hardware path and is
+starting a v22 app-only regression with the FPGA unchanged. Wait for its fresh
+post-update identity/readiness/counters before a short existing-path control run.
+No deployable GM01 fixture image, custom receiver or custom port is reported.
+
+A newer offline study at MoonBub `4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189`
+adds CP23/JA23/RS24 profile/reset modeling with explicit drain/write/vblank
+inputs. Review and pin those models/transcripts jointly as the next contract
+task; do not assume compatibility with the current v20 native wire helpers or
+claim an installed recovery service from the model. The older 1,725 wire logs
+still do not independently prove complete ownership state.
+
+Hardware scheduling now has a separate
+[readiness request](MOONBUB-HARDWARE-READINESS-REQUEST-20261104.md) and
+[published-source audit](measurements/receiver-readiness-20261104.md).
+Distinguish an existing JPEG/AV check, an FPGA-only functional fixture and a
+networked custom fixture. The first functional frame need not meet 30 fps;
+complete compatible implementations and an agreed safe-stop window are its gate.
+
 Windows offline progress now includes exact native transport wire codecs,
 the 1,725-message wire campaign, a bounded sender intent/reply helper and
 continuous generated-motion profiling with frame-local analysis reuse. See

@@ -61,6 +61,29 @@ class TransportCliTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 1)
                     self.assertIn("benchmark frame count", result.stderr)
 
+    def test_packet_model_rejects_unbounded_round_counts(self):
+        """@brief Keep independent model work finite before allocating payloads."""
+        for count in ("0", "100001", "-1", "1x", "+1", "", "999999999999999999"):
+            with self.subTest(count=count):
+                result = self.invoke("--packet-model", count)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("packet model rounds", result.stderr)
+
+    def test_packet_model_preserves_unknowns_and_excludes_hardware_claims(self):
+        """@brief Drive actual native ledgers through seeded credit and mailbox faults."""
+        result = self.invoke("--packet-model", 96)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["scope"], "independent_sender_packet_fault_models")
+        self.assertEqual(report["completed_cases"] + report["safe_stopped_cases"], 96)
+        self.assertGreater(report["safe_stopped_cases"], 0)
+        self.assertEqual(report["corrupt_receipts_rejected"], 96)
+        self.assertEqual(report["peak_data_permits"], 5)
+        self.assertEqual(report["peak_control_mailbox"], 1)
+        self.assertFalse(report["physical_drain_proven"])
+        self.assertFalse(report["production_reset_or_recovery_proven"])
+        self.assertFalse(report["hardware_playback"])
+
     @unittest.skipUnless(os.environ.get("GAMEBUB_V20_ENCODER_FIXTURES"), "Requires RGB seed")
     def test_generated_motion_has_real_software_reference_evolution(self):
         """@brief Run a continuous small workload, keeping playback claims explicitly false."""

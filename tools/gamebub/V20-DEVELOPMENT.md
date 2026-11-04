@@ -27,7 +27,12 @@ a bounded, sender-only frame-intent/reply ledger. The ledger assumes the caller
 proves DATA/CANCEL/FINISH eligibility; packet-credit ownership, receiver drain,
 reference publication and live recovery are not supplied by it. The wire runner
 checks the pinned 1,725 control messages and corruption/truncation probes.
-Full-state ownership remains open because the wire histories omit drain events.
+Native `packet_ledger.h` now adds five DATA permits, one shared query/control
+mailbox, bounded queries and exact generation/route matching. The independent
+`--packet-model` driver exercises lost/unknown/corrupt/stale credits and explicit
+external model RELEASE events. Packet and frame ledgers cannot be copied/moved
+to duplicate ownership. Full-state ownership, real network I/O and recovery
+remain open because these models do not establish receiver drain or a live peer.
 
 The reference kit's 34 tests are upstream evidence. The inverse/envelope suite
 independently replayed 101,667 inverse blocks / 6,506,688 residual samples, all
@@ -68,7 +73,7 @@ The executable is `cmake-build-gamebub-v20/gamebub-v20-conformance.exe`. Modes
 are `--inverse INPUT EXPECTED`, `--ar03 PACKET`, `--af03 PACKET`,
 `--body-case CASE.json`, `--encoder-case CASE.json`,
 `--transport-contract CONTRACT.json`, `--encoder-benchmark CASE.json FRAMES`
-and `--encoder-benchmark-cached CASE.json FRAMES`.
+and `--encoder-benchmark-cached CASE.json FRAMES`, plus `--packet-model ROUNDS`.
 Reports distinguish
 `inverse_only`, `envelope_only`, `full_body_fixture` and
 `native_encoder_fixture`; never substitute an outer-envelope pass for decoding.
@@ -171,7 +176,8 @@ remain recorded; software roundtrip speed is not encoder-only FPS.
 
 The cached benchmark mode uses the same workload and maps, with frame-local
 source-conversion/forward-transform analysis reuse between map attempts. Its
-first build pays analysis creation; every attempt still pays map-dependent
+first build now captures analysis while encoding the first map, rather than
+running a separate analysis pass. Every attempt still pays map-dependent
 quantization, coding and reconstruction work, and fitting candidates retain
 independent decoder validation. Analysis must not cross source/reference/frame
 identities or become a global cache. Compare both modes on the same seed and
@@ -181,6 +187,22 @@ and golden packet bytes remain required.
 ```powershell
 C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake-build-gamebub-v20/gamebub-v20-conformance.exe --encoder-benchmark-cached tools/gamebub/artifacts/v20-encoder-cases-20261104/cases/mass-effect-7200-mandatory-00.json 600'
 ```
+
+Exercise finite, independent sender bookkeeping fault cases:
+
+```powershell
+C:\msys64\msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cmake-build-gamebub-v20/gamebub-v20-conformance.exe --packet-model 10000'
+```
+
+The rounds argument is strictly 1..100000. This is a deterministic state model,
+not a duration soak or UDP loopback. It uses synthetic packet payloads and
+explicit external model RELEASE events; resetting objects between independent
+cases is not production peer recovery. Unknown outcomes remain owned and stop.
+Use [the readiness audit](measurements/receiver-readiness-20261104.md) and
+[the first-window request](MOONBUB-HARDWARE-READINESS-REQUEST-20261104.md) to
+coordinate a physical test. A first functional frame can precede 30 fps timing
+qualification, but matching complete implementations and a safe-stop contract
+must exist for the selected injection/network path.
 
 Set `GAMEBUB_V20_EXE`, `GAMEBUB_V20_CONTRACT` and
 `GAMEBUB_V20_ENCODER_FIXTURES` to enable the real transport/benchmark Python CLI

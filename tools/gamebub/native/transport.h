@@ -225,9 +225,11 @@ namespace gamebub::v20::transport {
     const auto whole = crc32(frame), content = crc32(frame.first(frame.size() > 4 ? frame.size() - 4 : 0));
     const auto count = (frame.size() + payload_cap - 1) / payload_cap;
     std::vector<std::vector<std::uint8_t>> out;
+    out.reserve(count);
     for (unsigned i = 0; i < count; ++i) {
       const auto payload = frame.subspan(i * payload_cap, std::min<std::size_t>(payload_cap, frame.size() - i * payload_cap));
       std::vector<std::uint8_t> bytes {'G', 'F', '0', '3', 3};
+      bytes.reserve(chunk_header + payload.size());
       append(bytes, epoch, 4);
       append(bytes, id, 4);
       append(bytes, frame.size(), 4);
@@ -284,6 +286,17 @@ namespace gamebub::v20::transport {
    */
   class SenderFrames {
   public:
+    /** @brief A new laboratory sender owns no grant or pending control identity. */
+    SenderFrames() = default;
+    /** @brief Frame-slot ownership cannot be copied into a second sender. */
+    SenderFrames(const SenderFrames &) = delete;
+    /** @brief Moving must not leave a second sender claiming the same grants. */
+    SenderFrames(SenderFrames &&) = delete;
+    /** @brief Assignment cannot fork or replace outstanding frame ownership. */
+    SenderFrames &operator=(const SenderFrames &) = delete;
+    /** @brief Move assignment cannot discard retained unknown outcomes. */
+    SenderFrames &operator=(SenderFrames &&) = delete;
+
     /** @brief Reserve a pending request intent; slots become granted only on its exact reply. */
     std::optional<FrameControl> request(std::uint32_t frame, std::uint32_t total, std::uint32_t crc) {
       if (stopped_ || pending_ || sequence_ == std::numeric_limits<std::uint64_t>::max()) {

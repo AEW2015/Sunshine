@@ -276,12 +276,45 @@ namespace gamebub::v20::encoder {
     }
   }
 
+  /** @brief Frame-bound coefficients declared before the private capture encoder interface. */
+  class Analysis;
+
+  /**
+   * @brief Encode validated inputs while optionally capturing this first map's forward work.
+   * @param request Exact fixed-profile input identity and quantization map.
+   * @param analysis Complete immutable analysis for a later map, or null.
+   * @param capture Private incomplete analysis created only by FrameBuilder, or null.
+   * @return Actual encoded bytes and reconstructed publication tag.
+   */
+  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture = nullptr);
+
   /** @brief Immutable raw forward coefficients bound to exactly one source, predictor and frame. */
   class Analysis {
     candidate::BuildRequest identity_;  ///< Exact owned source/reference pointers and immutable frame fields.
     std::uint32_t reference_id_ = 0;  ///< Original reference identity, guarding mutable aggregate aliases.
     body::Tag reference_tag_ {};  ///< Original canonical reference tag.
     std::array<std::vector<block_t>, 3> coefficients_;  ///< At most8100 blocks,2073600 retained coefficient bytes.
+    bool ready_ = false;  ///< Only a complete transform or successful fused encode may publish this analysis.
+
+    /** @brief Unforgeable external marker for the private first-map capture constructor. */
+    struct CaptureTag {};
+
+    /**
+     * @brief Bind private first-map capture without performing or trusting any transform work.
+     * @param request Identity later validated by the fused encoder before allocation or samples.
+     */
+    Analysis(const candidate::BuildRequest &request, CaptureTag):
+        identity_(request) {
+      if (request.reference) {
+        reference_id_ = request.reference->id;
+        reference_tag_ = request.reference->tag;
+      }
+    }
+
+    /** @brief Permit only the frame callback to own private incomplete capture storage. */
+    friend class FrameBuilder;
+    /** @brief Permit the always-validating encoder to fill and atomically seal private capture. */
+    friend candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &, const Analysis *, Analysis *);
 
   public:
     /** @brief Analysis storage cannot be copied or replaced through a retained alias. */
@@ -323,6 +356,7 @@ namespace gamebub::v20::encoder {
           }
         }
       }
+      ready_ = true;
     }
 
     /**
@@ -342,7 +376,7 @@ namespace gamebub::v20::encoder {
      * @return Complete natural-order raw coefficient blocks for that plane.
      */
     std::span<const block_t> plane(unsigned index) const {
-      body::require(index < coefficients_.size(), "encoder analysis plane");
+      body::require(ready_ && index < coefficients_.size(), "encoder analysis plane");
       return coefficients_[index];
     }
 
@@ -365,13 +399,18 @@ namespace gamebub::v20::encoder {
    * @brief Encode unchanged GM01 quantization/reconstruction/entropy using optional frame analysis.
    * @param request Immutable candidate identity, source, reference and declared ROI map.
    * @param analysis Exact frame-bound raw coefficients, or null for the original uncached path.
+   * @param capture Private incomplete analysis for fused first-map capture, or null.
    * @return Real encoded bytes and canonical reconstructed tag for key/promotion only.
    * @note This offline builder does not open sockets, publish banks or claim a target frame rate.
    */
-  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis) {
+  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture) {
     constexpr unsigned w = candidate::width, h = candidate::height;
     constexpr auto no_id = std::numeric_limits<std::uint32_t>::max();
     validate_request(request);
+    body::require(!capture || (!analysis && !capture->ready_), "encoder capture state");
+    if (capture) {
+      capture->require_identity(request);
+    }
     if (analysis) {
       analysis->require_identity(request);
     }
@@ -383,6 +422,9 @@ namespace gamebub::v20::encoder {
       const unsigned pw = p ? w / 2 : w, ph = p ? h / 2 : h;
       const unsigned bw = (pw + 7) / 8, bh = (ph + 7) / 8;
       const auto analyzed = analysis ? analysis->plane(p) : std::span<const block_t> {};
+      if (capture) {
+        capture->coefficients_[p].resize(bw * bh);
+      }
       std::vector<block_t> coefficients(bw * bh);
       if (request.key || request.promoted) {
         reconstruction[p].resize(pw * ph);
@@ -401,6 +443,9 @@ namespace gamebub::v20::encoder {
               }
             }
             raw = forward(residual);
+          }
+          if (capture) {
+            capture->coefficients_[p][by * bw + bx] = raw;
           }
           auto &quantized = coefficients[by * bw + bx];
           block_t dequantized;
@@ -457,6 +502,9 @@ namespace gamebub::v20::encoder {
     if (request.key || request.promoted) {
       result.stored_tag = body::canonical_tag(reconstruction, w, h);
     }
+    if (capture) {
+      capture->ready_ = true;
+    }
     return result;
   }
 
@@ -483,6 +531,8 @@ namespace gamebub::v20::encoder {
   class FrameBuilder {
     std::unique_ptr<const Analysis> analysis_;  ///< Exactly one frame-local analysis, freed with the callback.
     unsigned attempts_ = 0;  ///< Successful encoded attempts; cannot exceed the declared four maps.
+    bool analysis_built_ = false;  ///< Preserve paid successful capture accounting even after failure cleanup.
+    bool failed_ = false;  ///< A failed callback releases retained analysis and cannot be retried.
 
   public:
     /** @brief A new callback starts with no retained source, bank or analysis. */
@@ -497,24 +547,41 @@ namespace gamebub::v20::encoder {
     FrameBuilder &operator=(FrameBuilder &&) = delete;
 
     /**
-     * @brief Pay analysis on first build and reuse it only for subsequent matching map attempts.
+     * @brief Capture first-map forward work while encoding, then reuse it for later matching maps.
      * @param request Frame identity from one Policy.prepare lifetime.
      * @return Actual GM01 bytes/tag; analysis cost is included in the first paid build.
      */
     candidate::BuildResult operator()(const candidate::BuildRequest &request) {
-      body::require(attempts_ < candidate::maps.size(), "encoder analysis attempt bound");
-      body::require(request.map == candidate::maps[attempts_], "encoder analysis map order or reused prepare");
-      if (!analysis_) {
-        analysis_ = analyze(request);
+      body::require(!failed_, "encoder analysis callback failed");
+      try {
+        body::require(attempts_ < candidate::maps.size(), "encoder analysis attempt bound");
+        body::require(request.map == candidate::maps[attempts_], "encoder analysis map order or reused prepare");
+        if (!analysis_) {
+          auto capture = std::unique_ptr<Analysis>(new Analysis(request, Analysis::CaptureTag {}));
+          auto result = encode_inner_impl(request, nullptr, capture.get());
+          analysis_ = std::move(capture);
+          analysis_built_ = true;
+          ++attempts_;
+          return result;
+        }
+        auto result = encode_analyzed(request, *analysis_);
+        ++attempts_;
+        return result;
+      } catch (...) {
+        analysis_.reset();
+        failed_ = true;
+        throw;
       }
-      auto result = encode_analyzed(request, *analysis_);
-      ++attempts_;
-      return result;
     }
 
-    /** @brief Return zero before first analysis and one while this frame's storage is retained. */
+    /** @brief Read terminal callback failure, which never retains partial or prior analysis. */
+    bool failed() const {
+      return failed_;
+    }
+
+    /** @brief Count completed analysis creation, preserving paid work after terminal failure cleanup. */
     unsigned analysis_builds() const {
-      return analysis_ ? 1 : 0;
+      return analysis_built_ ? 1 : 0;
     }
 
     /** @brief Return successful actual encodes performed using the one retained analysis. */

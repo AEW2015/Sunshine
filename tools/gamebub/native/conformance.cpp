@@ -14,6 +14,7 @@
 #include "body_case.h"
 #include "encoder_benchmark.h"
 #include "encoder_case.h"
+#include "packet_model.h"
 #include "transport_case.h"
 #include "v20.h"
 
@@ -25,6 +26,19 @@
  */
 int main(int argc, char **argv) {
   using namespace gamebub::v20;
+  if (argc == 3 && std::string_view(argv[1]) == "--packet-model") {
+    try {
+      const std::string_view text(argv[2]);
+      unsigned rounds = 0;
+      const auto parsed = std::from_chars(text.data(), text.data() + text.size(), rounds);
+      body::require(parsed.ec == std::errc() && parsed.ptr == text.data() + text.size() && rounds >= 1 && rounds <= 100000, "packet model rounds must be 1..100000");
+      std::cout << packet_model::run(rounds).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Packet model rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
   if (argc == 3 && std::string_view(argv[1]) == "--transport-contract") {
     try {
       std::cout << transport_case::run(argv[2]).dump() << '\n';
@@ -125,6 +139,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
   return 2;
 }
