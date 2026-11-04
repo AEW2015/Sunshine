@@ -2,6 +2,21 @@
 
 Date: 2026-11-04
 
+Latest checkpoint: Windows now has offline RS24 wire conformance against
+MoonBub `4025d355`: all 124 frozen controls reproduce exactly and 5,704
+single-byte corruptions are rejected. This is syntax/byte verification only;
+no reset state machine or CP23 media endpoint is enabled. See
+[the checkpoint](measurements/v24-reset-wire-20261104.md) for reproduction and
+the next state/ownership gates. The implementation/test counts below describe
+the earlier encoder checkpoint, not the complete current tree.
+
+Next coordination request: please freeze the CP23/JA23 profile and full reset
+transcripts, including explicit packet/transport drain, candidate/reference
+readers, late owners, repeated BUSY, lost GO_ACK and reboot identity. We will
+port host transitions against those states before enabling media. A custom
+hardware test still needs a complete compatible decoder and agreed endpoint;
+the existing JPEG/AV demo does not satisfy that gate.
+
 The Windows native custom-codec encoder is ready for joint protocol and
 recovery work. Offline conformance passes; live custom-codec streaming and
 30 fps hardware playback have not been established.

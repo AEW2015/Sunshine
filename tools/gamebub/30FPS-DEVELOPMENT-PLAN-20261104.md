@@ -197,6 +197,12 @@ service is outside this development plan.
 
 ## Immediate next tasks
 
+Windows has since added an offline RS24 parser/serializer and pinned-byte
+replay of all 124 v24 controls. See [the checkpoint and reproduction steps](measurements/v24-reset-wire-20261104.md).
+This closes the wire-syntax subtask only. Full reset/ownership transition replay,
+CP23/JA23 media conformance and a compatible custom hardware endpoint remain open.
+The WoW demo is stopped; its incomplete measurement is [recorded separately](measurements/wow-demo-20261104.md).
+
 The receiver now reports JPEG/AV as its only available hardware path and is
 starting a v22 app-only regression with the FPGA unchanged. Wait for its fresh
 post-update identity/readiness/counters before a short existing-path control run.
