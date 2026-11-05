@@ -1,5 +1,10 @@
 # Game Bub host laboratory
 
+The [CU66 v70 audit and next-phase plan](CU66-V70-AUDIT-AND-NEXT-PLAN-20261105.md)
+tracks the newer receiver prototype, its failed cadence gate and a separate
+Windows CU66 conformance path. It does not replace deployed JPEG/AV or qualify
+the existing CP23 tools as CU66-compatible.
+
 The November 5 [morning handoff](MOONBUB-MORNING-HANDOFF-20261105.md) provides
 the next matched JPEG hardware comparison and a prompt for the receiver agent.
 The [validation index](measurements/windows-validation-20261105.md) separates
