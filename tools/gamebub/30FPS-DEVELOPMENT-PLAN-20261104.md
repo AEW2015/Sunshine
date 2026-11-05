@@ -29,11 +29,23 @@ H.264 or JPEG. All Windows native build/test commands use MSYS2 UCRT64 and
 
 ### Receiver coordination update, 2026-11-04
 
+Latest user status: v27 is installing, so sender traffic is on hold. V26 is the
+last verified runtime: installed around 6:38 p.m. America/Denver on November 4,
+with runtime ELF verification and a subsequent USB identity check. After v27
+reboots, use its fresh identity/configuration/counters for the short existing
+JPEG diagnostic control. Earlier unflashed-version statements below are
+historical and do not require repeating the v26 installation.
+
+The receiver team confirmed CP23/HC22/HD22 as the first complete-fixture target;
+CP25 is not selected. Its ready AKD1 ROM-fed AR03/GM01/CP02 KEY diagnostic is
+an earlier component image, not complete CP23 support. No complete custom
+decoder/local loader has been reported for either full profile.
+
 The receiver team's supplied coordinated plan adopts this development order.
 It reports that the custom FPGA work is currently an exact reconstruction
 component, not a complete parser/entropy/bank/tag/patch/scanout decoder or
 qualified bitstream. Its C gateway helpers are not a deployed custom endpoint.
-The v22 ESP application is built but unflashed. These are receiver-reported
+At that earlier update, the v22 ESP application was built but unflashed. These were receiver-reported
 capabilities; Windows has not independently probed or reproduced them.
 
 Consequently, complete custom FPGA-only throughput, concurrent receiver
@@ -198,8 +210,8 @@ service is outside this development plan.
 ## Immediate next tasks
 
 A new [v25 motion-codec study changes the media grammar](measurements/hd22-baseline-v25-gate-20261104.md).
-Coordinate CP23 versus CP25 for the first complete hardware fixture before
-porting or deploying the new profile. Its source does not establish a complete
+The receiver team has since retained CP23 for the first complete fixture;
+CP25 is not selected. Its source does not establish a complete
 FPGA decoder or endpoint. The native HD22 patch decoder and exact-word replay
 extend the current baseline; whole HC22/CP23 transactions remain separate.
 
@@ -222,11 +234,11 @@ This closes the wire-syntax subtask only. Full reset/ownership transition replay
 CP23/JA23 media conformance and a compatible custom hardware endpoint remain open.
 The WoW demo is stopped; its incomplete measurement is [recorded separately](measurements/wow-demo-20261104.md).
 
-The last receiver report identifies JPEG/AV as its only available hardware path.
-A v22 app-only demo was attempted; the stopped demo does not establish current
-installed identity or readiness. Confirm source binding, image and fresh counters
-before another controlled existing-path run. No deployable custom fixture image,
-custom receiver or custom port is reported by the latest source audit.
+JPEG/AV is the existing hardware streaming path. The earlier v22 app-only demo
+does not establish the current v27 runtime or readiness. Confirm post-update
+source binding, identity and fresh counters before another controlled run.
+The available AKD1 component artifact does not establish a complete CP23 fixture,
+custom streaming receiver or custom port.
 
 A newer offline study at MoonBub `4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189`
 adds CP23/JA23/RS24 profile/reset modeling with explicit drain/write/vblank

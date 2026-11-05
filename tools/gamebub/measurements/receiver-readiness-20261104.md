@@ -1,18 +1,29 @@
 # Receiver readiness for hardware testing
 
-Date: 2026-11-04. This is a source/document audit only. No receiver, installed
-application, FPGA image, or live stream was probed or changed.
+Date: 2026-11-04. This combines source audits with explicitly attributed user
+reports. Windows has not probed or changed a receiver, FPGA image or live stream
+as part of this readiness update.
 
 ## Decision
 
-Fresh receiver-side update relayed by the user on 2026-11-04: existing JPEG/AV
-is the only available hardware path; there is no deployable FPGA-only GM01
-fixture image, live custom GM01 receiver or assigned custom network port.
-The receiver agent is beginning a v22 app-only regression, first confirming the
-connected device/current identity and then installing the app with the FPGA
-unchanged. Post-update identity, readiness and counter baselines are still
-pending here. This is the receiver team's report, not a Windows device probe.
-Do not start a sender during that update window.
+Latest user report on November 4: v27 is currently installing. Hold sender
+traffic through that update and reboot. The last verified application is v26,
+flashed at approximately 6:38 p.m. America/Denver on November 4; the user verified
+its runtime ELF digest and a later USB check still identified v26. The digest
+value was not supplied here. No v27 runtime verification or test baseline has
+been reported yet. These reports supersede the historical unflashed-version
+notes below; v26 does not need reinstalling.
+
+The receiver team selected CP23/HC22/HD22 for the first complete custom fixture;
+CP25 is not selected. It reports no complete decoder image or local loader for
+either complete profile. Its ready AKD1 artifact is an earlier ROM-fed
+AR03/GM01/CP02 KEY diagnostic, not a CP23-capable image. This distinguishes an
+available component artifact from a deployed complete custom receiver.
+
+After v27 installation, confirm its runtime identity, actual FPGA build and
+Test MJPEG/source binding, then record fresh received/decoded/presented/dropped
+and queue counters before the 20-second 5 fps video-only control. Installing a
+new application does not by itself establish a new custom endpoint or profile.
 
 Hardware work has three distinct entry points: the existing JPEG/AV control,
 an FPGA-only functional custom fixture, and a Windows-to-MoonBub custom stream.

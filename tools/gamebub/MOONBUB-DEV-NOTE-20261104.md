@@ -2,10 +2,17 @@
 
 Date: 2026-11-04
 
-Profile question: the new v25 study at `3d881382` introduces incompatible
-CP25/JA25 with GM25/HD25. Which profile is the FPGA team building for the first
-complete fixture? Please send image/hash/readback and local loader status for
-that profile. Windows keeps its tested CP23 baseline while this is coordinated.
+Latest user status: v27 is currently installing. Hold sender traffic until its
+post-reboot identity, receiver/source binding and fresh counters are ready.
+V26 is the last verified application, installed around 6:38 p.m. America/Denver
+on November 4 with runtime ELF verification and a subsequent USB identity check.
+Earlier unflashed-version notes are historical, not a request to reinstall v26.
+
+Profile decision: the receiver team retained CP23/HC22/HD22 for the first complete
+fixture. The new v25 study at `3d881382` introduces incompatible CP25/JA25 with
+GM25/HD25, which is not selected. No complete custom decoder/local loader is
+reported; the ready AKD1 artifact is an earlier ROM-fed AR03/GM01/CP02 KEY
+diagnostic and must not be described as CP23-capable.
 The [new HD22 decoder/replay checkpoint](measurements/hd22-baseline-v25-gate-20261104.md)
 adds exact reference-dependent patch decoding, not a live whole-frame receiver.
 
@@ -13,7 +20,7 @@ Current checks: 121 native GameBub tests pass; Python completes 393 tests with
 five skips. Seven retained HD22 goldens match all 26,880 words, independent unit
 oracles cover COPY, and the original 20 encoder golden cases remain exact.
 
-Latest hardware evidence at MoonBub `4a927ab`: app-only v24 diagnostics are built
+Earlier published hardware evidence at MoonBub `4a927ab`: app-only v24 diagnostics were built
 but unflashed; the FPGA private KEY/tag simulation passed, while its isolated
 100 MHz timing, routed board/interface and restricted CSR-control gates remain
 open. Windows can support a 20-second 5 fps JPEG diagnostic control once the
