@@ -3,10 +3,13 @@
 Date: 2026-11-04
 
 V27 control completed: [IDs 2,000,000–2,000,099 at 5 fps, quality 25, 2 Mbps](measurements/v27-control-5fps-20261104.md).
-All 100 sends completed; 98 matched replies accepted and two rejected. Please
-preserve failure reasons/offsets for 2,000,079 and 2,000,084 and return final
-decoded/presented, queue/core/reboot observations. Sender is stopped; no audio
-or controller ran. Receiver `.47` acceptance is now confirmed by matching replies.
+All 100 sends completed; the receiver confirms 98 received/decoded/presented
+and two sequence failures. Frame 2,000,079 expected 20,480/observed 21,504;
+2,000,084 expected 21,504/observed 23,552. Requested host offsets were all logged
+sent, in order, roughly 5 ms apart; exact times are in the run report. Queue drops 0,
+peak 23/32; core fault/overflow/underrun counters 0; no reboot observed. Sender is
+stopped; no audio or controller ran. Loss/reordering location and continuous
+optical motion remain unverified.
 
 Earlier user status: v27 was installing. Hold sender traffic until its
 post-reboot identity, receiver/source binding and fresh counters are ready.

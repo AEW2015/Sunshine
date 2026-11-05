@@ -32,8 +32,11 @@ H.264 or JPEG. All Windows native build/test commands use MSYS2 UCRT64 and
 The latest operator readiness report is v27/build50, overlap/queue32. The
 [20-second 5 fps video-only control](measurements/v27-control-5fps-20261104.md)
 completed 100 full sends with 98 accepted replies and two rejected. The sender
-is stopped. Receiver decode/presentation, queue/core data and exact rejection
-reasons are pending before rate escalation. This supersedes the installation
+is stopped. Receiver totals reconcile 98 received/decoded/presented and two
+Sequence gaps, with zero application queue drops and no core fault/overflow/
+underrun or observed reboot. Host timestamps show all requested offsets sent
+in order; the loss/reordering location is unresolved before rate escalation.
+This supersedes the installation
 hold described in the earlier update below.
 
 Earlier user status: v27 was installing, so sender traffic was on hold. V26 was the
