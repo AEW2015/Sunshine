@@ -13,6 +13,7 @@
 // local includes
 #include "body_case.h"
 #include "composed_case.h"
+#include "composed_encoder_case.h"
 #include "encoder_benchmark.h"
 #include "encoder_case.h"
 #include "encoder_sequence.h"
@@ -31,6 +32,15 @@
  */
 int main(int argc, char **argv) {
   using namespace gamebub::v20;
+  if (argc == 3 && std::string_view(argv[1]) == "--composed-encode-case") {
+    try {
+      std::cout << gamebub::v24::refresh_encoder_case::run(argv[2]).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Composed encoder case rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
   if (argc == 3 && std::string_view(argv[1]) == "--hud-delta-contract") {
     try {
       std::cout << gamebub::v24::hud_delta_case::run(argv[2]).dump() << '\n';
@@ -197,6 +207,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES | --encoder-sequence MANIFEST.json FRAMES | --encoder-sequence-cached MANIFEST.json FRAMES\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --composed-encode-case SOURCE.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES | --encoder-sequence MANIFEST.json FRAMES | --encoder-sequence-cached MANIFEST.json FRAMES\n";
   return 2;
 }

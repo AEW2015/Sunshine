@@ -33,9 +33,49 @@ The clean localhost 80-frame probes compare sleep with precise wait and sleep wi
 
 The existing default remains `sleep`; the 600 μs hybrid tail is opt-in. The AV soak and native snapshots used the hybrid mode explicitly. This report does not recommend changing the default based on these localhost runs.
 
+## Hybrid spin-tail tuning: 200 μs versus 400 μs
+
+A separate localhost ABBA tuning set used a lab-only override in order
+`200, 400, 400, 200` μs. Each run submitted 900 unique native-decoded source
+frames at 30 fps, with no resampling or loop. This source was run under an
+8 Mbps cap, but measured application wire throughput was 4.80–4.92 Mbps and
+JPEG bytes alone were 4.73 Mbps; 8 Mbps is the cap, not the achieved rate.
+
+For the gap calculation, packet telemetry records each contiguous datagram's
+offset, payload length and monotonic timestamp sampled after `sock.send()`
+returns. The reported within-frame distribution includes only intervals between
+adjacent full 1,024-byte payload datagrams. It excludes frame-boundary intervals
+and short final payloads; intervals to the short final datagram are listed
+separately in the machine-readable data. Percentiles use nearest rank. These
+intervals include pacing waits and the later packet's send-call time; they are not socket
+call durations, RF gaps or receiver-arrival gaps.
+
+| Tail / order | Full-packet gap p50 / p95 / p99 / max | Sent / replaced | Process CPU | Sender-thread CPU |
+| --- | --- | ---: | ---: | ---: |
+| 200 μs / 0 | 1.340 / 2.023 / 2.238 / 3.239 ms | 884 / 16 | 15.98 s (52.7% one core) | 1.125 s (3.71% elapsed) |
+| 400 μs / 1 | 1.102 / 1.776 / 1.878 / 3.187 ms | 900 / 0 | 17.69 s (58.3% one core) | 1.672 s (5.51% elapsed) |
+| 400 μs / 2 | 1.102 / 1.789 / 1.888 / 8.627 ms | 900 / 0 | 19.39 s (64.0% one core) | 1.531 s (5.05% elapsed) |
+| 200 μs / 3 | 1.367 / 2.027 / 2.280 / 3.363 ms | 883 / 17 | 17.52 s (57.7% one core) | 1.047 s (3.45% elapsed) |
+
+The 400 μs runs had lower median and p95 full-packet gaps and delivered all
+900 frames in both runs, with no invalid datagrams or peer reply errors. They
+also used more process and sender-thread CPU in these runs. The 8.627 ms maximum
+in the second 400 μs run shows the tail result is not a bound on all packet
+intervals. Four observations do not establish a stable causal CPU/latency
+tradeoff. The existing `sleep` default is unchanged; these hybrid values are
+laboratory tuning results, not hardware or playback qualification.
+
+The detailed summary, including short-final-payload intervals, bytes, run order,
+and source hashes, is [hybrid-tail-tuning-20261105.json](hybrid-tail-tuning-20261105.json).
+Raw telemetry and per-run summaries remain in the ignored
+`artifacts/hybrid-tail-tuning-20261105/` directory. The sender timestamp meaning
+was checked against the recorded callback in `stream_sender.py` and the
+post-`sock.send()` sampling in `msv1.py`.
+
 ## Evidence files
 
 - `artifacts/hybrid-fullclip-20261105/summary.json` and per-period summaries
 - `artifacts/hybrid-av-soak-5m-20261105/result.json` and `session/video-summary.json`
 - `artifacts/hybrid-native-30fps-20261105/summary.json`
 - `artifacts/precise-wait-20261105/clean-native-abba-0036/summary.json`, `clean-period-abba-0037/summary.json`, and `clean-tails-0038/summary.json`
+- `artifacts/hybrid-tail-tuning-20261105/summary.json` and per-run JSONL

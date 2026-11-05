@@ -1286,6 +1286,7 @@ class StreamSenderTests(unittest.TestCase):
                         min_quality=20,
                         frames=4,
                         source_port=source_port,
+                        bind="127.0.0.1",
                         start_frame_id=0xFFFFFFFE,
                         packet_timing=True,
                     )
@@ -1299,6 +1300,9 @@ class StreamSenderTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(completed, [0xFFFFFFFE, 0xFFFFFFFF, 0, 1])
         self.assertEqual(source_ports, {source_port})
+        config = next(event for event in events if event["event"] == "capture_config")
+        self.assertEqual(config["local_endpoint"], ["127.0.0.1", source_port])
+        self.assertEqual(config["peer_endpoint"][0], "127.0.0.1")
         self.assertEqual(result["counts"]["feedback_accepted"], 4)
         self.assertEqual(result["pipeline"]["counts"]["sent"], 4)
         self.assertFalse(result["end_to_end_verified"])
@@ -1326,6 +1330,7 @@ class StreamSenderTests(unittest.TestCase):
                     "jpeg_retry_quality_drop": 0,
                     "shift_right_px": 0,
                     "pacing_wait": "sleep",
+                    "pacing_spin_us": 600,
                 }
             ],
         )
@@ -1428,7 +1433,12 @@ class StreamSenderTests(unittest.TestCase):
 
     def test_optional_wait_is_owned_until_sender_worker_has_stopped(self):
         """@brief Precise waits are opt-in and cleanup cannot strand feedback/log workers."""
-        for close_failure, mode in ((False, "precise"), (True, "precise"), (False, "hybrid")):
+        for close_failure, mode, spin_us in (
+            (False, "precise", 600),
+            (True, "precise", 600),
+            (False, "hybrid", 600),
+            (False, "hybrid", 400),
+        ):
             with self.subTest(close_failure=close_failure, mode=mode):
                 sock = Mock()
                 sock.recv.side_effect = BlockingIOError()
@@ -1439,8 +1449,20 @@ class StreamSenderTests(unittest.TestCase):
                 if close_failure:
                     waiter.close.side_effect = OSError("timer close")
                 with patch("stream_sender.PreciseWait", return_value=waiter) as factory:
-                    session = Session(sock, io.StringIO(), 20, 4, 200, 25, 25, pacing_wait=mode)
-                factory.assert_called_once_with(spin_tail_seconds=0.0006 if mode == "hybrid" else 0)
+                    session = Session(
+                        sock,
+                        io.StringIO(),
+                        20,
+                        4,
+                        200,
+                        25,
+                        25,
+                        pacing_wait=mode,
+                        pacing_spin_us=spin_us,
+                    )
+                factory.assert_called_once_with(
+                    spin_tail_seconds=spin_us / 1e6 if mode == "hybrid" else 0
+                )
                 image = Image.new("RGB", (720, 480), (30, 60, 90))
                 now = time.perf_counter_ns()
                 session.pipeline.submit(Frame(7, now, 123, image))
@@ -1457,6 +1479,30 @@ class StreamSenderTests(unittest.TestCase):
         with patch("stream_sender.PreciseWait") as waiter, self.assertRaises(ValueError):
             Session(None, None, 20, 4, 200, 25, 25, pacing_wait="unknown")
         waiter.assert_not_called()
+
+    def test_invalid_bind_rejected_before_file_or_socket(self):
+        """@brief Reject non-IPv4 source addresses before opening any run resources."""
+        for address in ("::1", "not-an-address", "256.1.1.1"):
+            options = SimpleNamespace(bind=address, log=Mock())
+            with self.subTest(address=address), patch("stream_sender.socket.socket") as sock:
+                with self.assertRaises(ValueError):
+                    run(options, iter(()))
+                options.log.open.assert_not_called()
+                sock.assert_not_called()
+
+    def test_invalid_spin_tail_rejected_before_resources(self):
+        """@brief Bound explicit spin configuration before starting timers or threads."""
+        for mode, value in (
+            ("hybrid", -1),
+            ("hybrid", 1001),
+            ("hybrid", True),
+            ("sleep", 400),
+            ("precise", 400),
+        ):
+            with self.subTest(mode=mode, value=value), patch("stream_sender.PreciseWait") as waiter:
+                with self.assertRaises(ValueError):
+                    Session(None, None, 20, 4, 200, 25, 25, pacing_wait=mode, pacing_spin_us=value)
+                waiter.assert_not_called()
 
     def test_wait_is_closed_if_worker_initialization_fails(self):
         """@brief Native timer ownership does not leak when later startup fails."""
@@ -1708,6 +1754,11 @@ class StreamSenderTests(unittest.TestCase):
             ("--max-age-ms", "0"),
             ("--source-port", "-1"),
             ("--start-frame-id", "4294967296"),
+            ("--pacing-spin-us", "-1"),
+            ("--pacing-wait", "hybrid", "--pacing-spin-us", "1001"),
+            ("--pacing-spin-us", "400"),
+            ("--bind", "::1"),
+            ("--loop-clip",),
         ):
             with self.subTest(extra=extra), self.assertRaises(SystemExit):
                 main(["127.0.0.1", "--desktop", "--log", "unused", *extra])

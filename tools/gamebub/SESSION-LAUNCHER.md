@@ -59,13 +59,22 @@ establish a measured speed improvement. The earlier spin-tail lab adapter is
 not enabled by this flag. A separate process timer-period helper is not
 selected by either launcher mode.
 
-`--pacing-wait hybrid` explicitly requests a bounded 600-microsecond native
-spin tail. Its wait-thread CPU and spin counters are reported. Fallback disables
+`--pacing-wait hybrid` explicitly requests a bounded native spin tail, defaulting
+to 600 microseconds. `--pacing-spin-us 400` selects a smaller tail; the accepted
+range is 0–1000 microseconds and a nondefault value requires hybrid mode.
+Its wait-thread CPU and spin counters are reported. Fallback disables
 the tail; it does not silently busy-spin on unsupported systems. This remains
 an experimental CPU/precision tradeoff, with no default behavior change.
 
 PowerShell equivalents: `-AvInput`, `-Clip PATH`, `-LoopClip`,
-`-PacingWait precise`. All existing media flags remain explicit.
+`-PacingWait precise`, or `-PacingWait hybrid -PacingSpinUs 400`.
+All existing media flags remain explicit.
+
+The launcher's `--bind` now binds both the AV socket and video child to that
+source IPv4 address. The standalone sender keeps its wildcard default unless
+`--bind` is selected. Video logs record the actual local and peer endpoints;
+the capture filter must match those addresses. This avoids silently choosing
+another source interface for video on a host with multiple adapters.
 
 ### Owned capture through STOP
 

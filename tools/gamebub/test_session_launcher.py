@@ -48,6 +48,8 @@ class LauncherTests(unittest.TestCase):
             self.assertEqual(manifest["profile"], "wow")
             self.assertEqual(manifest["canvas"], [720, 480])
             self.assertIn("--packet-timing", result["video_command"])
+            command = result["video_command"]
+            self.assertEqual(command[command.index("--bind") + 1], "127.0.0.1")
             with self.assertRaises(FileExistsError):
                 launcher.run(args)
 
@@ -70,6 +72,10 @@ class LauncherTests(unittest.TestCase):
                 ["--video-port", "0"],
                 ["--av-source-port", "65536"],
                 ["--av-source-port", "4", "--video-source-port", "4"],
+                ["--pacing-spin-us", "-1"],
+                ["--pacing-wait", "hybrid", "--pacing-spin-us", "1001"],
+                ["--pacing-wait", "sleep", "--pacing-spin-us", "400"],
+                ["--capture-interface", "adapter"],
             ):
                 with self.subTest(extra=extra), self.assertRaises(ValueError):
                     launcher.run(self.args(root, extra))
@@ -78,6 +84,16 @@ class LauncherTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 launcher.run(args)
             self.assertFalse(args.output.exists())
+
+    def test_explicit_hybrid_tail_forwarded_to_video(self):
+        """@brief Preserve the selected bounded tail through the production child command."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(
+                Path(directory), ["--pacing-wait", "hybrid", "--pacing-spin-us", "400", "--dry-run"]
+            )
+            result = launcher.run(args)
+            command = result["video_command"]
+            self.assertEqual(command[command.index("--pacing-spin-us") + 1], "400")
 
     def test_owned_video_cleanup_normal_timeout_and_kill(self):
         """@brief Bound termination to the spawned process object; record forced shutdown."""
@@ -162,6 +178,52 @@ class LauncherTests(unittest.TestCase):
             child.close.assert_called_once_with(grace=0)
             result = json.loads((args.output / "session-summary.json").read_text())
             self.assertIn("Owned video sender exited", result["error"])
+
+    def test_av_summary_survives_session_and_child_cleanup_failure(self):
+        """@brief Retain final AV evidence even when the owner subsequently raises."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--av-input"])
+            child = MagicMock()
+            child.process.pid = 123
+            child.close.side_effect = OSError("child cleanup")
+
+            def failed(options, event, ready, health, stop_when):
+                """@brief Publish the real owner's failure-summary event before propagating."""
+                ready()
+                event("av_summary", input_packets=7, stop_sent=True)
+                raise RuntimeError("session failure")
+
+            with (
+                patch.object(launcher, "run_av", side_effect=failed),
+                patch.object(launcher, "VideoProcess", return_value=child),
+                self.assertRaisesRegex(RuntimeError, "session failure"),
+            ):
+                launcher.run(args)
+            result = json.loads((args.output / "session-summary.json").read_text())
+            self.assertEqual(result["av"], {"input_packets": 7, "stop_sent": True})
+            self.assertTrue(result["video"]["forced_stop"])
+            self.assertIn("child cleanup", result["video"]["cleanup_error"])
+
+    def test_capture_rejects_unspecified_source_and_missing_tools(self):
+        """@brief Failed capture prerequisites never create an AV/media owner."""
+        for unspecified in (False, True):
+            with self.subTest(unspecified=unspecified), tempfile.TemporaryDirectory() as directory:
+                args = self.args(Path(directory), ["--av-input", "--capture-interface", "adapter"])
+                args.video = False
+                args.bind = "0.0.0.0" if unspecified else "127.0.0.1"
+                with (
+                    patch.object(Path, "is_file", return_value=False),
+                    patch.object(launcher, "run_av") as av,
+                    patch.object(launcher, "CaptureOwner") as capture,
+                    self.assertRaises((ValueError, FileNotFoundError)),
+                ):
+                    launcher.run(args)
+                av.assert_not_called()
+                capture.assert_not_called()
+                result = json.loads((args.output / "session-summary.json").read_text())
+                self.assertIn(
+                    "concrete source" if unspecified else "installed dumpcap", result["error"]
+                )
 
     def test_video_only_and_cli_exit_status(self):
         """@brief Video-only needs no AV owner; CLI exposes incomplete cleanup as failure."""

@@ -17,9 +17,11 @@ hardware playback.
 - Select one host-side wait implementation as the sole variable. Identify the
   source revision/hash and whether this is baseline or candidate before launch;
   do not silently substitute the lab spin-tail candidate into the baseline.
-- Start the packet capture before AV or video media begins. Keep the capture
-  alive until the session's STOP has been observed, then close and flush it.
-  Use a separate safety timeout and record whether it fired. The prior
+- Start the packet capture before AV or video media begins. Keep the owned
+  capture alive through STOP, let its bounded safety autostop finish naturally,
+  then verify the actual STOP packet in the finalized capture. Record the
+  autostop and any forced cleanup separately; finalization can take about two
+  minutes after media ends. The prior
   50-second capture ended before the final roughly nine seconds of video and
   STOP because its lifetime was not tied to the session
   ([baseline report](v30-pcap-baseline-2013600-20261105.md#coverage-failure)).
@@ -45,24 +47,56 @@ separate outcomes.
 ## Existing local regression commands
 
 Use the existing `tools/gamebub/.venv`; do not run `uv sync` or alter its
-optional extras for this matrix. From `tools/gamebub`, run the focused AV/video
+optional extras for this matrix. From the repository root, run the focused AV/video
 suite after the implementation is ready:
 
 ```powershell
-& .\.venv\Scripts\python.exe -m unittest -v test_stream_sender test_live_session test_live_session_loopback test_av_session
+& C:/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64 -c 'cd tools/gamebub && .venv/Scripts/python.exe -m unittest -v test_stream_sender test_live_session test_live_session_loopback test_av_session'
 ```
 
 Run the pacing-candidate tests from their directory with the same lab
 interpreter:
 
 ```powershell
-& ..\..\.venv\Scripts\python.exe -m unittest -v test_candidate
+& C:/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64 -c '../../.venv/Scripts/python.exe -m unittest -v test_candidate'
 ```
 
 The broader AV launcher regression command documented in
 [`SESSION-LAUNCHER.md`](../SESSION-LAUNCHER.md#testing) includes
 `test_live_audio`, `test_session_launcher`, and the localhost loopback suite.
 Commands above are recommendations only; this note does not claim they passed.
+
+## Morning hardware sequence
+
+The first morning test is the existing JPEG path, not the custom codec. Keep
+the receiver app, build50, overlap, queue and placement fixed. Record their
+actual identities rather than assuming the overnight configuration survived.
+Confirm the source IPv4 address and camera coverage through STOP again.
+
+1. Run a 30-second control at 720×480, 20 fps, Q25, 4 Mbps with the saved
+   Xonotic clip from offset zero, input-only AV and the unchanged `sleep` wait.
+   Reserve IDs 2,014,200–2,014,799 only after confirming they remain unused.
+2. Repeat the same slots and settings with `--pacing-wait hybrid` and its
+   default 600-microsecond tail. Reserve IDs 2,014,800–2,015,399 separately.
+   This changes only the host wait. Keep audio and gamepad injection off.
+3. Reconcile complete sends, exact ACK identities and receiver outcomes before
+   a longer run. Both captures must contain the actual STOP packet; retain
+   capture interface, point, drop counts, packet-gap distributions, host CPU,
+   receiver queue/core counters and the camera's coverage limitations.
+4. If the comparison passes, run five minutes at the selected 20 fps settings.
+   Stop rate escalation if the queue saturates, identities cannot be reconciled
+   or capture coverage fails. Preserve failure records before restarting.
+5. Treat 25/30 fps as separate measured gates. Local 30 fps results at an 8 Mbps
+   cap do not establish receiver capacity or authorize that hardware rate.
+   The 400-microsecond tail is a separate localhost-tuned candidate; do not
+   substitute it into the first 20 fps matched comparison without declaring it.
+
+Use the production launcher with explicit clip, wait and capture options from
+[`SESSION-LAUNCHER.md`](../SESSION-LAUNCHER.md). Allow its natural capture tail
+after media STOP. The latest results are tracked separately in
+[`overnight-host-pacing-20261105.md`](overnight-host-pacing-20261105.md).
+Custom CP23 testing stays gated on a matching complete decoder and loader;
+JPEG success does not clear that gate.
 
 ## Read-only audit findings
 

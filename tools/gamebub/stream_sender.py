@@ -4,6 +4,7 @@ This is not Sunshine integration. Feedback confirms ingress, not displayed video
 """
 
 import argparse
+import ipaddress
 import json
 import math
 import socket
@@ -278,6 +279,7 @@ class Session:
         max_jpeg_bytes=MAX_FRAME,
         jpeg_retry_quality_drop=0,
         pacing_wait="sleep",
+        pacing_spin_us=600,
     ):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
@@ -292,6 +294,7 @@ class Session:
         @param max_jpeg_bytes Maximum complete JPEG bytes for this receiver session.
         @param jpeg_retry_quality_drop One optional quality reduction after size rejection.
         @param pacing_wait Explicit optional precise blocking wait; default keeps ordinary sleep.
+        @param pacing_spin_us Explicit hybrid tail, from0 to1000 microseconds; ignored by default modes.
         """
         if (
             type(fps) is not int
@@ -306,6 +309,9 @@ class Session:
             or type(jpeg_retry_quality_drop) is not int
             or not 0 <= jpeg_retry_quality_drop <= 94
             or pacing_wait not in ("sleep", "precise", "hybrid")
+            or type(pacing_spin_us) is not int
+            or not 0 <= pacing_spin_us <= 1000
+            or (pacing_wait != "hybrid" and pacing_spin_us != 600)
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
@@ -313,7 +319,7 @@ class Session:
         self.max_jpeg_bytes = max_jpeg_bytes
         self.jpeg_retry_quality_drop = jpeg_retry_quality_drop
         self.precise_wait = (
-            PreciseWait(spin_tail_seconds=0.0006 if pacing_wait == "hybrid" else 0)
+            PreciseWait(spin_tail_seconds=pacing_spin_us / 1e6 if pacing_wait == "hybrid" else 0)
             if pacing_wait != "sleep"
             else None
         )
@@ -878,13 +884,14 @@ def recovering_desktop_frames(fps, on_event, sleeper=time.sleep, clock=time.mono
 def run(args, source=None):
     """@brief Capture a paced clip or desktop and write bounded-queue telemetry.
 
-    @param args Validated options, including explicit destination and log path.
+    @param args Validated options, including destination, source IPv4 bind and log path.
     @param source Optional iterator of images for tests; None uses clip or desktop.
     @return Run summary without any claim of receiver decode or display.
     """
     shift_right_px = getattr(args, "shift_right_px", 0)
     if type(shift_right_px) is not int or not 0 <= shift_right_px < WIDTH:
         raise ValueError("Right shift must be an integer from 0 to 719 pixels")
+    bind_address = str(ipaddress.IPv4Address(getattr(args, "bind", "0.0.0.0")))
     dxgi = (
         source is None
         and not args.clip
@@ -912,7 +919,7 @@ def run(args, source=None):
         args.log.open("x", encoding="utf-8", newline="\n") as log,
         socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock,
     ):
-        sock.bind(("0.0.0.0", getattr(args, "source_port", 0)))
+        sock.bind((bind_address, getattr(args, "source_port", 0)))
         sock.connect((args.target, args.port))
         sock.setblocking(False)
         session = Session(
@@ -927,6 +934,7 @@ def run(args, source=None):
             max_jpeg_bytes=getattr(args, "max_jpeg_bytes", MAX_FRAME),
             jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
             pacing_wait=getattr(args, "pacing_wait", "sleep"),
+            pacing_spin_us=getattr(args, "pacing_spin_us", 600),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -938,6 +946,8 @@ def run(args, source=None):
                 if frames is None
                 else "clip_or_test_source",
                 desktop_filter=filter_name if frames is None else None,
+                local_endpoint=sock.getsockname(),
+                peer_endpoint=sock.getpeername(),
             )
             session._event(
                 "session_config",
@@ -960,6 +970,7 @@ def run(args, source=None):
                 jpeg_retry_quality_drop=session.jpeg_retry_quality_drop,
                 shift_right_px=shift_right_px,
                 pacing_wait=getattr(args, "pacing_wait", "sleep"),
+                pacing_spin_us=getattr(args, "pacing_spin_us", 600),
             )
         started = time.perf_counter_ns()
         slot = 0
@@ -1037,6 +1048,11 @@ def main(argv=None):
     """@brief Parse sender options and run only against the explicitly selected peer."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("target", help="Receiver address on the trusted test LAN")
+    parser.add_argument(
+        "--bind",
+        default="0.0.0.0",
+        help="Source IPv4 address; default lets Windows select the interface",
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--clip", type=Path)
     group.add_argument("--desktop", action="store_true")
@@ -1074,9 +1090,15 @@ def main(argv=None):
         "--pacing-wait",
         choices=("sleep", "precise", "hybrid"),
         default="sleep",
-        help="Opt-in Windows wait: precise blocks; hybrid adds a bounded 600us spin tail; fallback reported",
+        help="Opt-in Windows wait: precise blocks; hybrid adds a configurable spin tail (default 600us); fallback reported",
     )
     parser.add_argument("--mbps", type=float, default=20)
+    parser.add_argument(
+        "--pacing-spin-us",
+        type=int,
+        default=600,
+        help="Explicit hybrid wait tail0..1000us; nondefault requires --pacing-wait hybrid",
+    )
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
@@ -1101,6 +1123,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.loop_clip and not args.clip:
         parser.error("--loop-clip requires --clip")
+    if not 0 <= args.pacing_spin_us <= 1000 or (
+        args.pacing_wait != "hybrid" and args.pacing_spin_us != 600
+    ):
+        parser.error("Hybrid spin tail must be0..1000us; nondefault requires hybrid mode")
     if args.desktop_backend != "imagegrab" and not args.desktop:
         parser.error("--desktop-backend requires --desktop")
     if (

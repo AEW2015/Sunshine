@@ -1,0 +1,199 @@
+{
+  "schema": "gamebub-host-hybrid-tail-tuning-v1",
+  "scope": "Saved localhost MSV1 video tuning; ingress feedback only; no hardware playback claim",
+  "reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+  "reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+  "clip": {
+    "file": "artifacts/media/Xonotic-0-8-2-gameplay.webm",
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "source_selection": "first 900 unique native-decoded frames; no resampling or looping",
+    "source_samples_per_run": 900,
+    "unique_pts_per_run": 900,
+    "source_timestamp_repeats_per_run": 0,
+    "first_pts_us": 7000,
+    "last_pts_us": 29974000
+  },
+  "settings": {
+    "fps": 30,
+    "cap_mbps": 8,
+    "quality": 25,
+    "max_age_ms": 200,
+    "frame_slots": 900,
+    "wait": "hybrid",
+    "tail_us_order": [200, 400, 400, 200],
+    "laboratory_override": true,
+    "production_default_changed": false,
+    "hardware_contacted": false
+  },
+  "timestamp_interval_method": {
+    "raw_records": "packet_timing packets [offset, payload_bytes, sent_monotonic_s]",
+    "timestamp_semantics": "sent_monotonic_s is sampled after sock.send(packet) returns",
+    "included": "Adjacent contiguous datagrams within one frame where both payloads are 1024 bytes; interval is current post-send timestamp minus previous post-send timestamp",
+    "excluded": "Frame-boundary intervals, short final payload intervals, and incomplete frame records",
+    "short_final_payload_intervals_reported_separately": true,
+    "percentiles": "nearest rank",
+    "limitations": "Intervals include pacing wait and the later packet's send-call time; they are not socket-call durations, RF gaps, or receiver-arrival gaps"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "tail_us": 200,
+      "duration_s": 30.3345498,
+      "sender_process_cpu_s": 15.984375,
+      "sender_process_cpu_pct_one_core": 52.6936,
+      "sender_thread_cpu_s": 1.125,
+      "sender_thread_cpu_pct_elapsed": 3.7086,
+      "submitted": 900,
+      "sent": 884,
+      "encoded_replaced": 16,
+      "peer_complete": 884,
+      "peer_invalid_datagrams": 0,
+      "peer_reply_errors": 0,
+      "jpeg_bytes": 17935055,
+      "application_wire_bytes": 18232617,
+      "application_wire_mbps": 4.808409,
+      "jpeg_mbps": 4.729935,
+      "full_packet_intervals_ms": {
+        "count": 15791,
+        "p50": 1.34,
+        "p95": 2.0231,
+        "p99": 2.2385,
+        "max": 3.2391
+      },
+      "short_final_payload_intervals_ms": {
+        "count": 883,
+        "p50": 1.3396,
+        "p95": 2.0651,
+        "p99": 2.471,
+        "max": 2.8576
+      },
+      "artifacts": {
+        "jsonl": "artifacts/hybrid-tail-tuning-20261105/0-200us.jsonl",
+        "summary": "artifacts/hybrid-tail-tuning-20261105/0-200us-summary.json"
+      }
+    },
+    {
+      "index": 1,
+      "tail_us": 400,
+      "duration_s": 30.3231442,
+      "sender_process_cpu_s": 17.6875,
+      "sender_process_cpu_pct_one_core": 58.33,
+      "sender_thread_cpu_s": 1.671875,
+      "sender_thread_cpu_pct_elapsed": 5.5135,
+      "submitted": 900,
+      "sent": 900,
+      "encoded_replaced": 0,
+      "peer_complete": 900,
+      "peer_invalid_datagrams": 0,
+      "peer_reply_errors": 0,
+      "jpeg_bytes": 17935055,
+      "application_wire_bytes": 18653495,
+      "application_wire_mbps": 4.921256,
+      "jpeg_mbps": 4.731713,
+      "full_packet_intervals_ms": {
+        "count": 16162,
+        "p50": 1.1018,
+        "p95": 1.7763,
+        "p99": 1.8777,
+        "max": 3.1873
+      },
+      "short_final_payload_intervals_ms": {
+        "count": 899,
+        "p50": 1.1095,
+        "p95": 1.77,
+        "p99": 2.2784,
+        "max": 2.7781
+      },
+      "artifacts": {
+        "jsonl": "artifacts/hybrid-tail-tuning-20261105/1-400us.jsonl",
+        "summary": "artifacts/hybrid-tail-tuning-20261105/1-400us-summary.json"
+      }
+    },
+    {
+      "index": 2,
+      "tail_us": 400,
+      "duration_s": 30.3194626,
+      "sender_process_cpu_s": 19.390625,
+      "sender_process_cpu_pct_one_core": 63.9544,
+      "sender_thread_cpu_s": 1.53125,
+      "sender_thread_cpu_pct_elapsed": 5.0504,
+      "submitted": 900,
+      "sent": 900,
+      "encoded_replaced": 0,
+      "peer_complete": 900,
+      "peer_invalid_datagrams": 0,
+      "peer_reply_errors": 0,
+      "jpeg_bytes": 17935055,
+      "application_wire_bytes": 18653495,
+      "application_wire_mbps": 4.921854,
+      "jpeg_mbps": 4.732288,
+      "full_packet_intervals_ms": {
+        "count": 16162,
+        "p50": 1.1019,
+        "p95": 1.7889,
+        "p99": 1.8879,
+        "max": 8.6274
+      },
+      "short_final_payload_intervals_ms": {
+        "count": 899,
+        "p50": 1.1099,
+        "p95": 1.7742,
+        "p99": 2.3595,
+        "max": 2.8668
+      },
+      "artifacts": {
+        "jsonl": "artifacts/hybrid-tail-tuning-20261105/2-400us.jsonl",
+        "summary": "artifacts/hybrid-tail-tuning-20261105/2-400us-summary.json"
+      }
+    },
+    {
+      "index": 3,
+      "tail_us": 200,
+      "duration_s": 30.336653,
+      "sender_process_cpu_s": 17.515625,
+      "sender_process_cpu_pct_one_core": 57.7375,
+      "sender_thread_cpu_s": 1.046875,
+      "sender_thread_cpu_pct_elapsed": 3.4509,
+      "submitted": 900,
+      "sent": 883,
+      "encoded_replaced": 17,
+      "peer_complete": 883,
+      "peer_invalid_datagrams": 0,
+      "peer_reply_errors": 0,
+      "jpeg_bytes": 17935055,
+      "application_wire_bytes": 18203018,
+      "application_wire_mbps": 4.800271,
+      "jpeg_mbps": 4.729607,
+      "full_packet_intervals_ms": {
+        "count": 15765,
+        "p50": 1.3671,
+        "p95": 2.0269,
+        "p99": 2.2797,
+        "max": 3.3626
+      },
+      "short_final_payload_intervals_ms": {
+        "count": 882,
+        "p50": 1.3038,
+        "p95": 2.1016,
+        "p99": 2.536,
+        "max": 2.764
+      },
+      "artifacts": {
+        "jsonl": "artifacts/hybrid-tail-tuning-20261105/3-200us.jsonl",
+        "summary": "artifacts/hybrid-tail-tuning-20261105/3-200us-summary.json"
+      }
+    }
+  ],
+  "provenance": {
+    "stream_sender_py_sha256": "981c19791904e8db2ac7d9ade9b9bb6842ab98d399050dc29724b9ac8dbdd604",
+    "msv1_py_sha256": "2a853c3478c83d7d00763d3cef847e192d4f44d0bc3344bf3f46735553a0610e",
+    "run_py_sha256": "51e35a68824c777ca4bc1524fcf3e7748cb8be19bca0049eb1959d90d7e994cf"
+  },
+  "not_claimed": [
+    "socket syscall duration",
+    "RF departure or arrival",
+    "real-device decode or presentation",
+    "hardware pacing qualification",
+    "production-default change"
+  ]
+}

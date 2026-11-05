@@ -21,6 +21,7 @@ param(
     [ValidateSet('standard','elden-ring','mass-effect','wow')][string]$Profile = 'standard',
     [ValidateRange(1,30)][int]$FPS = 5,
     [ValidateSet('sleep','precise','hybrid')][string]$PacingWait = 'sleep',
+    [ValidateRange(0,1000)][int]$PacingSpinUs = 600,
     [string]$CaptureInterface,
     [string]$CaptureExecutable = 'C:\Program Files\Wireshark\dumpcap.exe',
     [ValidateRange(1,95)][int]$Quality = 25,
@@ -40,6 +41,7 @@ if ($Audio) {$sessionArgs += '--audio'}
 if ($Gamepad) {$sessionArgs += '--gamepad'}
 if ($AvInput) {$sessionArgs += '--av-input'}
 if ($PacingWait -ne 'sleep') {$sessionArgs += @('--pacing-wait',$PacingWait)}
+if ($PacingSpinUs -ne 600) {$sessionArgs += @('--pacing-spin-us',$PacingSpinUs)}
 if ($CaptureInterface) {$sessionArgs += @('--capture-interface',$CaptureInterface,'--capture-executable',$CaptureExecutable)}
 if ($DryRun) {$sessionArgs += '--dry-run'}
 & $sessionPython @sessionArgs

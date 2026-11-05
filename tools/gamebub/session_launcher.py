@@ -46,6 +46,7 @@ def parser():
     result.add_argument("--gain", type=float, default=0.75)
     result.add_argument("--fps", type=int, default=5)
     result.add_argument("--pacing-wait", choices=("sleep", "precise", "hybrid"), default="sleep")
+    result.add_argument("--pacing-spin-us", type=int, default=600)
     result.add_argument("--capture-interface", help="Explicit dumpcap interface; capture is opt-in")
     result.add_argument("--capture-executable", default=r"C:\Program Files\Wireshark\dumpcap.exe")
     result.add_argument("--quality", type=int, default=25)
@@ -82,6 +83,10 @@ def validate(args):
         raise ValueError("--loop-clip requires --clip")
     if args.capture_interface and not (args.av_input or args.audio or args.gamepad):
         raise ValueError("Capture requires an AV owner so STOP can delimit coverage")
+    if not 0 <= args.pacing_spin_us <= 1000 or (
+        args.pacing_wait != "hybrid" and args.pacing_spin_us != 600
+    ):
+        raise ValueError("Hybrid spin tail must be0..1000us; nondefault requires hybrid mode")
     if any(
         not math.isfinite(v)
         for v in (args.seconds, args.gain, args.mbps, args.deadline_ms, args.source_timeout)
@@ -119,6 +124,8 @@ def video_command(args):
         "-u",
         str(HERE / "stream_sender.py"),
         args.receiver,
+        "--bind",
+        args.bind,
         *source,
         "--desktop-filter",
         "bilinear",
@@ -128,6 +135,8 @@ def video_command(args):
         str(args.fps),
         "--pacing-wait",
         args.pacing_wait,
+        "--pacing-spin-us",
+        str(args.pacing_spin_us),
         "--quality",
         str(args.quality),
         "--min-quality",

@@ -1,0 +1,319 @@
+{
+  "scope": "offline_native_cp23_fresh_independent_key_four_legacy_hud_each_source",
+  "codec_identity": "fresh epoch=index+1/frame0/generation1 per source; no stateful stream or transport epoch claim",
+  "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "source_provenance": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "original_clip_reverified": false,
+  "original_geometry": [
+    1024,
+    600
+  ],
+  "resized_geometry": [
+    691,
+    405
+  ],
+  "placement_xy": [
+    14,
+    37
+  ],
+  "canvas_geometry": [
+    720,
+    480
+  ],
+  "viewport_geometry": [
+    720,
+    405
+  ],
+  "native_executable_sha256": "0fb151b88d9ffc1b2decc415e55ae1cddf8e44bb6203f5e98f10387f9ed2e48b",
+  "accepted_frames": 34,
+  "rejected_frames": 26,
+  "attempts": 188,
+  "losing_attempts": 154,
+  "runner_wall_ns": 4332068800,
+  "timing_boundaries": "encode includes actual HUD/base attempts/framing/hash/independent decode/analysis cleanup; case adds read/hash/source/report construction; CLI process wall adds startup/shutdown/stdout and external scheduling; no capture/decode/scaling/network/playback",
+  "timings_ns": {
+    "source_prepare_ns": {
+      "count": 60,
+      "total": 763803500,
+      "min": 10919400,
+      "p50": 12372000,
+      "p95": 14789800,
+      "p99": 20575500,
+      "max": 20575500
+    },
+    "output_hash_ns": {
+      "count": 60,
+      "total": 3589900,
+      "min": 1000,
+      "p50": 86600,
+      "p95": 114800,
+      "p99": 218700,
+      "max": 218700
+    },
+    "encode_total_ns": {
+      "count": 60,
+      "total": 2888132200,
+      "min": 27294000,
+      "p50": 47992400,
+      "p95": 59646000,
+      "p99": 65087000,
+      "max": 65087000
+    },
+    "case_total_ns": {
+      "count": 60,
+      "total": 3705964600,
+      "min": 39917400,
+      "p50": 60575400,
+      "p95": 75320200,
+      "p99": 80479100,
+      "max": 80479100
+    },
+    "cli_process_wall_ns": {
+      "count": 60,
+      "total": 4325428400,
+      "min": 49504100,
+      "p50": 71022400,
+      "p95": 85521000,
+      "p99": 91664600,
+      "max": 91664600
+    }
+  },
+  "selected_packet_bytes": {
+    "count": 34,
+    "total": 1553903,
+    "min": 41116,
+    "p50": 46506,
+    "p95": 48871,
+    "p99": 48985,
+    "max": 48985
+  },
+  "schema": "gamebub-cp23-independent-encoder-summary-v1",
+  "source_commit": "4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189",
+  "validation": {
+    "native_tests_passed": 160,
+    "native_suites": 20,
+    "new_tests": 6,
+    "published_static_output_instances": 12,
+    "distinct_static_epoch_variants": 3,
+    "additional_pinned_source_cases": 4,
+    "malformed_cli_cases_rejected": 10
+  },
+  "coverage": {
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder.h": {
+      "lines": 93,
+      "hit_lines": 92,
+      "branches": 184,
+      "hit_branches": 104,
+      "unhit_lines": [
+        107
+      ]
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder_case.h": {
+      "lines": 27,
+      "hit_lines": 27,
+      "branches": 342,
+      "hit_branches": 171,
+      "unhit_lines": []
+    }
+  },
+  "paid_stage_groups": {
+    "(True, 2)": {
+      "count": 16,
+      "total_ms": {
+        "hud": 23.6899,
+        "build": 494.8224,
+        "first_build": 316.65,
+        "retry_build": 178.1724,
+        "framing": 13.0574,
+        "discard": 0.0376,
+        "validation": 185.8443,
+        "cleanup": 2.7486,
+        "encode": 720.3315,
+        "source_prepare": 224.1366,
+        "output_hash": 1.7198,
+        "case": 960.7311,
+        "process": 1140.0838
+      },
+      "mean_ms": {
+        "hud": 1.4806,
+        "build": 30.9264,
+        "first_build": 19.7906,
+        "retry_build": 11.1358,
+        "framing": 0.8161,
+        "discard": 0.0024,
+        "validation": 11.6153,
+        "cleanup": 0.1718,
+        "encode": 45.0207,
+        "source_prepare": 14.0085,
+        "output_hash": 0.1075,
+        "case": 60.0457,
+        "process": 71.2552
+      }
+    },
+    "(True, 1)": {
+      "count": 3,
+      "total_ms": {
+        "hud": 3.3154,
+        "build": 48.4071,
+        "first_build": 48.4071,
+        "retry_build": 0.0,
+        "framing": 2.0778,
+        "discard": 0.004,
+        "validation": 32.9697,
+        "cleanup": 0.5224,
+        "encode": 87.3045,
+        "source_prepare": 36.1191,
+        "output_hash": 0.3121,
+        "case": 126.1427,
+        "process": 155.7804
+      },
+      "mean_ms": {
+        "hud": 1.1051,
+        "build": 16.1357,
+        "first_build": 16.1357,
+        "retry_build": 0.0,
+        "framing": 0.6926,
+        "discard": 0.0013,
+        "validation": 10.9899,
+        "cleanup": 0.1741,
+        "encode": 29.1015,
+        "source_prepare": 12.0397,
+        "output_hash": 0.104,
+        "case": 42.0476,
+        "process": 51.9268
+      }
+    },
+    "(True, 4)": {
+      "count": 4,
+      "total_ms": {
+        "hud": 5.3578,
+        "build": 188.4469,
+        "first_build": 69.7961,
+        "retry_build": 118.6508,
+        "framing": 4.0243,
+        "discard": 0.0192,
+        "validation": 42.3993,
+        "cleanup": 0.586,
+        "encode": 240.863,
+        "source_prepare": 51.1651,
+        "output_hash": 0.4011,
+        "case": 295.9153,
+        "process": 336.2454
+      },
+      "mean_ms": {
+        "hud": 1.3395,
+        "build": 47.1117,
+        "first_build": 17.449,
+        "retry_build": 29.6627,
+        "framing": 1.0061,
+        "discard": 0.0048,
+        "validation": 10.5998,
+        "cleanup": 0.1465,
+        "encode": 60.2157,
+        "source_prepare": 12.7913,
+        "output_hash": 0.1003,
+        "case": 73.9788,
+        "process": 84.0614
+      }
+    },
+    "(False, 4)": {
+      "count": 26,
+      "total_ms": {
+        "hud": 38.4642,
+        "build": 1215.0002,
+        "first_build": 460.425,
+        "retry_build": 754.5752,
+        "framing": 10.846,
+        "discard": 0.2212,
+        "validation": 0.0,
+        "cleanup": 4.0491,
+        "encode": 1268.7656,
+        "source_prepare": 311.3577,
+        "output_hash": 0.0312,
+        "case": 1600.9216,
+        "process": 1857.0793
+      },
+      "mean_ms": {
+        "hud": 1.4794,
+        "build": 46.7308,
+        "first_build": 17.7087,
+        "retry_build": 29.0221,
+        "framing": 0.4172,
+        "discard": 0.0085,
+        "validation": 0.0,
+        "cleanup": 0.1557,
+        "encode": 48.7987,
+        "source_prepare": 11.9753,
+        "output_hash": 0.0012,
+        "case": 61.5739,
+        "process": 71.4261
+      }
+    },
+    "(True, 3)": {
+      "count": 11,
+      "total_ms": {
+        "hud": 15.3114,
+        "build": 423.0294,
+        "first_build": 200.463,
+        "retry_build": 222.5664,
+        "framing": 10.2579,
+        "discard": 0.069,
+        "validation": 120.4484,
+        "cleanup": 1.6847,
+        "encode": 570.8676,
+        "source_prepare": 141.025,
+        "output_hash": 1.1257,
+        "case": 722.2539,
+        "process": 836.2395
+      },
+      "mean_ms": {
+        "hud": 1.3919,
+        "build": 38.4572,
+        "first_build": 18.2239,
+        "retry_build": 20.2333,
+        "framing": 0.9325,
+        "discard": 0.0063,
+        "validation": 10.9499,
+        "cleanup": 0.1532,
+        "encode": 51.8971,
+        "source_prepare": 12.8205,
+        "output_hash": 0.1023,
+        "case": 65.6594,
+        "process": 76.0218
+      }
+    }
+  },
+  "source_code_sha256": {
+    "native/composed_encoder.h": "eb06ba5458f6028e810096336b53eec3136ac53f34c961b893e145a23004457d",
+    "native/composed_encoder_case.h": "65be961fbf1d2a788e12ffcc7ba011eda128eb79e5cb14f3e49dfdb7f583272f",
+    "native/inner_encoder.h": "7b110d83c755cc616aac3b3a1aeb197129b9cf7b89a54c69d598aa4dd9244904",
+    "native/conformance.cpp": "58935c4dd203c05240caafb237a01dc0cec91dd24fe77003ae396d611fa12dee"
+  },
+  "limitations": [
+    "No hardware/network/playback or process CPU/peak memory measurement",
+    "Fresh independent key per source; no stateful P/HD22/reference-publication claim",
+    "Short60frame prefix; external load uncontrolled outside reserved agent slot",
+    "CLI process startup per source differs from old single-process AR03 benchmark",
+    "Original clip hash is provenance; exported RGB hashes were reverified",
+    "Rawgcov closing-brace exception-cleanup line remains unhit; full branch coverage notclaimed"
+  ]
+}

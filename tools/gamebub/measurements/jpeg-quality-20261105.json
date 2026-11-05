@@ -1,0 +1,2430 @@
+{
+  "schema": "gamebub-jpeg-quality-study-v1",
+  "scope": "Deterministic offline JPEG size and Pillow software-decode RGB8 PSNR; no timing or hardware measurement",
+  "source": {
+    "file": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "selection": "first 60 unique native-decoded frames; no resampling or looping",
+    "native_pts_origin_us": 7000,
+    "native_pts_end_us": 1974000,
+    "source_geometry": {
+      "width": 1024,
+      "height": 600
+    },
+    "canvas_geometry": [
+      720,
+      480
+    ],
+    "scaled_content_rect": {
+      "x": 14,
+      "y": 37,
+      "width": 691,
+      "height": 405
+    },
+    "active_viewport": {
+      "x": 0,
+      "y": 37,
+      "width": 720,
+      "height": 405
+    },
+    "decoded_count": 60
+  },
+  "method": {
+    "canvas": "production host.canvas(frame), aspect-preserving fit into centered 720x405 viewport on RGB 720x480 canvas",
+    "encoder": "production msv1.encode_receiver_jpeg with its unchanged receiver JPEG profile",
+    "qualities": [
+      20,
+      25,
+      30
+    ],
+    "decoder": "Pillow software JPEG decode to RGB8",
+    "psnr": "RGB8 mean squared error over all channels; exact scaled content rectangle, active viewport rows 37:442 including side bars, and full 720x480 canvas are reported separately",
+    "percentiles": "nearest rank; 60 per-frame samples",
+    "application_udp_bytes": "JPEG bytes plus one production MSV1 header per 1024-byte payload chunk",
+    "rate_values": "nominal average bitrate demand from these 60 frames at 20 or 30 fps; not achieved throughput",
+    "timing_measurements": "intentionally omitted"
+  },
+  "quality_summaries": {
+    "20": {
+      "frame_count": 60,
+      "jpeg_bytes": {
+        "total": 1097759,
+        "minimum": 13411,
+        "p50_nearest_rank": 18720,
+        "p95_nearest_rank": 23076,
+        "maximum": 23285
+      },
+      "application_udp_payload_bytes_including_msv1_headers": {
+        "total": 1141999,
+        "per_frame_mean": 19033.316666666666,
+        "nominal_demand_mbps_at_20_fps": 3.0453306666666666,
+        "nominal_demand_mbps_at_30_fps": 4.567996
+      },
+      "active_viewport_psnr_db": {
+        "minimum": 28.941935814538333,
+        "p5_nearest_rank": 29.16788552460008,
+        "median_nearest_rank": 30.544168509861663
+      },
+      "scaled_content_psnr_db": {
+        "minimum": 28.80445113606415,
+        "p5_nearest_rank": 29.030392019496865,
+        "median_nearest_rank": 30.41976776044428
+      },
+      "whole_canvas_psnr_db": {
+        "minimum": 29.58495581110961,
+        "p5_nearest_rank": 29.810787242747246,
+        "median_nearest_rank": 31.144017348280663
+      }
+    },
+    "25": {
+      "frame_count": 60,
+      "jpeg_bytes": {
+        "total": 1233242,
+        "minimum": 14927,
+        "p50_nearest_rank": 20996,
+        "p95_nearest_rank": 26039,
+        "maximum": 26205
+      },
+      "application_udp_payload_bytes_including_msv1_headers": {
+        "total": 1282482,
+        "per_frame_mean": 21374.7,
+        "nominal_demand_mbps_at_20_fps": 3.419952,
+        "nominal_demand_mbps_at_30_fps": 5.129928
+      },
+      "active_viewport_psnr_db": {
+        "minimum": 29.846762261229163,
+        "p5_nearest_rank": 30.11814784742404,
+        "median_nearest_rank": 31.53682951211463
+      },
+      "scaled_content_psnr_db": {
+        "minimum": 29.708330445863243,
+        "p5_nearest_rank": 29.985529897410483,
+        "median_nearest_rank": 31.417081003456207
+      },
+      "whole_canvas_psnr_db": {
+        "minimum": 30.49250392761699,
+        "p5_nearest_rank": 30.76248641670341,
+        "median_nearest_rank": 32.15386264454118
+      }
+    },
+    "30": {
+      "frame_count": 60,
+      "jpeg_bytes": {
+        "total": 1353939,
+        "minimum": 16290,
+        "p50_nearest_rank": 22970,
+        "p95_nearest_rank": 28646,
+        "maximum": 28897
+      },
+      "application_udp_payload_bytes_including_msv1_headers": {
+        "total": 1408099,
+        "per_frame_mean": 23468.316666666666,
+        "nominal_demand_mbps_at_20_fps": 3.7549306666666666,
+        "nominal_demand_mbps_at_30_fps": 5.632396
+      },
+      "active_viewport_psnr_db": {
+        "minimum": 30.521558826442142,
+        "p5_nearest_rank": 30.85957159721592,
+        "median_nearest_rank": 32.36790726188027
+      },
+      "scaled_content_psnr_db": {
+        "minimum": 30.38424632754975,
+        "p5_nearest_rank": 30.725567314735205,
+        "median_nearest_rank": 32.243074471078415
+      },
+      "whole_canvas_psnr_db": {
+        "minimum": 31.176144517690943,
+        "p5_nearest_rank": 31.51029298736246,
+        "median_nearest_rank": 32.98150123026117
+      }
+    }
+  },
+  "frames": [
+    {
+      "source_frame_index": 0,
+      "source_pts_us": 7000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 15762,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16402,
+          "active_viewport_psnr_db": 31.302496000283938,
+          "scaled_content_psnr_db": 31.17932023149368,
+          "whole_canvas_psnr_db": 31.862093209710977
+        },
+        "25": {
+          "jpeg_bytes": 17765,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18485,
+          "active_viewport_psnr_db": 32.24458052038428,
+          "scaled_content_psnr_db": 32.126326195291696,
+          "whole_canvas_psnr_db": 32.82257276069898
+        },
+        "30": {
+          "jpeg_bytes": 19510,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20310,
+          "active_viewport_psnr_db": 32.954363047921504,
+          "scaled_content_psnr_db": 32.83473236139106,
+          "whole_canvas_psnr_db": 33.541073917078236
+        }
+      }
+    },
+    {
+      "source_frame_index": 1,
+      "source_pts_us": 40000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 15765,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16405,
+          "active_viewport_psnr_db": 31.346655201311236,
+          "scaled_content_psnr_db": 31.219847779582956,
+          "whole_canvas_psnr_db": 31.893520266759374
+        },
+        "25": {
+          "jpeg_bytes": 17699,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18419,
+          "active_viewport_psnr_db": 32.27175774033567,
+          "scaled_content_psnr_db": 32.151250427737324,
+          "whole_canvas_psnr_db": 32.85004178520999
+        },
+        "30": {
+          "jpeg_bytes": 19480,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20280,
+          "active_viewport_psnr_db": 32.9862091545244,
+          "scaled_content_psnr_db": 32.86522370061302,
+          "whole_canvas_psnr_db": 33.57153553280317
+        }
+      }
+    },
+    {
+      "source_frame_index": 2,
+      "source_pts_us": 74000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 15402,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16042,
+          "active_viewport_psnr_db": 31.61522020667174,
+          "scaled_content_psnr_db": 31.48933021271384,
+          "whole_canvas_psnr_db": 32.15662644434473
+        },
+        "25": {
+          "jpeg_bytes": 17284,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17964,
+          "active_viewport_psnr_db": 32.57826925270599,
+          "scaled_content_psnr_db": 32.463864250257096,
+          "whole_canvas_psnr_db": 33.1400499486294
+        },
+        "30": {
+          "jpeg_bytes": 18942,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19702,
+          "active_viewport_psnr_db": 33.30718471101976,
+          "scaled_content_psnr_db": 33.19413664929772,
+          "whole_canvas_psnr_db": 33.876081905728284
+        }
+      }
+    },
+    {
+      "source_frame_index": 3,
+      "source_pts_us": 107000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 14887,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15487,
+          "active_viewport_psnr_db": 31.86693132547143,
+          "scaled_content_psnr_db": 31.735925665241474,
+          "whole_canvas_psnr_db": 32.378715724598166
+        },
+        "25": {
+          "jpeg_bytes": 16715,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17395,
+          "active_viewport_psnr_db": 32.79008038064,
+          "scaled_content_psnr_db": 32.67034045589705,
+          "whole_canvas_psnr_db": 33.338280566443416
+        },
+        "30": {
+          "jpeg_bytes": 18266,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18986,
+          "active_viewport_psnr_db": 33.51517320958838,
+          "scaled_content_psnr_db": 33.388957773210976,
+          "whole_canvas_psnr_db": 34.07121251249594
+        }
+      }
+    },
+    {
+      "source_frame_index": 4,
+      "source_pts_us": 140000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 14593,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15193,
+          "active_viewport_psnr_db": 32.036906543870614,
+          "scaled_content_psnr_db": 31.90110260145388,
+          "whole_canvas_psnr_db": 32.5435277916629
+        },
+        "25": {
+          "jpeg_bytes": 16279,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16919,
+          "active_viewport_psnr_db": 32.95464554580099,
+          "scaled_content_psnr_db": 32.83073466644136,
+          "whole_canvas_psnr_db": 33.48372358075394
+        },
+        "30": {
+          "jpeg_bytes": 17780,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18500,
+          "active_viewport_psnr_db": 33.70886260996157,
+          "scaled_content_psnr_db": 33.58476050595503,
+          "whole_canvas_psnr_db": 34.246387558747344
+        }
+      }
+    },
+    {
+      "source_frame_index": 5,
+      "source_pts_us": 174000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 14411,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15011,
+          "active_viewport_psnr_db": 32.13792613410257,
+          "scaled_content_psnr_db": 32.00281528371319,
+          "whole_canvas_psnr_db": 32.66246269194169
+        },
+        "25": {
+          "jpeg_bytes": 16078,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16718,
+          "active_viewport_psnr_db": 33.02930407251538,
+          "scaled_content_psnr_db": 32.90932937605094,
+          "whole_canvas_psnr_db": 33.58330619015076
+        },
+        "30": {
+          "jpeg_bytes": 17610,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18330,
+          "active_viewport_psnr_db": 33.85905330843908,
+          "scaled_content_psnr_db": 33.74001690687048,
+          "whole_canvas_psnr_db": 34.406098435941914
+        }
+      }
+    },
+    {
+      "source_frame_index": 6,
+      "source_pts_us": 207000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13959,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14519,
+          "active_viewport_psnr_db": 32.37283221054152,
+          "scaled_content_psnr_db": 32.24324941532102,
+          "whole_canvas_psnr_db": 32.91893730205097
+        },
+        "25": {
+          "jpeg_bytes": 15597,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16237,
+          "active_viewport_psnr_db": 33.223730966440584,
+          "scaled_content_psnr_db": 33.10863703287093,
+          "whole_canvas_psnr_db": 33.79632852191459
+        },
+        "30": {
+          "jpeg_bytes": 17049,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17729,
+          "active_viewport_psnr_db": 34.04928117050013,
+          "scaled_content_psnr_db": 33.93477207590284,
+          "whole_canvas_psnr_db": 34.64515081571357
+        }
+      }
+    },
+    {
+      "source_frame_index": 7,
+      "source_pts_us": 240000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13991,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14551,
+          "active_viewport_psnr_db": 32.543303483348545,
+          "scaled_content_psnr_db": 32.41330307690638,
+          "whole_canvas_psnr_db": 33.07776916433036
+        },
+        "25": {
+          "jpeg_bytes": 15625,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16265,
+          "active_viewport_psnr_db": 33.363361580887144,
+          "scaled_content_psnr_db": 33.24259396608043,
+          "whole_canvas_psnr_db": 33.924162325247146
+        },
+        "30": {
+          "jpeg_bytes": 17080,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17760,
+          "active_viewport_psnr_db": 34.2179850281867,
+          "scaled_content_psnr_db": 34.098834906217114,
+          "whole_canvas_psnr_db": 34.78019755289071
+        }
+      }
+    },
+    {
+      "source_frame_index": 8,
+      "source_pts_us": 274000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 14002,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14562,
+          "active_viewport_psnr_db": 32.35668013435593,
+          "scaled_content_psnr_db": 32.22666720873997,
+          "whole_canvas_psnr_db": 32.83944213160958
+        },
+        "25": {
+          "jpeg_bytes": 15637,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16277,
+          "active_viewport_psnr_db": 33.2294644027662,
+          "scaled_content_psnr_db": 33.10492895833392,
+          "whole_canvas_psnr_db": 33.73476439554093
+        },
+        "30": {
+          "jpeg_bytes": 17171,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17851,
+          "active_viewport_psnr_db": 34.02630252169925,
+          "scaled_content_psnr_db": 33.907253157934434,
+          "whole_canvas_psnr_db": 34.53400019768982
+        }
+      }
+    },
+    {
+      "source_frame_index": 9,
+      "source_pts_us": 307000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13934,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14494,
+          "active_viewport_psnr_db": 32.587545407857185,
+          "scaled_content_psnr_db": 32.4558534762196,
+          "whole_canvas_psnr_db": 33.06400673784597
+        },
+        "25": {
+          "jpeg_bytes": 15478,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16118,
+          "active_viewport_psnr_db": 33.39749462681785,
+          "scaled_content_psnr_db": 33.27179645890671,
+          "whole_canvas_psnr_db": 33.923081666855325
+        },
+        "30": {
+          "jpeg_bytes": 16963,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17643,
+          "active_viewport_psnr_db": 34.14649223907615,
+          "scaled_content_psnr_db": 34.025357923299815,
+          "whole_canvas_psnr_db": 34.659993350027854
+        }
+      }
+    },
+    {
+      "source_frame_index": 10,
+      "source_pts_us": 340000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13835,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14395,
+          "active_viewport_psnr_db": 32.505874391330785,
+          "scaled_content_psnr_db": 32.369857104625794,
+          "whole_canvas_psnr_db": 33.05030364907877
+        },
+        "25": {
+          "jpeg_bytes": 15441,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16081,
+          "active_viewport_psnr_db": 33.319676446431224,
+          "scaled_content_psnr_db": 33.189762714037876,
+          "whole_canvas_psnr_db": 33.903769982407674
+        },
+        "30": {
+          "jpeg_bytes": 16940,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17620,
+          "active_viewport_psnr_db": 34.093145810421774,
+          "scaled_content_psnr_db": 33.96756474078949,
+          "whole_canvas_psnr_db": 34.67765012637361
+        }
+      }
+    },
+    {
+      "source_frame_index": 11,
+      "source_pts_us": 374000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13509,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14069,
+          "active_viewport_psnr_db": 32.64096789001332,
+          "scaled_content_psnr_db": 32.50672610536862,
+          "whole_canvas_psnr_db": 33.16581331782124
+        },
+        "25": {
+          "jpeg_bytes": 15112,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15712,
+          "active_viewport_psnr_db": 33.5098078057976,
+          "scaled_content_psnr_db": 33.383276147836675,
+          "whole_canvas_psnr_db": 34.074443406076504
+        },
+        "30": {
+          "jpeg_bytes": 16563,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17243,
+          "active_viewport_psnr_db": 34.25129928330365,
+          "scaled_content_psnr_db": 34.13273041687586,
+          "whole_canvas_psnr_db": 34.82594522699636
+        }
+      }
+    },
+    {
+      "source_frame_index": 12,
+      "source_pts_us": 407000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13422,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 13982,
+          "active_viewport_psnr_db": 32.642801579037595,
+          "scaled_content_psnr_db": 32.504607730917186,
+          "whole_canvas_psnr_db": 33.16498642346395
+        },
+        "25": {
+          "jpeg_bytes": 14954,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15554,
+          "active_viewport_psnr_db": 33.50678134604842,
+          "scaled_content_psnr_db": 33.373584936690946,
+          "whole_canvas_psnr_db": 34.07335959174379
+        },
+        "30": {
+          "jpeg_bytes": 16391,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17071,
+          "active_viewport_psnr_db": 34.22807146374303,
+          "scaled_content_psnr_db": 34.10300676192716,
+          "whole_canvas_psnr_db": 34.79866147088453
+        }
+      }
+    },
+    {
+      "source_frame_index": 13,
+      "source_pts_us": 440000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13411,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 13971,
+          "active_viewport_psnr_db": 32.65633028004364,
+          "scaled_content_psnr_db": 32.519465770518195,
+          "whole_canvas_psnr_db": 33.19493531861473
+        },
+        "25": {
+          "jpeg_bytes": 14927,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15527,
+          "active_viewport_psnr_db": 33.512057653757,
+          "scaled_content_psnr_db": 33.381653868745836,
+          "whole_canvas_psnr_db": 34.09391214520497
+        },
+        "30": {
+          "jpeg_bytes": 16290,
+          "udp_datagrams": 16,
+          "application_udp_payload_bytes": 16930,
+          "active_viewport_psnr_db": 34.23642003306918,
+          "scaled_content_psnr_db": 34.11498520761303,
+          "whole_canvas_psnr_db": 34.8229779724755
+        }
+      }
+    },
+    {
+      "source_frame_index": 14,
+      "source_pts_us": 474000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13536,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14096,
+          "active_viewport_psnr_db": 32.663480018304455,
+          "scaled_content_psnr_db": 32.522946500510265,
+          "whole_canvas_psnr_db": 33.229464889580576
+        },
+        "25": {
+          "jpeg_bytes": 15044,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15644,
+          "active_viewport_psnr_db": 33.52501531382839,
+          "scaled_content_psnr_db": 33.39812005300694,
+          "whole_canvas_psnr_db": 34.12790055794392
+        },
+        "30": {
+          "jpeg_bytes": 16456,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17136,
+          "active_viewport_psnr_db": 34.27768706667982,
+          "scaled_content_psnr_db": 34.15779793983915,
+          "whole_canvas_psnr_db": 34.87903734372572
+        }
+      }
+    },
+    {
+      "source_frame_index": 15,
+      "source_pts_us": 507000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13647,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14207,
+          "active_viewport_psnr_db": 32.7162060947805,
+          "scaled_content_psnr_db": 32.58221398487437,
+          "whole_canvas_psnr_db": 33.28141602754834
+        },
+        "25": {
+          "jpeg_bytes": 15210,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15810,
+          "active_viewport_psnr_db": 33.61717482648055,
+          "scaled_content_psnr_db": 33.49687426410402,
+          "whole_canvas_psnr_db": 34.20834590487554
+        },
+        "30": {
+          "jpeg_bytes": 16637,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17317,
+          "active_viewport_psnr_db": 34.33013051455438,
+          "scaled_content_psnr_db": 34.22036973834406,
+          "whole_canvas_psnr_db": 34.9239651793321
+        }
+      }
+    },
+    {
+      "source_frame_index": 16,
+      "source_pts_us": 540000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13654,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14214,
+          "active_viewport_psnr_db": 32.533189888472755,
+          "scaled_content_psnr_db": 32.39419924138692,
+          "whole_canvas_psnr_db": 33.09821323766543
+        },
+        "25": {
+          "jpeg_bytes": 15251,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15851,
+          "active_viewport_psnr_db": 33.37568032395131,
+          "scaled_content_psnr_db": 33.24822529842335,
+          "whole_canvas_psnr_db": 33.97346880178045
+        },
+        "30": {
+          "jpeg_bytes": 16630,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17310,
+          "active_viewport_psnr_db": 34.07428039145917,
+          "scaled_content_psnr_db": 33.9530565717308,
+          "whole_canvas_psnr_db": 34.67802198347594
+        }
+      }
+    },
+    {
+      "source_frame_index": 17,
+      "source_pts_us": 574000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 13733,
+          "udp_datagrams": 14,
+          "application_udp_payload_bytes": 14293,
+          "active_viewport_psnr_db": 32.53929092108401,
+          "scaled_content_psnr_db": 32.39379653748,
+          "whole_canvas_psnr_db": 33.09196693844016
+        },
+        "25": {
+          "jpeg_bytes": 15279,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15879,
+          "active_viewport_psnr_db": 33.3562451191714,
+          "scaled_content_psnr_db": 33.219462152816405,
+          "whole_canvas_psnr_db": 33.944101165491475
+        },
+        "30": {
+          "jpeg_bytes": 16649,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17329,
+          "active_viewport_psnr_db": 34.09909138032629,
+          "scaled_content_psnr_db": 33.96696599940835,
+          "whole_canvas_psnr_db": 34.69223958199993
+        }
+      }
+    },
+    {
+      "source_frame_index": 18,
+      "source_pts_us": 607000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 15327,
+          "udp_datagrams": 15,
+          "application_udp_payload_bytes": 15927,
+          "active_viewport_psnr_db": 32.03865126829791,
+          "scaled_content_psnr_db": 31.88639526832531,
+          "whole_canvas_psnr_db": 32.597385643816565
+        },
+        "25": {
+          "jpeg_bytes": 17264,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17944,
+          "active_viewport_psnr_db": 32.858208045837415,
+          "scaled_content_psnr_db": 32.71458279501995,
+          "whole_canvas_psnr_db": 33.44958913793115
+        },
+        "30": {
+          "jpeg_bytes": 18973,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19733,
+          "active_viewport_psnr_db": 33.64377450757527,
+          "scaled_content_psnr_db": 33.50665899344262,
+          "whole_canvas_psnr_db": 34.21528525405456
+        }
+      }
+    },
+    {
+      "source_frame_index": 19,
+      "source_pts_us": 640000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 16916,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17596,
+          "active_viewport_psnr_db": 31.511185712353548,
+          "scaled_content_psnr_db": 31.4522212903665,
+          "whole_canvas_psnr_db": 32.10013430445724
+        },
+        "25": {
+          "jpeg_bytes": 19080,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19840,
+          "active_viewport_psnr_db": 32.36881279404376,
+          "scaled_content_psnr_db": 32.2912469426428,
+          "whole_canvas_psnr_db": 32.98275207983294
+        },
+        "30": {
+          "jpeg_bytes": 20991,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21831,
+          "active_viewport_psnr_db": 33.14664840284407,
+          "scaled_content_psnr_db": 33.06352348808303,
+          "whole_canvas_psnr_db": 33.750429296366924
+        }
+      }
+    },
+    {
+      "source_frame_index": 20,
+      "source_pts_us": 674000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17296,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17976,
+          "active_viewport_psnr_db": 31.175349913073976,
+          "scaled_content_psnr_db": 31.08971637769685,
+          "whole_canvas_psnr_db": 31.777150412864227
+        },
+        "25": {
+          "jpeg_bytes": 19619,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20419,
+          "active_viewport_psnr_db": 32.01429620738444,
+          "scaled_content_psnr_db": 31.922608924832904,
+          "whole_canvas_psnr_db": 32.63525037465605
+        },
+        "30": {
+          "jpeg_bytes": 21656,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22536,
+          "active_viewport_psnr_db": 32.77831473685813,
+          "scaled_content_psnr_db": 32.682935749034264,
+          "whole_canvas_psnr_db": 33.39359838416334
+        }
+      }
+    },
+    {
+      "source_frame_index": 21,
+      "source_pts_us": 707000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17609,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18329,
+          "active_viewport_psnr_db": 31.139812490728723,
+          "scaled_content_psnr_db": 31.078222636892008,
+          "whole_canvas_psnr_db": 31.741174408421248
+        },
+        "25": {
+          "jpeg_bytes": 19856,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20656,
+          "active_viewport_psnr_db": 32.04473288774024,
+          "scaled_content_psnr_db": 31.972157072271457,
+          "whole_canvas_psnr_db": 32.678579117045935
+        },
+        "30": {
+          "jpeg_bytes": 21856,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22736,
+          "active_viewport_psnr_db": 32.77877608819199,
+          "scaled_content_psnr_db": 32.699729272347106,
+          "whole_canvas_psnr_db": 33.39246795304308
+        }
+      }
+    },
+    {
+      "source_frame_index": 22,
+      "source_pts_us": 740000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17412,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18132,
+          "active_viewport_psnr_db": 31.27089363299694,
+          "scaled_content_psnr_db": 31.188014510316382,
+          "whole_canvas_psnr_db": 31.869689919174405
+        },
+        "25": {
+          "jpeg_bytes": 19642,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20442,
+          "active_viewport_psnr_db": 32.19451561988947,
+          "scaled_content_psnr_db": 32.11154263566848,
+          "whole_canvas_psnr_db": 32.82106943790155
+        },
+        "30": {
+          "jpeg_bytes": 21626,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22506,
+          "active_viewport_psnr_db": 32.93443084767982,
+          "scaled_content_psnr_db": 32.84936127381782,
+          "whole_canvas_psnr_db": 33.54422158407799
+        }
+      }
+    },
+    {
+      "source_frame_index": 23,
+      "source_pts_us": 774000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18024,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18744,
+          "active_viewport_psnr_db": 31.2474154508959,
+          "scaled_content_psnr_db": 31.16788283658932,
+          "whole_canvas_psnr_db": 31.849835029487995
+        },
+        "25": {
+          "jpeg_bytes": 20235,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 21035,
+          "active_viewport_psnr_db": 32.161049968532694,
+          "scaled_content_psnr_db": 32.07280267599979,
+          "whole_canvas_psnr_db": 32.78633093049487
+        },
+        "30": {
+          "jpeg_bytes": 22248,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23128,
+          "active_viewport_psnr_db": 32.96855345102917,
+          "scaled_content_psnr_db": 32.86971043715691,
+          "whole_canvas_psnr_db": 33.56190107260605
+        }
+      }
+    },
+    {
+      "source_frame_index": 24,
+      "source_pts_us": 807000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18641,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19401,
+          "active_viewport_psnr_db": 30.99876931832345,
+          "scaled_content_psnr_db": 30.901872461216698,
+          "whole_canvas_psnr_db": 31.60083335032421
+        },
+        "25": {
+          "jpeg_bytes": 20917,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21757,
+          "active_viewport_psnr_db": 31.952918355413086,
+          "scaled_content_psnr_db": 31.85915559996775,
+          "whole_canvas_psnr_db": 32.567303431243445
+        },
+        "30": {
+          "jpeg_bytes": 22951,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23871,
+          "active_viewport_psnr_db": 32.81078165039793,
+          "scaled_content_psnr_db": 32.71553220171563,
+          "whole_canvas_psnr_db": 33.39280350588249
+        }
+      }
+    },
+    {
+      "source_frame_index": 25,
+      "source_pts_us": 840000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20143,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20943,
+          "active_viewport_psnr_db": 30.57388568348147,
+          "scaled_content_psnr_db": 30.454631138254626,
+          "whole_canvas_psnr_db": 31.17757355604254
+        },
+        "25": {
+          "jpeg_bytes": 22754,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23674,
+          "active_viewport_psnr_db": 31.57253373183796,
+          "scaled_content_psnr_db": 31.45347413392562,
+          "whole_canvas_psnr_db": 32.19112269449086
+        },
+        "30": {
+          "jpeg_bytes": 25068,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26068,
+          "active_viewport_psnr_db": 32.385824558434976,
+          "scaled_content_psnr_db": 32.260479902855856,
+          "whole_canvas_psnr_db": 32.98150123026117
+        }
+      }
+    },
+    {
+      "source_frame_index": 26,
+      "source_pts_us": 874000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18867,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19627,
+          "active_viewport_psnr_db": 30.7678450841628,
+          "scaled_content_psnr_db": 30.630352659246327,
+          "whole_canvas_psnr_db": 31.354620563036754
+        },
+        "25": {
+          "jpeg_bytes": 21140,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21980,
+          "active_viewport_psnr_db": 31.786243199359223,
+          "scaled_content_psnr_db": 31.646040925407853,
+          "whole_canvas_psnr_db": 32.38598411435993
+        },
+        "30": {
+          "jpeg_bytes": 23135,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24055,
+          "active_viewport_psnr_db": 32.557626076508804,
+          "scaled_content_psnr_db": 32.42366750436106,
+          "whole_canvas_psnr_db": 33.15457313689502
+        }
+      }
+    },
+    {
+      "source_frame_index": 27,
+      "source_pts_us": 907000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17041,
+          "udp_datagrams": 17,
+          "application_udp_payload_bytes": 17721,
+          "active_viewport_psnr_db": 31.155422223547472,
+          "scaled_content_psnr_db": 31.024832293370785,
+          "whole_canvas_psnr_db": 31.727708519704617
+        },
+        "25": {
+          "jpeg_bytes": 19026,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19786,
+          "active_viewport_psnr_db": 32.17683717668174,
+          "scaled_content_psnr_db": 32.047593785865246,
+          "whole_canvas_psnr_db": 32.77161838616305
+        },
+        "30": {
+          "jpeg_bytes": 20805,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21645,
+          "active_viewport_psnr_db": 32.93169928216532,
+          "scaled_content_psnr_db": 32.81049030509949,
+          "whole_canvas_psnr_db": 33.53380381748576
+        }
+      }
+    },
+    {
+      "source_frame_index": 28,
+      "source_pts_us": 940000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17899,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18619,
+          "active_viewport_psnr_db": 30.962976031145683,
+          "scaled_content_psnr_db": 30.831347772530087,
+          "whole_canvas_psnr_db": 31.537641321336718
+        },
+        "25": {
+          "jpeg_bytes": 20002,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20802,
+          "active_viewport_psnr_db": 31.987702683338014,
+          "scaled_content_psnr_db": 31.85703914699465,
+          "whole_canvas_psnr_db": 32.586182740729136
+        },
+        "30": {
+          "jpeg_bytes": 21884,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22764,
+          "active_viewport_psnr_db": 32.76196994993366,
+          "scaled_content_psnr_db": 32.634912231193866,
+          "whole_canvas_psnr_db": 33.35936347613736
+        }
+      }
+    },
+    {
+      "source_frame_index": 29,
+      "source_pts_us": 974000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 17946,
+          "udp_datagrams": 18,
+          "application_udp_payload_bytes": 18666,
+          "active_viewport_psnr_db": 30.723909496578514,
+          "scaled_content_psnr_db": 30.59085635098034,
+          "whole_canvas_psnr_db": 31.31999758657834
+        },
+        "25": {
+          "jpeg_bytes": 20127,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20927,
+          "active_viewport_psnr_db": 31.737639504182358,
+          "scaled_content_psnr_db": 31.610438244658397,
+          "whole_canvas_psnr_db": 32.34803516932531
+        },
+        "30": {
+          "jpeg_bytes": 22016,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22896,
+          "active_viewport_psnr_db": 32.49149014474239,
+          "scaled_content_psnr_db": 32.36719204719294,
+          "whole_canvas_psnr_db": 33.10756484609676
+        }
+      }
+    },
+    {
+      "source_frame_index": 30,
+      "source_pts_us": 1007000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18795,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19555,
+          "active_viewport_psnr_db": 30.27920108853495,
+          "scaled_content_psnr_db": 30.14310365609337,
+          "whole_canvas_psnr_db": 30.871873502222904
+        },
+        "25": {
+          "jpeg_bytes": 21095,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21935,
+          "active_viewport_psnr_db": 31.24082051376828,
+          "scaled_content_psnr_db": 31.103592977018945,
+          "whole_canvas_psnr_db": 31.859709857491755
+        },
+        "30": {
+          "jpeg_bytes": 23092,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24012,
+          "active_viewport_psnr_db": 31.985823439312057,
+          "scaled_content_psnr_db": 31.850831922974297,
+          "whole_canvas_psnr_db": 32.591703886921145
+        }
+      }
+    },
+    {
+      "source_frame_index": 31,
+      "source_pts_us": 1040000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18919,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19679,
+          "active_viewport_psnr_db": 30.353010942657885,
+          "scaled_content_psnr_db": 30.257542282658886,
+          "whole_canvas_psnr_db": 30.954745081742185
+        },
+        "25": {
+          "jpeg_bytes": 21241,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 22081,
+          "active_viewport_psnr_db": 31.278162445360024,
+          "scaled_content_psnr_db": 31.182357144950842,
+          "whole_canvas_psnr_db": 31.89881159403538
+        },
+        "30": {
+          "jpeg_bytes": 23304,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24224,
+          "active_viewport_psnr_db": 32.02676529231511,
+          "scaled_content_psnr_db": 31.930805518807595,
+          "whole_canvas_psnr_db": 32.64596725757748
+        }
+      }
+    },
+    {
+      "source_frame_index": 32,
+      "source_pts_us": 1074000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18861,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19621,
+          "active_viewport_psnr_db": 30.448360460020684,
+          "scaled_content_psnr_db": 30.362488371297523,
+          "whole_canvas_psnr_db": 31.048624311925455
+        },
+        "25": {
+          "jpeg_bytes": 21252,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 22092,
+          "active_viewport_psnr_db": 31.422393772654793,
+          "scaled_content_psnr_db": 31.33265019591144,
+          "whole_canvas_psnr_db": 32.04048530651201
+        },
+        "30": {
+          "jpeg_bytes": 23300,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24220,
+          "active_viewport_psnr_db": 32.25575003043758,
+          "scaled_content_psnr_db": 32.166841427279394,
+          "whole_canvas_psnr_db": 32.8817498187781
+        }
+      }
+    },
+    {
+      "source_frame_index": 33,
+      "source_pts_us": 1107000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18611,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19371,
+          "active_viewport_psnr_db": 30.527326530477524,
+          "scaled_content_psnr_db": 30.40921437227025,
+          "whole_canvas_psnr_db": 31.125285517304242
+        },
+        "25": {
+          "jpeg_bytes": 20909,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21749,
+          "active_viewport_psnr_db": 31.508858363019435,
+          "scaled_content_psnr_db": 31.396096541853563,
+          "whole_canvas_psnr_db": 32.12887870094554
+        },
+        "30": {
+          "jpeg_bytes": 22925,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23845,
+          "active_viewport_psnr_db": 32.351078878860044,
+          "scaled_content_psnr_db": 32.22693886720422,
+          "whole_canvas_psnr_db": 32.96845090115421
+        }
+      }
+    },
+    {
+      "source_frame_index": 34,
+      "source_pts_us": 1140000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 18720,
+          "udp_datagrams": 19,
+          "application_udp_payload_bytes": 19480,
+          "active_viewport_psnr_db": 30.544168509861663,
+          "scaled_content_psnr_db": 30.41976776044428,
+          "whole_canvas_psnr_db": 31.144017348280663
+        },
+        "25": {
+          "jpeg_bytes": 20996,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21836,
+          "active_viewport_psnr_db": 31.53682951211463,
+          "scaled_content_psnr_db": 31.417081003456207,
+          "whole_canvas_psnr_db": 32.15386264454118
+        },
+        "30": {
+          "jpeg_bytes": 22970,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23890,
+          "active_viewport_psnr_db": 32.36790726188027,
+          "scaled_content_psnr_db": 32.243074471078415,
+          "whole_canvas_psnr_db": 32.9830962162565
+        }
+      }
+    },
+    {
+      "source_frame_index": 35,
+      "source_pts_us": 1174000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19594,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20394,
+          "active_viewport_psnr_db": 30.369691990671875,
+          "scaled_content_psnr_db": 30.2444314784601,
+          "whole_canvas_psnr_db": 30.98538019145088
+        },
+        "25": {
+          "jpeg_bytes": 22068,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22948,
+          "active_viewport_psnr_db": 31.348950224259518,
+          "scaled_content_psnr_db": 31.22908710052338,
+          "whole_canvas_psnr_db": 31.97596255944355
+        },
+        "30": {
+          "jpeg_bytes": 24083,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25043,
+          "active_viewport_psnr_db": 32.16154739614167,
+          "scaled_content_psnr_db": 32.0357916829039,
+          "whole_canvas_psnr_db": 32.77972944985076
+        }
+      }
+    },
+    {
+      "source_frame_index": 36,
+      "source_pts_us": 1207000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19664,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20464,
+          "active_viewport_psnr_db": 30.32205850955302,
+          "scaled_content_psnr_db": 30.194595989788407,
+          "whole_canvas_psnr_db": 30.932492080996774
+        },
+        "25": {
+          "jpeg_bytes": 22133,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23013,
+          "active_viewport_psnr_db": 31.277447956666123,
+          "scaled_content_psnr_db": 31.15793549248655,
+          "whole_canvas_psnr_db": 31.904678153040056
+        },
+        "30": {
+          "jpeg_bytes": 24288,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25248,
+          "active_viewport_psnr_db": 32.08534005719811,
+          "scaled_content_psnr_db": 31.95730455734035,
+          "whole_canvas_psnr_db": 32.7091461210414
+        }
+      }
+    },
+    {
+      "source_frame_index": 37,
+      "source_pts_us": 1240000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19948,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20748,
+          "active_viewport_psnr_db": 30.230301367514,
+          "scaled_content_psnr_db": 30.101162634319994,
+          "whole_canvas_psnr_db": 30.8439576641413
+        },
+        "25": {
+          "jpeg_bytes": 22498,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23378,
+          "active_viewport_psnr_db": 31.24666490202383,
+          "scaled_content_psnr_db": 31.120349989975455,
+          "whole_canvas_psnr_db": 31.861993217898892
+        },
+        "30": {
+          "jpeg_bytes": 24636,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 25636,
+          "active_viewport_psnr_db": 32.004069238262794,
+          "scaled_content_psnr_db": 31.871861578312796,
+          "whole_canvas_psnr_db": 32.63847083576357
+        }
+      }
+    },
+    {
+      "source_frame_index": 38,
+      "source_pts_us": 1274000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19761,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20561,
+          "active_viewport_psnr_db": 30.176513224449057,
+          "scaled_content_psnr_db": 30.042026946431047,
+          "whole_canvas_psnr_db": 30.795790150480755
+        },
+        "25": {
+          "jpeg_bytes": 22321,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23201,
+          "active_viewport_psnr_db": 31.17696734316037,
+          "scaled_content_psnr_db": 31.049235031779503,
+          "whole_canvas_psnr_db": 31.79740695798463
+        },
+        "30": {
+          "jpeg_bytes": 24416,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25376,
+          "active_viewport_psnr_db": 32.00795189850129,
+          "scaled_content_psnr_db": 31.879029398604523,
+          "whole_canvas_psnr_db": 32.63296991558161
+        }
+      }
+    },
+    {
+      "source_frame_index": 39,
+      "source_pts_us": 1307000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19883,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20683,
+          "active_viewport_psnr_db": 30.15005078644242,
+          "scaled_content_psnr_db": 30.0190974405563,
+          "whole_canvas_psnr_db": 30.76484740393571
+        },
+        "25": {
+          "jpeg_bytes": 22370,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23250,
+          "active_viewport_psnr_db": 31.124461720705533,
+          "scaled_content_psnr_db": 31.002035041755327,
+          "whole_canvas_psnr_db": 31.748405485892306
+        },
+        "30": {
+          "jpeg_bytes": 24576,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25536,
+          "active_viewport_psnr_db": 31.929505204928873,
+          "scaled_content_psnr_db": 31.796860036802663,
+          "whole_canvas_psnr_db": 32.55515819159888
+        }
+      }
+    },
+    {
+      "source_frame_index": 40,
+      "source_pts_us": 1340000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20494,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21334,
+          "active_viewport_psnr_db": 29.765300791664224,
+          "scaled_content_psnr_db": 29.692956001009133,
+          "whole_canvas_psnr_db": 30.386723527303012
+        },
+        "25": {
+          "jpeg_bytes": 23035,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23955,
+          "active_viewport_psnr_db": 30.724164667881738,
+          "scaled_content_psnr_db": 30.645416176409906,
+          "whole_canvas_psnr_db": 31.352877327734653
+        },
+        "30": {
+          "jpeg_bytes": 25405,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26405,
+          "active_viewport_psnr_db": 31.52910513071902,
+          "scaled_content_psnr_db": 31.43964032738229,
+          "whole_canvas_psnr_db": 32.16010326634019
+        }
+      }
+    },
+    {
+      "source_frame_index": 41,
+      "source_pts_us": 1374000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19852,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20652,
+          "active_viewport_psnr_db": 30.106460898414802,
+          "scaled_content_psnr_db": 30.046994612524827,
+          "whole_canvas_psnr_db": 30.68494766221341
+        },
+        "25": {
+          "jpeg_bytes": 22248,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23128,
+          "active_viewport_psnr_db": 31.10575629212145,
+          "scaled_content_psnr_db": 31.036471422588892,
+          "whole_canvas_psnr_db": 31.70512726401164
+        },
+        "30": {
+          "jpeg_bytes": 24492,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25452,
+          "active_viewport_psnr_db": 31.91433443031855,
+          "scaled_content_psnr_db": 31.834033736882592,
+          "whole_canvas_psnr_db": 32.51198789979966
+        }
+      }
+    },
+    {
+      "source_frame_index": 42,
+      "source_pts_us": 1407000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 19703,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20503,
+          "active_viewport_psnr_db": 30.121855395804012,
+          "scaled_content_psnr_db": 30.02161757154213,
+          "whole_canvas_psnr_db": 30.71434385343568
+        },
+        "25": {
+          "jpeg_bytes": 22118,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22998,
+          "active_viewport_psnr_db": 31.10069818477466,
+          "scaled_content_psnr_db": 31.00360079617026,
+          "whole_canvas_psnr_db": 31.712038723853
+        },
+        "30": {
+          "jpeg_bytes": 24348,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25308,
+          "active_viewport_psnr_db": 31.92483268855319,
+          "scaled_content_psnr_db": 31.828411420511635,
+          "whole_canvas_psnr_db": 32.5343253749965
+        }
+      }
+    },
+    {
+      "source_frame_index": 43,
+      "source_pts_us": 1440000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20158,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 20958,
+          "active_viewport_psnr_db": 30.10429827379536,
+          "scaled_content_psnr_db": 29.979831704358325,
+          "whole_canvas_psnr_db": 30.709173616456972
+        },
+        "25": {
+          "jpeg_bytes": 22622,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23542,
+          "active_viewport_psnr_db": 31.107364754157768,
+          "scaled_content_psnr_db": 30.979415941795814,
+          "whole_canvas_psnr_db": 31.723594616654673
+        },
+        "30": {
+          "jpeg_bytes": 24820,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 25820,
+          "active_viewport_psnr_db": 31.91303113577429,
+          "scaled_content_psnr_db": 31.777857876199636,
+          "whole_canvas_psnr_db": 32.528769750037775
+        }
+      }
+    },
+    {
+      "source_frame_index": 44,
+      "source_pts_us": 1474000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20318,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 21118,
+          "active_viewport_psnr_db": 30.018857654998058,
+          "scaled_content_psnr_db": 29.89902879762286,
+          "whole_canvas_psnr_db": 30.635118979367437
+        },
+        "25": {
+          "jpeg_bytes": 22794,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23714,
+          "active_viewport_psnr_db": 31.014063454591255,
+          "scaled_content_psnr_db": 30.884670304285425,
+          "whole_canvas_psnr_db": 31.63812208706528
+        },
+        "30": {
+          "jpeg_bytes": 25076,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26076,
+          "active_viewport_psnr_db": 31.790498028736785,
+          "scaled_content_psnr_db": 31.655536349160705,
+          "whole_canvas_psnr_db": 32.415011203511945
+        }
+      }
+    },
+    {
+      "source_frame_index": 45,
+      "source_pts_us": 1507000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20460,
+          "udp_datagrams": 20,
+          "application_udp_payload_bytes": 21260,
+          "active_viewport_psnr_db": 29.936829479294225,
+          "scaled_content_psnr_db": 29.807185265733636,
+          "whole_canvas_psnr_db": 30.550988664882954
+        },
+        "25": {
+          "jpeg_bytes": 23009,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23929,
+          "active_viewport_psnr_db": 30.922983600200688,
+          "scaled_content_psnr_db": 30.789609987042418,
+          "whole_canvas_psnr_db": 31.546656644971655
+        },
+        "30": {
+          "jpeg_bytes": 25231,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26231,
+          "active_viewport_psnr_db": 31.729237372817455,
+          "scaled_content_psnr_db": 31.59373397179326,
+          "whole_canvas_psnr_db": 32.35645634370634
+        }
+      }
+    },
+    {
+      "source_frame_index": 46,
+      "source_pts_us": 1540000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 20868,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 21708,
+          "active_viewport_psnr_db": 29.872149178801607,
+          "scaled_content_psnr_db": 29.737783795827156,
+          "whole_canvas_psnr_db": 30.490560033619552
+        },
+        "25": {
+          "jpeg_bytes": 23436,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24356,
+          "active_viewport_psnr_db": 30.86204465831191,
+          "scaled_content_psnr_db": 30.732275999242027,
+          "whole_canvas_psnr_db": 31.486522388735494
+        },
+        "30": {
+          "jpeg_bytes": 25683,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 26723,
+          "active_viewport_psnr_db": 31.621654612196952,
+          "scaled_content_psnr_db": 31.487547610295596,
+          "whole_canvas_psnr_db": 32.2539376082765
+        }
+      }
+    },
+    {
+      "source_frame_index": 47,
+      "source_pts_us": 1574000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 21294,
+          "udp_datagrams": 21,
+          "application_udp_payload_bytes": 22134,
+          "active_viewport_psnr_db": 29.679421315376583,
+          "scaled_content_psnr_db": 29.543117219755075,
+          "whole_canvas_psnr_db": 30.305079981045694
+        },
+        "25": {
+          "jpeg_bytes": 23916,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 24876,
+          "active_viewport_psnr_db": 30.66197349830439,
+          "scaled_content_psnr_db": 30.52960846350789,
+          "whole_canvas_psnr_db": 31.291391794631544
+        },
+        "30": {
+          "jpeg_bytes": 26235,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27275,
+          "active_viewport_psnr_db": 31.418244739204113,
+          "scaled_content_psnr_db": 31.283363412165038,
+          "whole_canvas_psnr_db": 32.04961522696757
+        }
+      }
+    },
+    {
+      "source_frame_index": 48,
+      "source_pts_us": 1607000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 21877,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 22757,
+          "active_viewport_psnr_db": 29.560717257387044,
+          "scaled_content_psnr_db": 29.430264472404836,
+          "whole_canvas_psnr_db": 30.1852892882019
+        },
+        "25": {
+          "jpeg_bytes": 24547,
+          "udp_datagrams": 24,
+          "application_udp_payload_bytes": 25507,
+          "active_viewport_psnr_db": 30.493366457235243,
+          "scaled_content_psnr_db": 30.36011048430202,
+          "whole_canvas_psnr_db": 31.12409003803168
+        },
+        "30": {
+          "jpeg_bytes": 27018,
+          "udp_datagrams": 27,
+          "application_udp_payload_bytes": 28098,
+          "active_viewport_psnr_db": 31.24274090223023,
+          "scaled_content_psnr_db": 31.109893125373652,
+          "whole_canvas_psnr_db": 31.876497363956457
+        }
+      }
+    },
+    {
+      "source_frame_index": 49,
+      "source_pts_us": 1640000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22666,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23586,
+          "active_viewport_psnr_db": 29.248196185899683,
+          "scaled_content_psnr_db": 29.113361696662892,
+          "whole_canvas_psnr_db": 29.88556666764124
+        },
+        "25": {
+          "jpeg_bytes": 25535,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26535,
+          "active_viewport_psnr_db": 30.184843198740495,
+          "scaled_content_psnr_db": 30.047583226086296,
+          "whole_canvas_psnr_db": 30.825685258744933
+        },
+        "30": {
+          "jpeg_bytes": 28070,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29190,
+          "active_viewport_psnr_db": 30.934485414003944,
+          "scaled_content_psnr_db": 30.797156318955334,
+          "whole_canvas_psnr_db": 31.581442123607314
+        }
+      }
+    },
+    {
+      "source_frame_index": 50,
+      "source_pts_us": 1674000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 23285,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24205,
+          "active_viewport_psnr_db": 28.941935814538333,
+          "scaled_content_psnr_db": 28.80445113606415,
+          "whole_canvas_psnr_db": 29.58495581110961
+        },
+        "25": {
+          "jpeg_bytes": 26205,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27245,
+          "active_viewport_psnr_db": 29.846762261229163,
+          "scaled_content_psnr_db": 29.708330445863243,
+          "whole_canvas_psnr_db": 30.49250392761699
+        },
+        "30": {
+          "jpeg_bytes": 28897,
+          "udp_datagrams": 29,
+          "application_udp_payload_bytes": 30057,
+          "active_viewport_psnr_db": 30.521558826442142,
+          "scaled_content_psnr_db": 30.38424632754975,
+          "whole_canvas_psnr_db": 31.176144517690943
+        }
+      }
+    },
+    {
+      "source_frame_index": 51,
+      "source_pts_us": 1707000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 23019,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23939,
+          "active_viewport_psnr_db": 29.16788552460008,
+          "scaled_content_psnr_db": 29.030392019496865,
+          "whole_canvas_psnr_db": 29.81285386807506
+        },
+        "25": {
+          "jpeg_bytes": 25981,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27021,
+          "active_viewport_psnr_db": 30.100310564471947,
+          "scaled_content_psnr_db": 29.962328745303548,
+          "whole_canvas_psnr_db": 30.742631748849945
+        },
+        "30": {
+          "jpeg_bytes": 28596,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29716,
+          "active_viewport_psnr_db": 30.840329011275696,
+          "scaled_content_psnr_db": 30.702131303630726,
+          "whole_canvas_psnr_db": 31.489852950171247
+        }
+      }
+    },
+    {
+      "source_frame_index": 52,
+      "source_pts_us": 1740000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 23090,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24010,
+          "active_viewport_psnr_db": 29.15636906927442,
+          "scaled_content_psnr_db": 29.01773796387385,
+          "whole_canvas_psnr_db": 29.794436203347765
+        },
+        "25": {
+          "jpeg_bytes": 26039,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27079,
+          "active_viewport_psnr_db": 30.11814784742404,
+          "scaled_content_psnr_db": 29.985529897410483,
+          "whole_canvas_psnr_db": 30.76248641670341
+        },
+        "30": {
+          "jpeg_bytes": 28646,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29766,
+          "active_viewport_psnr_db": 30.85957159721592,
+          "scaled_content_psnr_db": 30.725567314735205,
+          "whole_canvas_psnr_db": 31.51029298736246
+        }
+      }
+    },
+    {
+      "source_frame_index": 53,
+      "source_pts_us": 1774000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 23166,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 24086,
+          "active_viewport_psnr_db": 29.172652472813052,
+          "scaled_content_psnr_db": 29.03831517761195,
+          "whole_canvas_psnr_db": 29.810787242747246
+        },
+        "25": {
+          "jpeg_bytes": 26142,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27182,
+          "active_viewport_psnr_db": 30.128361965337653,
+          "scaled_content_psnr_db": 29.996395187877685,
+          "whole_canvas_psnr_db": 30.769845030557864
+        },
+        "30": {
+          "jpeg_bytes": 28784,
+          "udp_datagrams": 29,
+          "application_udp_payload_bytes": 29944,
+          "active_viewport_psnr_db": 30.8935584442674,
+          "scaled_content_psnr_db": 30.75993149119471,
+          "whole_canvas_psnr_db": 31.53883432683606
+        }
+      }
+    },
+    {
+      "source_frame_index": 54,
+      "source_pts_us": 1807000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22897,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23817,
+          "active_viewport_psnr_db": 29.30539068861174,
+          "scaled_content_psnr_db": 29.16940953390558,
+          "whole_canvas_psnr_db": 29.94017273382802
+        },
+        "25": {
+          "jpeg_bytes": 25802,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 26842,
+          "active_viewport_psnr_db": 30.25380190632194,
+          "scaled_content_psnr_db": 30.121673804821217,
+          "whole_canvas_psnr_db": 30.892393005061972
+        },
+        "30": {
+          "jpeg_bytes": 28428,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29548,
+          "active_viewport_psnr_db": 30.990786119923456,
+          "scaled_content_psnr_db": 30.85719309497562,
+          "whole_canvas_psnr_db": 31.634750051470633
+        }
+      }
+    },
+    {
+      "source_frame_index": 55,
+      "source_pts_us": 1840000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 23076,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23996,
+          "active_viewport_psnr_db": 29.34073982756628,
+          "scaled_content_psnr_db": 29.206864726134437,
+          "whole_canvas_psnr_db": 29.966401481664974
+        },
+        "25": {
+          "jpeg_bytes": 26065,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 27105,
+          "active_viewport_psnr_db": 30.26155653832937,
+          "scaled_content_psnr_db": 30.130736242143875,
+          "whole_canvas_psnr_db": 30.899196438612925
+        },
+        "30": {
+          "jpeg_bytes": 28733,
+          "udp_datagrams": 29,
+          "application_udp_payload_bytes": 29893,
+          "active_viewport_psnr_db": 31.03340093704084,
+          "scaled_content_psnr_db": 30.901684375926376,
+          "whole_canvas_psnr_db": 31.67758359392108
+        }
+      }
+    },
+    {
+      "source_frame_index": 56,
+      "source_pts_us": 1874000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22444,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23324,
+          "active_viewport_psnr_db": 29.516747593081085,
+          "scaled_content_psnr_db": 29.38485062601742,
+          "whole_canvas_psnr_db": 30.13733614698404
+        },
+        "25": {
+          "jpeg_bytes": 25311,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26311,
+          "active_viewport_psnr_db": 30.455811634912948,
+          "scaled_content_psnr_db": 30.326698316008244,
+          "whole_canvas_psnr_db": 31.09064999292963
+        },
+        "30": {
+          "jpeg_bytes": 27892,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29012,
+          "active_viewport_psnr_db": 31.236844540480178,
+          "scaled_content_psnr_db": 31.10413702805351,
+          "whole_canvas_psnr_db": 31.87888905572067
+        }
+      }
+    },
+    {
+      "source_frame_index": 57,
+      "source_pts_us": 1907000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22545,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23465,
+          "active_viewport_psnr_db": 29.428370621096917,
+          "scaled_content_psnr_db": 29.2965377240658,
+          "whole_canvas_psnr_db": 30.051255338172297
+        },
+        "25": {
+          "jpeg_bytes": 25394,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26394,
+          "active_viewport_psnr_db": 30.379618891700485,
+          "scaled_content_psnr_db": 30.247676540962022,
+          "whole_canvas_psnr_db": 31.01842099001352
+        },
+        "30": {
+          "jpeg_bytes": 27976,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29096,
+          "active_viewport_psnr_db": 31.164100435238126,
+          "scaled_content_psnr_db": 31.037359556078044,
+          "whole_canvas_psnr_db": 31.80481668541464
+        }
+      }
+    },
+    {
+      "source_frame_index": 58,
+      "source_pts_us": 1940000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22757,
+          "udp_datagrams": 23,
+          "application_udp_payload_bytes": 23677,
+          "active_viewport_psnr_db": 29.273254947949635,
+          "scaled_content_psnr_db": 29.138896632464082,
+          "whole_canvas_psnr_db": 29.90316701205858
+        },
+        "25": {
+          "jpeg_bytes": 25705,
+          "udp_datagrams": 26,
+          "application_udp_payload_bytes": 26745,
+          "active_viewport_psnr_db": 30.220545090385475,
+          "scaled_content_psnr_db": 30.08862380571694,
+          "whole_canvas_psnr_db": 30.860728129853445
+        },
+        "30": {
+          "jpeg_bytes": 28349,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29469,
+          "active_viewport_psnr_db": 30.992865226399957,
+          "scaled_content_psnr_db": 30.86172261041034,
+          "whole_canvas_psnr_db": 31.64436348194262
+        }
+      }
+    },
+    {
+      "source_frame_index": 59,
+      "source_pts_us": 1974000,
+      "canvas": [
+        720,
+        480
+      ],
+      "viewport_rows": [
+        37,
+        442
+      ],
+      "qualities": {
+        "20": {
+          "jpeg_bytes": 22460,
+          "udp_datagrams": 22,
+          "application_udp_payload_bytes": 23340,
+          "active_viewport_psnr_db": 29.34674379745964,
+          "scaled_content_psnr_db": 29.21420262848254,
+          "whole_canvas_psnr_db": 29.97446368454892
+        },
+        "25": {
+          "jpeg_bytes": 25418,
+          "udp_datagrams": 25,
+          "application_udp_payload_bytes": 26418,
+          "active_viewport_psnr_db": 30.311961908938677,
+          "scaled_content_psnr_db": 30.18083601217674,
+          "whole_canvas_psnr_db": 30.946918964083956
+        },
+        "30": {
+          "jpeg_bytes": 28054,
+          "udp_datagrams": 28,
+          "application_udp_payload_bytes": 29174,
+          "active_viewport_psnr_db": 31.06842810661531,
+          "scaled_content_psnr_db": 30.939048401746525,
+          "whole_canvas_psnr_db": 31.714277945475608
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Pillow software decode is not FPGA decoded-pixel evidence.",
+    "PSNR is a numerical image-difference metric, not human visual assessment.",
+    "Nominal rate demand is not proof that a sender, link, receiver or display can sustain the rate."
+  ]
+}

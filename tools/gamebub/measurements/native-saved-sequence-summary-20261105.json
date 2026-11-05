@@ -1,0 +1,188 @@
+{
+  "scope": "60 unique decoded source frames; native offline AR03 component encode+software decode with file/hash input costs, not fullCP23/network/hardware",
+  "manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "source_selection": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "first_pts_us": 7000,
+  "last_pts_us": 1974000,
+  "unique_pts": 60,
+  "runs": {
+    "baseline": {
+      "requested_frames": 60,
+      "accepted_frames": 20,
+      "rejected_frames": 40,
+      "attempts": 210,
+      "losing_attempts": 190,
+      "complete_bytes": 926054,
+      "analysis_builds": 0,
+      "analysis_reuses": 0,
+      "maximum_analysis_coefficient_bytes": 0,
+      "source_frames_loaded": 60,
+      "key_frames": 1,
+      "promoted_frames": 0,
+      "ordinary_frames": 19,
+      "loop_wall_seconds": 4.0885421,
+      "sequence_total_wall_seconds": 4.1410732,
+      "offline_complete_frames_per_second": 4.891719226763007,
+      "timings_ms": {
+        "admission": {
+          "count": 60,
+          "max": 74.4433,
+          "p50": 54.9142,
+          "p95": 62.6604,
+          "p99": 74.4433,
+          "total": 3242.3187
+        },
+        "offline_roundtrip": {
+          "count": 60,
+          "max": 90.8389,
+          "p50": 65.6892,
+          "p95": 84.9012,
+          "p99": 90.8389,
+          "total": 4079.1039
+        },
+        "output_identity": {
+          "count": 60,
+          "max": 0.1671,
+          "p50": 0.0,
+          "p95": 0.1331,
+          "p99": 0.1671,
+          "total": 2.2962
+        },
+        "software_decode": {
+          "count": 20,
+          "max": 19.385,
+          "p50": 11.9144,
+          "p95": 13.5881,
+          "p99": 19.385,
+          "total": 247.1632
+        },
+        "source_file_read": {
+          "count": 60,
+          "max": 8.1247,
+          "p50": 6.7575,
+          "p95": 7.9958,
+          "p99": 8.1247,
+          "total": 409.9959
+        },
+        "source_hash": {
+          "count": 60,
+          "max": 2.3832,
+          "p50": 1.9673,
+          "p95": 2.1784,
+          "p99": 2.3832,
+          "total": 119.7922
+        },
+        "source_prepare": {
+          "count": 60,
+          "max": 11.4304,
+          "p50": 9.7015,
+          "p95": 10.8528,
+          "p99": 11.4304,
+          "total": 582.06
+        }
+      }
+    },
+    "cached": {
+      "requested_frames": 60,
+      "accepted_frames": 20,
+      "rejected_frames": 40,
+      "attempts": 210,
+      "losing_attempts": 190,
+      "complete_bytes": 926054,
+      "analysis_builds": 60,
+      "analysis_reuses": 150,
+      "maximum_analysis_coefficient_bytes": 2073600,
+      "source_frames_loaded": 60,
+      "key_frames": 1,
+      "promoted_frames": 0,
+      "ordinary_frames": 19,
+      "loop_wall_seconds": 2.8364802,
+      "sequence_total_wall_seconds": 2.884376,
+      "offline_complete_frames_per_second": 7.050992282618437,
+      "timings_ms": {
+        "admission": {
+          "count": 60,
+          "max": 57.0108,
+          "p50": 39.04,
+          "p95": 46.5396,
+          "p99": 57.0108,
+          "total": 2372.5651
+        },
+        "offline_roundtrip": {
+          "count": 60,
+          "max": 67.7041,
+          "p50": 43.2534,
+          "p95": 59.5594,
+          "p99": 67.7041,
+          "total": 2827.8177
+        },
+        "output_identity": {
+          "count": 60,
+          "max": 0.1351,
+          "p50": 0.0,
+          "p95": 0.1179,
+          "p99": 0.1351,
+          "total": 2.1887
+        },
+        "software_decode": {
+          "count": 20,
+          "max": 13.0341,
+          "p50": 12.2274,
+          "p95": 12.9491,
+          "p99": 13.0341,
+          "total": 240.3595
+        },
+        "source_file_read": {
+          "count": 60,
+          "max": 0.7964,
+          "p50": 0.5855,
+          "p95": 0.7392,
+          "p99": 0.7964,
+          "total": 34.993
+        },
+        "source_hash": {
+          "count": 60,
+          "max": 2.3171,
+          "p50": 2.0413,
+          "p95": 2.1548,
+          "p99": 2.3171,
+          "total": 121.377
+        },
+        "source_prepare": {
+          "count": 60,
+          "max": 3.915,
+          "p50": 3.4775,
+          "p95": 3.7978,
+          "p99": 3.915,
+          "total": 207.521
+        }
+      }
+    }
+  },
+  "same_acceptance_by_source_id": true,
+  "same_packet_sha256_by_source_id": true,
+  "missing_packet_hashes": {
+    "baseline": 40,
+    "cached": 40
+  }
+}

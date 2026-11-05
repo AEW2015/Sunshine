@@ -1,0 +1,180 @@
+{
+  "schema": "gamebub-localhost-30m-soak-v1",
+  "scope": "Finite localhost video plus input-only AV stress run; not a clean performance benchmark, RF test, or physical playback qualification",
+  "run": {
+    "complete": true,
+    "start_utc": "2026-11-05T09:00:29.410177+00:00",
+    "media_end_utc": "2026-11-05T09:30:30.233340+00:00",
+    "finished_utc": "2026-11-05T09:30:30.275226+00:00",
+    "duration_seconds": 1800.3114093,
+    "configured_seconds": 1800,
+    "overlap_note": "A native build ran concurrently until about 02:22 Denver; Python regression activity overlapped for about 19 minutes. Treat CPU/memory/throughput as operational stress observations."
+  },
+  "configuration": {
+    "fps_target": 20,
+    "mbps_cap": 4,
+    "quality": 25,
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "start_frame_id": 10000000,
+    "source_slots": 36000,
+    "loop_clip": true,
+    "audio": false,
+    "gamepad": false,
+    "capture": false,
+    "host_and_receiver": "127.0.0.1",
+    "receiver_reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+    "receiver_reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5"
+  },
+  "source": {
+    "file": "Xonotic-0-8-2-gameplay.webm",
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "native_source_samples": 36000,
+    "source_timestamp_repeats": 0,
+    "resampling": "native decoded frames on a looped saved clip"
+  },
+  "video": {
+    "submitted": 36000,
+    "encoded": 36000,
+    "complete_sender_sends": 35533,
+    "feedback_accepted": 35533,
+    "pending_feedback": 0,
+    "reference_complete": 35533,
+    "replaced_encoded_frames": 467,
+    "scheduler_skips": 0,
+    "receiver_dropped_frames": 0,
+    "invalid_datagrams": 0,
+    "reply_errors": 0,
+    "send_error": null,
+    "nominal_fps": 20,
+    "complete_frames_per_second_including_drain": 19.73714092819975,
+    "sender_duration_including_feedback_drain_seconds": 1800.3114093,
+    "jpeg_bytes": 702690445,
+    "application_wire_bytes": 718416491,
+    "jpeg_mbps_from_bytes_and_duration": 3.122528430892837,
+    "application_wire_mbps_from_bytes_and_duration": 3.1924098788190687,
+    "wire_rate_excludes": "UDP/IP and radio overhead"
+  },
+  "av": {
+    "host_received_input_packets": 58705,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "stop_sent": true,
+    "stop_observed_by_peer": true,
+    "cleanup_errors": [],
+    "audio_sent": 0
+  },
+  "cpu": {
+    "video_sender_process_cpu_seconds": 904.453125,
+    "video_sender_process_percent_one_core": 50.238704277926615,
+    "video_sender_thread_cpu_seconds": 64.28125,
+    "video_sender_thread_percent_elapsed": 3.570562829738103,
+    "host_launcher_and_peer_process_cpu_seconds_at_final_sample": 32.8125,
+    "host_launcher_and_peer_percent_one_core_approx": 1.822077498752054
+  },
+  "memory_sampling": {
+    "api": "Windows GetProcessMemoryInfo working set/private bytes; samples every ~30 seconds",
+    "total_sample_records": 62,
+    "warm_filter": "elapsed >= 60 seconds",
+    "percentiles": "nearest rank",
+    "units": "MiB",
+    "startup_samples_not_memory_bounds": {
+      "host_at_0s": {
+        "working_set_bytes": 40062976,
+        "private_bytes": 35434496
+      },
+      "sender_at_spawn": {
+        "working_set_bytes": 14336000,
+        "private_bytes": 9613312
+      }
+    },
+    "warmed_host_launcher_and_loopback_process": {
+      "sample_count": 59,
+      "first_elapsed_seconds": 60.281999999890104,
+      "last_elapsed_seconds": 1800.8289999999106,
+      "working_set_mib": {
+        "min": 38.59765625,
+        "p50_nearest_rank": 41.359375,
+        "p95_nearest_rank": 43.74609375,
+        "max": 43.82421875,
+        "first_at_60s_or_later": 38.59765625,
+        "last_sample": 43.81640625,
+        "first_to_last_change": 5.21875
+      },
+      "private_mib": {
+        "min": 33.8203125,
+        "p50_nearest_rank": 36.359375,
+        "p95_nearest_rank": 38.58984375,
+        "max": 38.58984375,
+        "first_at_60s_or_later": 33.8203125,
+        "last_sample": 38.44140625,
+        "first_to_last_change": 4.62109375
+      }
+    },
+    "warmed_video_sender": {
+      "sample_count": 58,
+      "first_elapsed_seconds": 60.281999999890104,
+      "last_elapsed_seconds": 1779.0789999999106,
+      "working_set_mib": {
+        "min": 50.16796875,
+        "p50_nearest_rank": 53.56640625,
+        "p95_nearest_rank": 55.2109375,
+        "max": 56.26171875,
+        "first_at_60s_or_later": 50.16796875,
+        "last_sample": 53.9296875,
+        "first_to_last_change": 3.76171875
+      },
+      "private_mib": {
+        "min": 44.23046875,
+        "p50_nearest_rank": 46.890625,
+        "p95_nearest_rank": 48.4453125,
+        "max": 49.7109375,
+        "first_at_60s_or_later": 44.4921875,
+        "last_sample": 47.0078125,
+        "first_to_last_change": 2.515625
+      }
+    },
+    "post_exit_video_sender_final_sample": "excluded; process had exited and sampled handle values are not resident-memory evidence",
+    "limit": "Sampled extrema are observations, not peak or hard memory bounds. Parent process includes finite-run LoopbackPeer control-packet retention; the run does not establish steady-state heap behavior."
+  },
+  "logs": {
+    "video_jsonl_bytes": 50060542,
+    "av_jsonl_bytes": 13785471,
+    "per_file_limit_bytes": 67108864,
+    "video_logger_records": 214135,
+    "video_logger_dropped": 0,
+    "av_logger_records": 58710,
+    "av_logger_dropped": 0
+  },
+  "provenance": {
+    "controller_harness_sha256": "8229d9b11d3edf2aa2afa590fd3bc1723233bff59fa180388c70bbd6df198b4f",
+    "controller_json_sha256": "ce731ddddc27dafb5d03fe293d0e2555b8e473d69be8a5532d37d60e584a2e79",
+    "production_session_manifest_sha256": "4dc61bdcaf99a804c17400438561ced898f961ca356a28d233506b59a95f4fe6",
+    "production_source_sha256": {
+      "session_launcher.py": "23d5eec9699b48e4903f9076c4153d329e99c4a1899788dc9dcccc424ffeae8a",
+      "live_session.py": "c1d8e539618996481243741322ac9893c1b353509346665d62be601b0574e6e9",
+      "live_audio.py": "092478b12fd6003f4c4130d2c8ff836009d8291c03bd708b02bbc0b97d85a43e",
+      "audio_codec.py": "b3b795c3b9d23e397343fd09aff64b3a083ed9fc1842afd30592c56dcc7f611c",
+      "av_protocol.py": "f9bb83120869673f61f6fa493db05faf6b891229dd859a088923b012b5c1a029",
+      "av_session.py": "098f2433f83bc23763dfefbf2188b2a832b5bc54a364ee80e57f63fd1dba235c",
+      "gamepad_backend.py": "dcf088699f3a817b0f1cc48766b6e9e397a723c24d3dca9ba78949654eff1ad0",
+      "stream_sender.py": "981c19791904e8db2ac7d9ade9b9bb6842ab98d399050dc29724b9ac8dbdd604",
+      "host.py": "ba7267586a7e88812e8335fb6f266262c015611ce6908daed8337ae77eaa2e1d",
+      "msv1.py": "2a853c3478c83d7d00763d3cef847e192d4f44d0bc3344bf3f46735553a0610e",
+      "pipeline.py": "6f0cd283772d2e0c0b7ab021f4a5f8dfcef549a2a1f3c782b44a6f4e0644984c",
+      "event_log.py": "46092e9101cc3cc48d4cb391ae4019af5cb8337f2cd2f2de5ebba7b05e60ede9",
+      "pacing_wait.py": "6c84d7def3a9f30efa1bbfbb0f94b01abd57faa1710e70c25df30456ebdcf9ad",
+      "capture_owner.py": "2a8e596f6a3b62f669454548a1b7cfcba558465a7dbdc3091019d5932a0457bb",
+      "capture_evidence.py": "d4de2da6d049c01b0bff0cd455fa5dcc7287ac2a9047097b1c81ad3be3df1a79"
+    },
+    "raw_summary": "artifacts/overnight-long-soak-20261105/runs/stress-20fps-30m-0203/soak-summary.json",
+    "raw_session_artifacts": "artifacts/overnight-long-soak-20261105/runs/stress-20fps-30m-0203/session"
+  },
+  "interpretation_limits": [
+    "Local reference peer completed/ACKed frames; this does not establish RF delivery, receiver decode or physical display.",
+    "Frame replacements are sender queue behavior and are not counted as receiver drops.",
+    "The completed status and reconciliations establish run cleanup/liveness only; concurrent build and regressions make CPU/memory/throughput unsuitable as a clean performance comparison.",
+    "No physical audio was captured or injected; this was input-only AV."
+  ]
+}

@@ -139,6 +139,7 @@ def run_reference(args, source=None):
         jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
         frames=args.frames,
         pacing_wait=getattr(args, "pacing_wait", "sleep"),
+        pacing_spin_us=getattr(args, "pacing_spin_us", 600),
     )
     try:
         sender = run(options, source)
@@ -171,6 +172,7 @@ def main(argv=None):
     )
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--pacing-wait", choices=("sleep", "precise", "hybrid"), default="sleep")
+    parser.add_argument("--pacing-spin-us", type=int, default=600)
     parser.add_argument("--mbps", type=float, default=20)
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)

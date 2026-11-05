@@ -2,7 +2,7 @@
 
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from PIL import Image
 
@@ -58,6 +58,24 @@ class PipelineTests(unittest.TestCase):
         ):
             VideoPipeline(lambda image: b"x", lambda *args: True, 100, 10, clock=lambda: 100)
         self.assertFalse(any(worker.is_alive() for worker in created))
+
+    def test_startup_exception_joins_each_worker_that_is_already_alive(self):
+        """@brief Cleanup also handles a failure raised after the second worker starts."""
+        for encoder_alive, sender_alive in ((False, False), (True, False), (True, True)):
+            with self.subTest(encoder_alive=encoder_alive, sender_alive=sender_alive):
+                encoder, sender = Mock(), Mock()
+                encoder.is_alive.return_value = encoder_alive
+                sender.is_alive.return_value = sender_alive
+                sender.start.side_effect = RuntimeError("startup interrupted")
+                owner = VideoPipeline.__new__(VideoPipeline)
+                with (
+                    patch("pipeline.Thread", side_effect=(encoder, sender)),
+                    self.assertRaisesRegex(RuntimeError, "startup interrupted"),
+                ):
+                    owner.__init__(lambda image: b"x", lambda *args: True, 100, 10)
+                self.assertTrue(owner.closed)
+                self.assertEqual(encoder.join.call_count, int(encoder_alive))
+                self.assertEqual(sender.join.call_count, int(sender_alive))
 
     def test_encoder_overlaps_blocked_sender_and_keeps_latest_encoded(self):
         """@brief A blocked sender does not prevent encoding or create an unbounded queue."""
