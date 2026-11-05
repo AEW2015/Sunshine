@@ -1,0 +1,357 @@
+{
+  "scope": "Localhost transport only; neither original hardware losses nor playback verified",
+  "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "clock": "namespace(implementation='QueryPerformanceCounter()', monotonic=True, adjustable=False, resolution=1e-07)",
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "runs": {
+    "baseline": {
+      "reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+      "reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+      "receiver": {
+        "complete": 526,
+        "invalid_datagrams": 0,
+        "reply_errors": 0
+      },
+      "sender": {
+        "scope": "MSV1 video test; feedback is ingress only",
+        "end_to_end_verified": false,
+        "duration_s": 30.3773878,
+        "quality_final": 25,
+        "counts": {
+          "skipped_slots": 0,
+          "encoded_bytes": 11959521,
+          "wire_bytes": 10627114,
+          "receiver_completed_frames_since_baseline": 525,
+          "receiver_dropped_frames_since_baseline": 0,
+          "feedback_accepted": 526
+        },
+        "pending_feedback": 0,
+        "feedback_probing": false,
+        "pipeline": {
+          "raw_waiting": 0,
+          "encoded_waiting": 0,
+          "counts": {
+            "submitted": 600,
+            "encoded": 600,
+            "sent": 526,
+            "encoded_replaced": 74
+          },
+          "last_error": null
+        },
+        "wire_mbps": 2.7986906760955925,
+        "encoded_mbps": 3.1495851002698787,
+        "encoded_fps": 19.751533737868005,
+        "sent_fps": 17.315511243530953,
+        "logging": {
+          "written": 2707,
+          "bytes": 653296,
+          "dropped": 0,
+          "error": null
+        }
+      },
+      "hardware_playback_verified": false,
+      "within_frame_gap_ms": {
+        "count": 9714,
+        "min_ms": 2.159199910238385,
+        "p50_ms": 2.9843999072909355,
+        "p95_ms": 3.189800074324012,
+        "p99_ms": 3.687199903652072,
+        "max_ms": 4.57230000756681
+      },
+      "sent_complete": 526,
+      "partial_sends": 0
+    },
+    "candidate": {
+      "reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+      "reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+      "receiver": {
+        "complete": 592,
+        "invalid_datagrams": 0,
+        "reply_errors": 0
+      },
+      "sender": {
+        "scope": "MSV1 video test; feedback is ingress only",
+        "end_to_end_verified": false,
+        "duration_s": 30.3272191,
+        "quality_final": 25,
+        "counts": {
+          "skipped_slots": 0,
+          "encoded_bytes": 11959521,
+          "wire_bytes": 12221758,
+          "receiver_completed_frames_since_baseline": 591,
+          "receiver_dropped_frames_since_baseline": 0,
+          "feedback_accepted": 592
+        },
+        "pending_feedback": 0,
+        "feedback_probing": false,
+        "pipeline": {
+          "raw_waiting": 0,
+          "encoded_waiting": 0,
+          "counts": {
+            "submitted": 600,
+            "encoded": 600,
+            "sent": 592,
+            "encoded_replaced": 8
+          },
+          "last_error": null
+        },
+        "wire_mbps": 3.223970640948085,
+        "encoded_mbps": 3.1547952908085795,
+        "encoded_fps": 19.784207645995473,
+        "sent_fps": 19.520418210715533,
+        "logging": {
+          "written": 2971,
+          "bytes": 733525,
+          "dropped": 0,
+          "error": null
+        }
+      },
+      "hardware_playback_verified": false,
+      "experiment": {
+        "name": "local bounded 1ms spin-tail wait",
+        "wall_seconds": 30.424006100045517,
+        "process_cpu_seconds": 14.828125,
+        "hardware_contacted": false,
+        "production_files_changed": false
+      },
+      "within_frame_gap_ms": {
+        "count": 11177,
+        "min_ms": 2.143499907106161,
+        "p50_ms": 2.1575000137090683,
+        "p95_ms": 2.2503999061882496,
+        "p99_ms": 2.4826000444591045,
+        "max_ms": 3.849300090223551
+      },
+      "sent_complete": 592,
+      "partial_sends": 0
+    }
+  },
+  "wait_probe": {
+    "scope": "@brief Isolate unchanged MSV1 pacing waits and UDP sends on localhost only.\n\nThe spin-tail alternative is a laboratory experiment, not a shipping change.\nNo global timer-resolution changes, hardware traffic or input injection occur.\n",
+    "jpeg_sha256": "ef479829049ec2245262593679f4da584bef6a57e0b303705c20066a97a0f7a7",
+    "results": [
+      {
+        "mode": "sleep",
+        "frames": 80,
+        "jpeg_bytes": 17765,
+        "datagrams": 1440,
+        "sender_seconds": 4.086293600033969,
+        "process_cpu_seconds": 0.046875,
+        "spin_seconds": 0.0,
+        "receiver": {
+          "complete": 80,
+          "invalid_datagrams": 0,
+          "reply_errors": 0
+        },
+        "acks": 80,
+        "gap_ms": {
+          "count": 1439,
+          "min": 0.847300048917532,
+          "p50": 2.9782000929117203,
+          "p95": 3.158499952405691,
+          "p99": 3.2432000152766705,
+          "max": 3.549099899828434
+        },
+        "post_send_deadline_lateness_ms": {
+          "count": 1439,
+          "min": 0.028399888917803647,
+          "p50": 0.8518999894410371,
+          "p95": 1.042599928125739,
+          "p99": 1.170700175449252,
+          "max": 1.4210998998284339
+        },
+        "sleep_requested_ms": {
+          "count": 1439,
+          "min": 0.5268999375402927,
+          "p50": 2.121599856764078,
+          "p95": 2.122800098732114,
+          "p99": 2.1234997548162937,
+          "max": 2.1246997639536858
+        },
+        "sleep_overshoot_ms": {
+          "count": 1439,
+          "min": 0.012899981811642647,
+          "p50": 0.8092999923974276,
+          "p95": 1.009100116789341,
+          "p99": 1.127799740061164,
+          "max": 1.3178002554923296
+        },
+        "send_api_duration_ms": {
+          "count": 1440,
+          "min": 0.0126,
+          "p50": 0.0202,
+          "p95": 0.0922,
+          "p99": 0.1142,
+          "max": 0.6561
+        }
+      },
+      {
+        "mode": "spin_tail",
+        "frames": 80,
+        "jpeg_bytes": 17765,
+        "datagrams": 1440,
+        "sender_seconds": 3.0081565000582486,
+        "process_cpu_seconds": 0.34375,
+        "spin_seconds": 0.714571,
+        "receiver": {
+          "complete": 80,
+          "invalid_datagrams": 0,
+          "reply_errors": 0
+        },
+        "acks": 80,
+        "gap_ms": {
+          "count": 1439,
+          "min": 0.8058999665081501,
+          "p50": 2.1522000897675753,
+          "p95": 2.224500058218837,
+          "p99": 2.3455999325960875,
+          "max": 2.3845999967306852
+        },
+        "post_send_deadline_lateness_ms": {
+          "count": 1439,
+          "min": 0.0118999665081501,
+          "p50": 0.02449997563660133,
+          "p95": 0.10369996702671051,
+          "p99": 0.21759993259608734,
+          "max": 0.2565999967306851
+        },
+        "sleep_requested_ms": {
+          "count": 1439,
+          "min": 0.6689000874757767,
+          "p50": 2.1226999815553427,
+          "p95": 2.1245998796075583,
+          "p99": 2.1249998826533556,
+          "max": 2.1251998841762543
+        },
+        "sleep_overshoot_ms": {
+          "count": 1439,
+          "min": 0.000600004568696022,
+          "p50": 0.001400010660290718,
+          "p95": 0.0442001037299633,
+          "p99": 0.1655002124607563,
+          "max": 0.2193001564592123
+        },
+        "send_api_duration_ms": {
+          "count": 1440,
+          "min": 0.0092,
+          "p50": 0.0185,
+          "p95": 0.0467,
+          "p99": 0.085,
+          "max": 0.2085
+        }
+      },
+      {
+        "mode": "spin_tail",
+        "frames": 80,
+        "jpeg_bytes": 17765,
+        "datagrams": 1440,
+        "sender_seconds": 3.0068520000204444,
+        "process_cpu_seconds": 0.421875,
+        "spin_seconds": 0.7261881,
+        "receiver": {
+          "complete": 80,
+          "invalid_datagrams": 0,
+          "reply_errors": 0
+        },
+        "acks": 80,
+        "gap_ms": {
+          "count": 1439,
+          "min": 0.806399853900075,
+          "p50": 2.153899986296892,
+          "p95": 2.1995999850332737,
+          "p99": 2.3102001287043095,
+          "max": 2.6159000117331743
+        },
+        "post_send_deadline_lateness_ms": {
+          "count": 1439,
+          "min": 0.012399853900074958,
+          "p50": 0.026199872165918233,
+          "p95": 0.07449989069998253,
+          "p99": 0.18220012870430935,
+          "max": 0.4879000117331742
+        },
+        "sleep_requested_ms": {
+          "count": 1439,
+          "min": 0.6603999063372612,
+          "p50": 2.122499980032444,
+          "p95": 2.1242997609078884,
+          "p99": 2.124799881130457,
+          "max": 2.1253000013530254
+        },
+        "sleep_overshoot_ms": {
+          "count": 1439,
+          "min": 0.000600004568696022,
+          "p50": 0.001400243490934372,
+          "p95": 0.020700041204690933,
+          "p99": 0.15029986388981342,
+          "max": 0.4622002597898245
+        },
+        "send_api_duration_ms": {
+          "count": 1440,
+          "min": 0.0093,
+          "p50": 0.0198,
+          "p95": 0.043,
+          "p99": 0.0823,
+          "max": 0.191
+        }
+      },
+      {
+        "mode": "sleep",
+        "frames": 80,
+        "jpeg_bytes": 17765,
+        "datagrams": 1440,
+        "sender_seconds": 4.08850449998863,
+        "process_cpu_seconds": 0.0,
+        "spin_seconds": 0.0,
+        "receiver": {
+          "complete": 80,
+          "invalid_datagrams": 0,
+          "reply_errors": 0
+        },
+        "acks": 80,
+        "gap_ms": {
+          "count": 1439,
+          "min": 0.8537000976502895,
+          "p50": 2.97949998639524,
+          "p95": 3.157299943268299,
+          "p99": 3.227299777790904,
+          "max": 3.460699925199151
+        },
+        "post_send_deadline_lateness_ms": {
+          "count": 1439,
+          "min": 0.03499993917345989,
+          "p50": 0.8528001127094029,
+          "p95": 1.0341998641639947,
+          "p99": 1.1641999227255582,
+          "max": 1.332699925199151
+        },
+        "sleep_requested_ms": {
+          "count": 1439,
+          "min": 0.6236000917851925,
+          "p50": 2.122200094163418,
+          "p95": 2.122999867424369,
+          "p99": 2.123699989169836,
+          "max": 2.1250001154839993
+        },
+        "sleep_overshoot_ms": {
+          "count": 1439,
+          "min": 0.012699980288743973,
+          "p50": 0.8152001537382603,
+          "p95": 1.0029003024101257,
+          "p99": 1.1162001173943281,
+          "max": 1.294800080358982
+        },
+        "send_api_duration_ms": {
+          "count": 1440,
+          "min": 0.0119,
+          "p50": 0.0205,
+          "p95": 0.0888,
+          "p99": 0.1128,
+          "max": 0.1967
+        }
+      }
+    ]
+  },
+  "same_encoded_length_by_slot": true
+}
