@@ -1,0 +1,74 @@
+{
+  "scope": "Matched first 600 source slots (nominal 30s), same saved clip/hash and offset zero; v29/3Mbps versus v30/4Mbps; not a one-variable experiment",
+  "v29_3mbps": {
+    "frame_range": [
+      2007000,
+      2007599
+    ],
+    "encoded": 600,
+    "complete": 477,
+    "partial": 0,
+    "encoded_without_send": 123,
+    "accepted_acks": 472,
+    "rejected_acks": 5,
+    "send_ids_without_matched_feedback": [],
+    "encoded_bytes": 11959521,
+    "wire_bytes": 9614853,
+    "wire_mbps_over_nominal_30s": 2.5639608,
+    "complete_fps_over_nominal_30s": 15.9,
+    "first_to_last_packet_s": 29.9924981999211,
+    "within_frame_gaps": {
+      "count": 8790,
+      "min_ms": 2.8751001227647066,
+      "p50_ms": 3.0763999093323946,
+      "p95_ms": 3.984499955549836,
+      "p99_ms": 4.129800014197826,
+      "max_ms": 5.089599872007966
+    },
+    "frame_boundary_gaps": {
+      "count": 476,
+      "min_ms": 0.24189986288547516,
+      "p50_ms": 2.0212000235915184,
+      "p95_ms": 3.841300029307604,
+      "p99_ms": 10.984399821609259,
+      "max_ms": 12.189199915155768
+    }
+  },
+  "v30_4mbps": {
+    "frame_range": [
+      2013000,
+      2013599
+    ],
+    "encoded": 600,
+    "complete": 525,
+    "partial": 0,
+    "encoded_without_send": 75,
+    "accepted_acks": 523,
+    "rejected_acks": 2,
+    "send_ids_without_matched_feedback": [],
+    "encoded_bytes": 11959521,
+    "wire_bytes": 10613980,
+    "wire_mbps_over_nominal_30s": 2.8303946666666664,
+    "complete_fps_over_nominal_30s": 17.5,
+    "first_to_last_packet_s": 29.998071699868888,
+    "within_frame_gaps": {
+      "count": 9705,
+      "min_ms": 2.1633999422192574,
+      "p50_ms": 2.9835000168532133,
+      "p95_ms": 3.2146999146789312,
+      "p99_ms": 3.7718999665230513,
+      "max_ms": 17.87430001422763
+    },
+    "frame_boundary_gaps": {
+      "count": 524,
+      "min_ms": 0.24019996635615826,
+      "p50_ms": 1.9616999197751284,
+      "p95_ms": 10.432600043714046,
+      "p99_ms": 13.595900032669306,
+      "max_ms": 16.37579989619553
+    }
+  },
+  "same_encoded_byte_length_by_relative_slot": true,
+  "same_quality_by_relative_slot": true,
+  "jpeg_payload_hashes_not_recorded": true
+}

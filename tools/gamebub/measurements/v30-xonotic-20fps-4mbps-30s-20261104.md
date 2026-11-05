@@ -48,10 +48,29 @@ Reconciliation: 600 = 525 complete sends + 75 encoded replacements;
 **2,013,421 and 2,013,422**. Final receiver feedback: **523 received / 2 dropped**.
 The receiver operator subsequently confirmed **523 received, decoded and
 presented**, two dropped frames and zero application-queue packet drops.
-Core status, queue high-water, trace-loss, full failure classification, camera
-motion and power-save restoration await confirmation. These are operator-
-reported device counters, not direct Windows register reads. Bitrates exclude
-UDP/IP/Wi-Fi overhead.
+Queue high-water was 15/32, with zero queue drops. Core completed was 523,
+separate core drop count one; faults, overflows, underruns and transport
+overflows were zero. No reboot was observed; build50 remained unchanged.
+These are operator-reported device counters, not direct Windows register
+reads. Bitrates exclude UDP/IP/Wi-Fi overhead.
+
+Retained failures:
+
+- Frame 2,013,421: same active frame, expected offset 4,096, observed 5,120.
+- Frame 2,013,422: observed offset 1,024 with no active assembly.
+
+Epoch 2's Sequence trigger retained a 125.834 ms window, with 79 preceding
+records and 16 following records; both failure identities survived. There
+were 2,376 trace-record losses, zero phase losses and no failure-table overflow.
+The first completion duration remains unavailable; the second was 3.219 ms.
+Do not infer receipt of frame 2,013,422's SOF from the host's successful send
+alone, or assign a cause for no-active-assembly without the receiver history.
+
+Camera coverage spanned the full run: 307 samples, maximum gap 115 ms, zero
+read failures. Changing scenes were confirmed, with no sustained freeze found
+in sampled review; subsecond stutter and optical latency remain unquantified.
+All accepted frames have independent receiver decode/presentation counts, but
+this is not sustained 20 fps playback qualification.
 
 ## Actual packet gaps
 
@@ -105,6 +124,36 @@ receiver monotonic clocks cannot be subtracted directly.
 Machine-readable exact selections plus **all packet timestamps for both frames**:
 [v30-requested-packet-times-20261104.json](v30-requested-packet-times-20261104.json).
 
+### Matched 3 Mbps source segment
+
+The first 600 slots from the preceding v29 saved-clip run are now extracted
+for comparison, rather than comparing this short run with its whole soak.
+Both start at source offset zero, use the same file SHA and Q25, and encode
+exactly 11,959,521 bytes. Every corresponding slot has the same recorded
+JPEG byte length and quality. JPEG payload hashes were not recorded, so this
+does not prove byte-identical encoded payloads.
+
+| First 600 source slots, nominal 30 seconds | v29 / 3 Mbps | v30 / 4 Mbps |
+|---|---:|---:|
+| Frame IDs | 2,007,000–2,007,599 | 2,013,000–2,013,599 |
+| Encoded | 600 | 600 |
+| Complete sends | 477 | 525 |
+| Replaced before transmission | 123 (20.5%) | 75 (12.5%) |
+| Accepted / rejected ACKs | 472 / 5 | 523 / 2 |
+| Partial / unmatched sends | 0 / 0 | 0 / 0 |
+| Complete sends / nominal second | 15.9 | 17.5 |
+| MSV1 Mbps over nominal 30 s | 2.564 | 2.830 |
+| Within-frame median gap | 3.076 ms | 2.984 ms |
+| Within-frame p95 gap | 3.984 ms | 3.215 ms |
+
+These nominal-30-second rates differ from the primary whole-session rates,
+which include ACK drain. Both source intervals span approximately 30 seconds
+between their first and last packet. This comparison controls source file,
+start offset, slot range and quality, but **firmware and cap both changed**.
+It does not establish which change produced the observed improvement.
+Machine-readable segment counts and gap distributions:
+[v30-matched-30s-comparison-20261104.json](v30-matched-30s-comparison-20261104.json).
+
 ## AV and logs
 
 AV source port 60299, cookie `f9179c2cab7a7ce9`; HELLO was sent twice before
@@ -112,7 +161,8 @@ one START reached ACTIVE. Host validated 1,478 post-handshake MSI1 packets,
 sequences 1–1,478 without intervening gaps, all masks zero. Invalid/stale
 packets, input timeouts and audio sends were zero. States: 513 at state 1,
 965 at state 5. One STOP was successfully sent, sequence 297, after video
-exited 0. Cleanup errors and forced termination were zero.
+exited 0. Cleanup errors and forced termination were zero. The receiver verified
+MIN_MODEM power saving restored after STOP, with zero entry/restoration errors.
 
 Both loggers reported zero dropped records and no write errors. Full local
 frame/packet evidence and exact artifact adapters:
@@ -122,6 +172,11 @@ frame/packet evidence and exact artifact adapters:
 `frame-outcomes.json`, `packet-gap-analysis.json`, `run.py`, `clip_sender.py`
 and `packet_gaps.py`. Production source and installed Sunshine were unchanged.
 
-The test did not deliver all 20 target frames per second. Obtain v30's retained
-failure identity/phase history before selecting a receiver fix; investigate
-host pacing independently before raising the cap or configured FPS again.
+The test did not deliver all 20 target frames per second. Investigate the
+same-frame gap and following no-active-assembly using the retained receiver
+window and published host timestamps. Separately measure host pacing/waits
+under controlled source and receiver settings before raising cap or FPS again.
+Receiver evidence supplied by the operator is at
+`C:/Users/lavat/codex/moonbub/evidence/hardware-v30-sequence-20261105/run-2013000/`,
+files `host-reconciliation.json` and `TRACE-ANALYSIS.md`; these remote-machine
+paths were not independently opened on Windows.
