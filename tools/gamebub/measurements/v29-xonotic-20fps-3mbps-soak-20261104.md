@@ -56,13 +56,51 @@ Pending send IDs: **2,008,251; 2,008,688; 2,009,284**.
 Final feedback was **4,791 received / 51 dropped**. Those aggregate counts
 numerically account for 4,842 outcomes, but do not identify which of the three
 pending sends was accepted versus rejected. Do not treat pending feedback as
-three additional frame losses. Final independently read decode/presentation,
-queue/core, trace reasons and per-ID disposition await the receiver operator.
+three additional frame losses. The receiver operator subsequently confirmed
+the final results below. The three pending IDs remain individually unresolved;
+collectively they account for one additional success and two drops beyond
+matched ACKs.
+
+| Receiver result | Final total |
+|---|---:|
+| Received / decoded / presented | 4,791 / 4,791 / 4,791 |
+| Dropped frames | 51 |
+| Application-queue packet drops | 0 |
+| Queue high-water | 18/32 |
+| Core completed / separate drop counter | 4,791 / 40 |
+| Faults / overflows / underruns / transport overflows | 0 / 0 / 0 / 0 |
+
+All 4,791 accepted frames are accounted for as decoded and presented. This is
+approximately 15.9 presentations/s over five minutes; using the host's
+300.394-second interval yields approximately 15.95/s. No reboot was observed.
+These are operator-reported device measurements, not direct Windows reads.
+
+Epoch 2 retained 32 detailed failure records: 23 same-frame forward-offset
+gaps and nine no-active-assembly cases. No backward-offset cases were retained.
+17 failures exceeded the detailed table capacity; the supplied classifications
+do not explain all 51 drops. Do not assign the other failures or pending IDs a
+reason from these aggregate counts.
+
+Observed full consumer durations, including cleanup/recycling, were 2.609–9.905 ms.
+Observed phase maxima were lock 2.583 ms, QSPI 3.530 ms, error abort 0.583 ms
+and feedback 5.068 ms. The recorder lost **43,472 trace records**, including
+22,713 phase transitions. These are telemetry losses, not measured network
+packet losses. The maxima are incomplete observations, not upper bounds on
+stalls. No queue-overflow trigger fired; the final 96 ring entries contain
+late maintenance rather than failure-time history.
+
+Queue saturation was not measured in this run: queue drops were zero and
+high-water was 18/32. This differs from the v27 desktop soak but cannot be
+attributed to v29 alone because the video content changed. Same-frame gaps do
+not locate loss between host send calls, the network stack and the receiver.
 
 All encodes used quality 25. The JPEG demand exceeded the cap before MSV1
 overhead; this run did not deliver all 20 target frames per second. Bitrates
-exclude UDP/IP/Wi-Fi overhead. No optical latency, full-run visible-motion or
-decode/presentation claim follows from Windows send/ingress logs.
+exclude UDP/IP/Wi-Fi overhead. Camera timestamps covered command start through
+STOP, with zero read failures and a maximum sample gap of 117 ms. The receiver
+agent's sampled review confirmed changing game scenes throughout coverage and
+identified no sustained freeze. Subsecond stutter remains unquantified; this is
+not a frame-by-frame optical presentation count or an optical latency measurement.
 
 ## AV and cleanup
 
@@ -72,8 +110,9 @@ sequences 1–14,472 with four intervening missing sequence IDs. Invalid/stale
 packets and 500 ms input timeouts were zero; all button masks were zero.
 States: 9,106 at state 5 and 5,362 at state 1. Audio blocks sent: zero.
 After video exited normally, one STOP was successfully sent, control sequence
-2,887. Cleanup errors and forced termination were zero. Receiver power-save
-restoration requires independent confirmation.
+2,887. Cleanup errors and forced termination were zero. The receiver operator
+verified power saving restored to MIN_MODEM after STOP, with zero entry or
+restoration errors.
 
 Both loggers closed with zero dropped records and no write errors. Full local
 frame/packet timing evidence:
@@ -82,6 +121,11 @@ frame/packet timing evidence:
 `manifest.json`, `completion.json`, `sender-analysis.json`, `av-analysis.json`,
 `frame-outcomes.json`, exact `run.py` and source adapter `clip_sender.py`.
 
-Next: correlate v29 epoch-2 traces with these host IDs and packet timestamps.
-Classify queue/phase and frame-identity failures before changing bitrate,
-pacing, firmware or FPGA. This run does not qualify sustained 20 fps playback.
+Next: preserve a bounded packet-identity history on Sequence/no-active-assembly
+failures as well as queue overflow. Reduce repetitive phase logging or export
+compact aggregates so trace loss cannot erase the failure interval; keep lost-
+event counters explicit. Correlate active/incoming frame IDs and offsets with
+the saved host timings before selecting a pacing, receiver or FPGA change.
+Build50 remains unchanged. JPEG demand also exceeds the configured cap, so
+host replacements need separate treatment from receiver failures. This run
+does not qualify sustained 20 fps playback.
