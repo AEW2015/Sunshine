@@ -39,6 +39,17 @@ It was not replaced by the isolated helper. Earlier regression results remain
 [548 Python and 173 native tests](windows-validation-20261105.md); the full
 suite was not rerun for this documentation/asset-only preparation.
 
+Windows-file SHA256 provenance (Python tools are interpreted, not a new binary
+sender build):
+
+- `stream_sender.py`: `d559913d60f8bff328e5f1f069f305cac7d1b7a4da2ded3b3cd44ecf15d6d348`.
+- `session_launcher.py`: `4165872a17d4f28f03f218bb9652b1110095309f23c9bc64df5d39a29221852e`.
+- Isolated fixture-check executable: `235141a19794ba074f51afa8fcb9ee9f595e3b8059ae7f62b98fd38448de28aa`.
+
+Live tooling still implements MSV1 baseline JPEG and AV v1. Custom CP23/HC22
+independent LEGACY checks and partial HD22/control components remain offline;
+this diagnostic does not negotiate a new live custom streaming capability.
+
 ## Readiness boundary
 
 - **Ready:** exact fixture software verification; preserved MSV1/JPEG and AV v1
