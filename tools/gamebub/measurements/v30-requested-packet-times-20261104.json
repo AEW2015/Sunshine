@@ -1,0 +1,257 @@
+{
+  "scope": "Successful host post-send API-call timestamps; not NIC/RF departure or receiver arrival",
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "frames": [
+    {
+      "frame_id": 2013421,
+      "capture_us_unix": 1793859711151542,
+      "capture_utc": "2026-11-05T06:21:51.151542+00:00",
+      "packets": [
+        [
+          0,
+          1024,
+          1354793.5048517
+        ],
+        [
+          1024,
+          1024,
+          1354793.5076279
+        ],
+        [
+          2048,
+          1024,
+          1354793.5106073
+        ],
+        [
+          3072,
+          1024,
+          1354793.5134483
+        ],
+        [
+          4096,
+          1024,
+          1354793.5164743
+        ],
+        [
+          5120,
+          1024,
+          1354793.5196654
+        ],
+        [
+          6144,
+          1024,
+          1354793.5224386
+        ],
+        [
+          7168,
+          1024,
+          1354793.5252637
+        ],
+        [
+          8192,
+          1024,
+          1354793.5284179
+        ],
+        [
+          9216,
+          1024,
+          1354793.5311942
+        ],
+        [
+          10240,
+          1024,
+          1354793.5343563
+        ],
+        [
+          11264,
+          1024,
+          1354793.5372484
+        ],
+        [
+          12288,
+          1024,
+          1354793.5401202
+        ],
+        [
+          13312,
+          1024,
+          1354793.5426979
+        ],
+        [
+          14336,
+          1024,
+          1354793.5454033
+        ],
+        [
+          15360,
+          239,
+          1354793.5483774
+        ]
+      ]
+    },
+    {
+      "frame_id": 2013422,
+      "capture_us_unix": 1793859711202169,
+      "capture_utc": "2026-11-05T06:21:51.202169+00:00",
+      "packets": [
+        [
+          0,
+          1024,
+          1354793.5550626
+        ],
+        [
+          1024,
+          1024,
+          1354793.5574626
+        ],
+        [
+          2048,
+          1024,
+          1354793.5604536
+        ],
+        [
+          3072,
+          1024,
+          1354793.5632955
+        ],
+        [
+          4096,
+          1024,
+          1354793.5663933
+        ],
+        [
+          5120,
+          1024,
+          1354793.5694214
+        ],
+        [
+          6144,
+          1024,
+          1354793.5723328
+        ],
+        [
+          7168,
+          1024,
+          1354793.5748715
+        ],
+        [
+          8192,
+          1024,
+          1354793.5780905
+        ],
+        [
+          9216,
+          1024,
+          1354793.5810798
+        ],
+        [
+          10240,
+          1024,
+          1354793.5839968
+        ],
+        [
+          11264,
+          1024,
+          1354793.5866933
+        ],
+        [
+          12288,
+          1024,
+          1354793.5895372
+        ],
+        [
+          13312,
+          1024,
+          1354793.5925316
+        ],
+        [
+          14336,
+          1024,
+          1354793.5953628
+        ],
+        [
+          15360,
+          557,
+          1354793.5983636
+        ]
+      ]
+    }
+  ],
+  "requested_packets": [
+    {
+      "frame_id": 2013421,
+      "offset": 2048,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5106073,
+      "previous_frame_id": 2013421,
+      "previous_offset": 1024,
+      "gap_from_previous_datagram_ms": 2.9794001020491123
+    },
+    {
+      "frame_id": 2013421,
+      "offset": 3072,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5134483,
+      "previous_frame_id": 2013421,
+      "previous_offset": 2048,
+      "gap_from_previous_datagram_ms": 2.8409999795258045
+    },
+    {
+      "frame_id": 2013421,
+      "offset": 4096,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5164743,
+      "previous_frame_id": 2013421,
+      "previous_offset": 3072,
+      "gap_from_previous_datagram_ms": 3.025999991223216
+    },
+    {
+      "frame_id": 2013421,
+      "offset": 5120,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5196654,
+      "previous_frame_id": 2013421,
+      "previous_offset": 4096,
+      "gap_from_previous_datagram_ms": 3.1910999678075314
+    },
+    {
+      "frame_id": 2013421,
+      "offset": 6144,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5224386,
+      "previous_frame_id": 2013421,
+      "previous_offset": 5120,
+      "gap_from_previous_datagram_ms": 2.7731999289244413
+    },
+    {
+      "frame_id": 2013422,
+      "offset": 0,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5550626,
+      "previous_frame_id": 2013421,
+      "previous_offset": 15360,
+      "gap_from_previous_datagram_ms": 6.685199914500117
+    },
+    {
+      "frame_id": 2013422,
+      "offset": 1024,
+      "payload_bytes": 1024,
+      "post_send_monotonic_s": 1354793.5574626,
+      "previous_frame_id": 2013422,
+      "previous_offset": 0,
+      "gap_from_previous_datagram_ms": 2.400000113993883
+    }
+  ],
+  "receiver_operator_reported": {
+    "received": 523,
+    "decoded": 523,
+    "presented": 523,
+    "dropped": 2,
+    "queue_packet_drops": 0,
+    "first_failure": {
+      "frame_id": 2013421,
+      "expected_offset": 4096,
+      "observed_offset": 5120
+    }
+  }
+}

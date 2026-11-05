@@ -46,9 +46,12 @@ to a single cause from the aggregate run totals.
 Reconciliation: 600 = 525 complete sends + 75 encoded replacements;
 525 = 523 accepted ACKs + two rejected ACKs. Rejected IDs:
 **2,013,421 and 2,013,422**. Final receiver feedback: **523 received / 2 dropped**.
-Receiver decode/presentation, queue/core, trace-loss, failure reasons, camera
-motion and power-save restoration await operator confirmation. ACKs establish
-ingress outcome only. Bitrates exclude UDP/IP/Wi-Fi overhead.
+The receiver operator subsequently confirmed **523 received, decoded and
+presented**, two dropped frames and zero application-queue packet drops.
+Core status, queue high-water, trace-loss, full failure classification, camera
+motion and power-save restoration await confirmation. These are operator-
+reported device counters, not direct Windows register reads. Bitrates exclude
+UDP/IP/Wi-Fi overhead.
 
 ## Actual packet gaps
 
@@ -73,6 +76,34 @@ host pacing/wait granularity worth measuring separately; it does not establish
 a Windows scheduler root cause or a Wi-Fi capacity limit. The largest gap,
 17.874 ms, was within frame 2,013,237 between offsets 11,264 and 12,288.
 No pacing behavior was modified during this run.
+
+### Selected failure-window packets
+
+Capture timestamps (host Unix microseconds): frame **2,013,421**:
+`1793859711151542`; frame **2,013,422**: `1793859711202169`.
+Capture timestamp difference: 50.627 ms. Both frames were completely sent and
+had matching rejected ACKs. Receiver's first failure expected offset 4,096 and
+observed 5,120 in frame 2,013,421; its Sequence window is retained remotely.
+
+| Frame | Offset | Host post-send monotonic seconds | Gap from preceding datagram |
+|---|---:|---:|---:|
+| 2,013,421 | 2,048 | 1354793.5106073 | 2.9794 ms |
+| 2,013,421 | 3,072 | 1354793.5134483 | 2.8410 ms |
+| 2,013,421 | 4,096 | 1354793.5164743 | 3.0260 ms |
+| 2,013,421 | 5,120 | 1354793.5196654 | 3.1911 ms |
+| 2,013,421 | 6,144 | 1354793.5224386 | 2.7732 ms |
+| 2,013,422 | 0 | 1354793.5550626 | 6.6852 ms |
+| 2,013,422 | 1,024 | 1354793.5574626 | 2.4000 ms |
+
+All selected datagrams contained 1,024 payload bytes. The gap for frame
+2,013,422 offset zero is measured from frame 2,013,421's final offset 15,360,
+whose 239-byte payload was logged at `1354793.5483774`. The host logged a
+successful offset-4,096 send before offset 5,120, with a 3.1911 ms gap. This
+does not locate loss or reordering after the send API returns, and host and
+receiver monotonic clocks cannot be subtracted directly.
+
+Machine-readable exact selections plus **all packet timestamps for both frames**:
+[v30-requested-packet-times-20261104.json](v30-requested-packet-times-20261104.json).
 
 ## AV and logs
 
