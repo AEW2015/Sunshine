@@ -6,7 +6,16 @@ as part of this readiness update.
 
 ## Decision
 
-Latest user report on November 4: v27 is currently installing. Hold sender
+Latest operator update: v27/build50 is ready for legacy Test MJPEG at
+`192.168.0.157:5533`, overlap active, queue32, recorder running, all starting
+frame/queue counters zero. The 20-second Windows control has now finished:
+IDs 2,000,000–2,000,099, 100 complete sends, 98 accepted feedback and two rejected
+(2,000,079/2,000,084). Matching replies confirm `.47` source acceptance. Final
+decoded/presented, queue/core/reboot observations and the two failure reasons
+are pending. See [the run report](v27-control-5fps-20261104.md). The installation
+hold below is historical; no sender remains running after the completed test.
+
+Earlier user report on November 4: v27 was installing. Hold sender
 traffic through that update and reboot. The last verified application is v26,
 flashed at approximately 6:38 p.m. America/Denver on November 4; the user verified
 its runtime ELF digest and a later USB check still identified v26. The digest

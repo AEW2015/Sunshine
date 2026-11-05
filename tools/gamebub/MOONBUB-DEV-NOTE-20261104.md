@@ -2,7 +2,13 @@
 
 Date: 2026-11-04
 
-Latest user status: v27 is currently installing. Hold sender traffic until its
+V27 control completed: [IDs 2,000,000–2,000,099 at 5 fps, quality 25, 2 Mbps](measurements/v27-control-5fps-20261104.md).
+All 100 sends completed; 98 matched replies accepted and two rejected. Please
+preserve failure reasons/offsets for 2,000,079 and 2,000,084 and return final
+decoded/presented, queue/core/reboot observations. Sender is stopped; no audio
+or controller ran. Receiver `.47` acceptance is now confirmed by matching replies.
+
+Earlier user status: v27 was installing. Hold sender traffic until its
 post-reboot identity, receiver/source binding and fresh counters are ready.
 V26 is the last verified application, installed around 6:38 p.m. America/Denver
 on November 4 with runtime ELF verification and a subsequent USB identity check.

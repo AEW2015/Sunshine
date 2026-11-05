@@ -29,7 +29,14 @@ H.264 or JPEG. All Windows native build/test commands use MSYS2 UCRT64 and
 
 ### Receiver coordination update, 2026-11-04
 
-Latest user status: v27 is installing, so sender traffic is on hold. V26 is the
+The latest operator readiness report is v27/build50, overlap/queue32. The
+[20-second 5 fps video-only control](measurements/v27-control-5fps-20261104.md)
+completed 100 full sends with 98 accepted replies and two rejected. The sender
+is stopped. Receiver decode/presentation, queue/core data and exact rejection
+reasons are pending before rate escalation. This supersedes the installation
+hold described in the earlier update below.
+
+Earlier user status: v27 was installing, so sender traffic was on hold. V26 was the
 last verified runtime: installed around 6:38 p.m. America/Denver on November 4,
 with runtime ELF verification and a subsequent USB identity check. After v27
 reboots, use its fresh identity/configuration/counters for the short existing
