@@ -12,11 +12,17 @@ param(
     [Parameter(Mandatory=$true)][uint32]$StartFrameId,
     [Parameter(Mandatory=$true)][string]$Output,
     [switch]$Video,
+    [string]$Clip,
+    [switch]$LoopClip,
     [switch]$Audio,
     [switch]$Gamepad,
+    [switch]$AvInput,
     [switch]$DryRun,
     [ValidateSet('standard','elden-ring','mass-effect','wow')][string]$Profile = 'standard',
     [ValidateRange(1,30)][int]$FPS = 5,
+    [ValidateSet('sleep','precise','hybrid')][string]$PacingWait = 'sleep',
+    [string]$CaptureInterface,
+    [string]$CaptureExecutable = 'C:\Program Files\Wireshark\dumpcap.exe',
     [ValidateRange(1,95)][int]$Quality = 25,
     [double]$Mbps = 2,
     [ValidateRange(0,1)][double]$Gain = 0.75
@@ -28,8 +34,13 @@ $sessionArgs = @('-u',(Join-Path $PSScriptRoot 'session_launcher.py'),'--receive
     '--output',$Output,'--profile',$Profile,'--fps',$FPS,'--quality',$Quality,
     '--mbps',$Mbps,'--gain',$Gain)
 if ($Video) {$sessionArgs += '--video'}
+if ($Clip) {$sessionArgs += @('--clip',$Clip)}
+if ($LoopClip) {$sessionArgs += '--loop-clip'}
 if ($Audio) {$sessionArgs += '--audio'}
 if ($Gamepad) {$sessionArgs += '--gamepad'}
+if ($AvInput) {$sessionArgs += '--av-input'}
+if ($PacingWait -ne 'sleep') {$sessionArgs += @('--pacing-wait',$PacingWait)}
+if ($CaptureInterface) {$sessionArgs += @('--capture-interface',$CaptureInterface,'--capture-executable',$CaptureExecutable)}
 if ($DryRun) {$sessionArgs += '--dry-run'}
 & $sessionPython @sessionArgs
 exit $LASTEXITCODE

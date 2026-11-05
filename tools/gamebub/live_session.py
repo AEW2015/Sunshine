@@ -4,7 +4,7 @@ import queue
 import socket
 import time
 
-from av_protocol import BLOCK_SAMPLES, KEEP_NS, LEASE_NS, RATE
+from av_protocol import BLOCK_SAMPLES, KEEP_NS, LEASE_NS, RATE, decode
 from av_session import AvSession
 from gamepad_backend import GamepadDispatcher, VigemXbox360Backend
 from live_audio import LoopbackAudio
@@ -61,6 +61,7 @@ def run_av(
     socket_factory=socket.socket,
     audio_factory=LoopbackAudio,
     health=lambda: None,
+    stop_when=lambda: False,
 ):
     """@brief Run one AV owner with independent input lease and bounded audio pacing.
 
@@ -68,6 +69,7 @@ def run_av(
     @param event Structured logger, accepting event kind and named fields.
     @param ready Called after ACTIVE, before starting the finite session clock.
     @param health Optional nonblocking owned-video health check at each loop iteration.
+    @param stop_when Optional nonblocking completion predicate; STOP follows completion.
     @return Counters with snapshot validity preserved; no end-to-end playback claim.
     """
     dispatcher = audio = session = sock = None
@@ -84,6 +86,7 @@ def run_av(
     try:
         if args.gamepad:
             dispatcher = GamepadDispatcher(VigemXbox360Backend.create(), args.profile)
+        health()
         peer = socket.gethostbyname(args.receiver), args.av_port
         session = AvSession(peer, ProfileSink(dispatcher), audio=args.audio)
         sock = socket_factory(socket.AF_INET, socket.SOCK_DGRAM)
@@ -92,6 +95,7 @@ def run_av(
         sock.settimeout(0.005)
         event("socket", local=sock.getsockname(), peer=peer)
         handshake(session, sock, peer, clock)
+        health()
         event("active", session=f"{session.cookie:016x}", audio=args.audio, profile=args.profile)
         ready()
         started = clock()
@@ -102,6 +106,8 @@ def run_av(
         period = round(BLOCK_SAMPLES * 1e9 / RATE)
         while clock() - started < args.seconds * 1e9:
             health()
+            if stop_when():
+                break
             now = clock()
             keep = session.keepalive(now)
             if keep is not None:
@@ -169,12 +175,21 @@ def run_av(
     finally:
         summary.update(counts)
         summary["last_status"] = session.status if session is not None else None
+        summary["stop_sent"] = False
         cleanup_errors = []
         if session is not None:
             try:
                 packet = session.stop(clock())
                 if packet is not None and sock is not None:
-                    sock.send(packet)
+                    if sock.send(packet) != len(packet):
+                        raise OSError("Partial AV STOP datagram send")
+                    summary["stop_sent"] = True
+                    event(
+                        "stop_sent",
+                        sequence=decode(packet).sequence,
+                        bytes=len(packet),
+                        wire_hex=packet.hex(),
+                    )
             except (OSError, RuntimeError, ValueError) as error:
                 summary["stop_error"] = str(error)
             finally:

@@ -7,6 +7,7 @@
 // standard includes
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <limits>
 #include <memory>
 
@@ -23,12 +24,17 @@ namespace gamebub::v20::benchmark {
     unsigned promote_every = 30;  ///< Promotion period, or0 to disable.
     unsigned key_every = 300;  ///< Key refresh period, or0 to disable after initial admission.
     bool reuse_analysis = false;  ///< Reuse only this frame's source conversion/forward work across maps.
+    bool record_output_hashes = false;  ///< Optional paid packet SHA256 for saved-frame comparisons.
   };
 
   /** @brief Monotonic local work clock; never compared with a receiver clock. */
   using Clock = std::chrono::steady_clock;
   /** @brief JSON offline result document, not a wire message. */
   using Json = body_case::Json;
+  /**
+   * @brief Load or generate exactly one owned RGB8 canvas for the requested source index.
+   */
+  using FrameProvider = std::function<std::vector<std::uint8_t>(unsigned)>;
 
   /**
    * @brief Validate every workload limit before source allocation or encoding.
@@ -87,19 +93,18 @@ namespace gamebub::v20::benchmark {
   }
 
   /**
-   * @brief Profile real mandatory candidates and sequential software AF03/reference publication.
-   * @param original Exact original RGB8 seed; never modified or replaced by RGB565 expansion.
-   * @param options Finite generated workload with explicit refresh/promotion periods.
+   * @brief Profile a finite frame provider with all candidate and software reference costs.
+   * @param provider Serialized source loader, returning one exact RGB8 canvas per call.
+   * @param options Finite workload with explicit refresh/promotion periods.
    * @return Scoped work/cost report; no capture, pacing, RF or hardware playback is measured.
    */
-  inline Json run(std::span<const std::uint8_t> original, const Options &options = {}) {
+  inline Json run_frames(const FrameProvider &provider, const Options &options = {}) {
     validate(options);
-    body::require(original.size() == candidate::width * candidate::height * 3, "benchmark RGB8 geometry");
-    const auto source_hash = body_case::digest(original);
+    body::require(bool(provider), "benchmark source provider");
     candidate::Policy policy;
     body::State receiver;
     Json rows = Json::array();
-    std::vector<std::uint64_t> source_times, admission_times, decode_times, roundtrip_times;
+    std::vector<std::uint64_t> source_times, admission_times, decode_times, roundtrip_times, identity_times;
     std::uint64_t accepted = 0, rejected = 0, total_bytes = 0, attempts = 0, losing_attempts = 0;
     std::uint64_t keys = 0, promotions = 0, ordinary = 0;
     std::uint64_t analysis_builds = 0, analysis_reuses = 0;
@@ -107,7 +112,8 @@ namespace gamebub::v20::benchmark {
     const auto began = Clock::now();
     for (unsigned index = 0; index < options.frames; ++index) {
       const auto frame_start = Clock::now();
-      const auto moved = moving_rgb(original, index, options.shift_pixels);
+      const auto moved = provider(index);
+      body::require(moved.size() == candidate::width * candidate::height * 3, "benchmark RGB8 geometry");
       const auto source = std::make_shared<const candidate::Source>(moved);
       const auto source_ns = elapsed(frame_start);
       source_times.push_back(source_ns);
@@ -143,6 +149,10 @@ namespace gamebub::v20::benchmark {
       row["analysis_builds"] = frame_analysis_builds;
       row["analysis_reuses"] = frame_analysis_reuses;
       row["analysis_coefficient_bytes"] = frame_analysis_bytes;
+      if (options.record_output_hashes) {
+        row["packet_sha256"] = nullptr;
+        row["output_identity_ns"] = 0;
+      }
       if (prepared.accepted()) {
         const auto packet = policy.commit(prepared);
         const auto decode_start = Clock::now();
@@ -163,9 +173,19 @@ namespace gamebub::v20::benchmark {
         row["frame_kind"] = packet[5];
         row["software_decode_ns"] = decode_ns;
         row["confirmed_frame"] = receiver.last_frame;
+        if (options.record_output_hashes) {
+          const auto identity_start = Clock::now();
+          row["packet_sha256"] = body_case::digest(packet);
+          const auto identity_ns = elapsed(identity_start);
+          row["output_identity_ns"] = identity_ns;
+          identity_times.push_back(identity_ns);
+        }
       } else {
         ++rejected;
         body::require(!policy.active() && policy.pending() == 0, "benchmark rejected ownership");
+        if (options.record_output_hashes) {
+          identity_times.push_back(0);
+        }
       }
       const auto frame_ns = elapsed(frame_start);
       roundtrip_times.push_back(frame_ns);
@@ -173,8 +193,33 @@ namespace gamebub::v20::benchmark {
       rows.push_back(std::move(row));
     }
     const auto wall_ns = elapsed(began);
+    Json result {{"schema", "gamebub-v20-encoder-frames-benchmark-v1"}, {"scope", "offline_finite_frames_encode_and_software_decode"}, {"profiling_not_playback", true}, {"capture_measured", false}, {"network_measured", false}, {"hardware_measured", false}, {"cpu_and_peak_memory_measured", false}, {"width", candidate::width}, {"height", candidate::height}, {"shift_pixels", options.shift_pixels}, {"promote_every", options.promote_every}, {"key_every", options.key_every}, {"analysis_reuse", options.reuse_analysis}, {"analysis_builds", analysis_builds}, {"analysis_reuses", analysis_reuses}, {"maximum_analysis_coefficient_bytes", maximum_analysis_bytes}, {"analysis_paid_in_first_build", options.reuse_analysis}, {"analysis_accounting", options.reuse_analysis ? "first build includes frame analysis; later maps reuse coefficients" : "every build pays conversion and forward analysis"}, {"requested_frames", options.frames}, {"accepted_frames", accepted}, {"rejected_frames", rejected}, {"software_decoded_frames", accepted}, {"key_frames", keys}, {"promoted_frames", promotions}, {"ordinary_frames", ordinary}, {"attempts", attempts}, {"losing_attempts", losing_attempts}, {"complete_bytes", total_bytes}, {"complete_frame_cap", 49152}, {"final_confirmed_frame", receiver.last_frame}, {"wall_ns", wall_ns}, {"timings_ns", {{"source_prepare", distribution(source_times)}, {"admission", distribution(admission_times)}, {"software_decode", distribution(decode_times)}, {"offline_roundtrip", distribution(roundtrip_times)}}}, {"frames", rows}};
+    if (options.record_output_hashes) {
+      result["output_identity_recorded"] = true;
+      result["timings_ns"]["output_identity"] = distribution(identity_times);
+    }
+    return result;
+  }
+
+  /**
+   * @brief Preserve the generated-motion workload and report schema around the finite loop.
+   * @param original Exact original RGB8 seed; never modified or replaced by RGB565 expansion.
+   * @param options Finite generated workload with explicit refresh/promotion periods.
+   * @return Existing generated-motion report, with no saved-footage or capture claim.
+   */
+  inline Json run(std::span<const std::uint8_t> original, const Options &options = {}) {
+    validate(options);
+    body::require(original.size() == candidate::width * candidate::height * 3, "benchmark RGB8 geometry");
+    const auto source_hash = body_case::digest(original);
+    auto result = run_frames([&](unsigned index) {
+      return moving_rgb(original, index, options.shift_pixels);
+    },
+                             options);
     body::require(body_case::digest(original) == source_hash, "benchmark seed mutation");
-    return {{"schema", "gamebub-v20-encoder-benchmark-v1"}, {"scope", "offline_generated_motion_encode_and_software_decode"}, {"profiling_not_playback", true}, {"capture_measured", false}, {"network_measured", false}, {"hardware_measured", false}, {"cpu_and_peak_memory_measured", false}, {"source_rgb_sha256", source_hash}, {"width", candidate::width}, {"height", candidate::height}, {"shift_pixels", options.shift_pixels}, {"promote_every", options.promote_every}, {"key_every", options.key_every}, {"analysis_reuse", options.reuse_analysis}, {"analysis_builds", analysis_builds}, {"analysis_reuses", analysis_reuses}, {"maximum_analysis_coefficient_bytes", maximum_analysis_bytes}, {"analysis_paid_in_first_build", options.reuse_analysis}, {"analysis_accounting", options.reuse_analysis ? "first build includes frame analysis; later maps reuse coefficients" : "every build pays conversion and forward analysis"}, {"requested_frames", options.frames}, {"accepted_frames", accepted}, {"rejected_frames", rejected}, {"software_decoded_frames", accepted}, {"key_frames", keys}, {"promoted_frames", promotions}, {"ordinary_frames", ordinary}, {"attempts", attempts}, {"losing_attempts", losing_attempts}, {"complete_bytes", total_bytes}, {"complete_frame_cap", 49152}, {"final_confirmed_frame", receiver.last_frame}, {"wall_ns", wall_ns}, {"timings_ns", {{"source_prepare", distribution(source_times)}, {"admission", distribution(admission_times)}, {"software_decode", distribution(decode_times)}, {"offline_roundtrip", distribution(roundtrip_times)}}}, {"frames", rows}};
+    result["schema"] = "gamebub-v20-encoder-benchmark-v1";
+    result["scope"] = "offline_generated_motion_encode_and_software_decode";
+    result["source_rgb_sha256"] = source_hash;
+    return result;
   }
 
   /**

@@ -36,6 +36,68 @@ only `--gamepad` creates a virtual controller. Profiles are `standard`,
 `elden-ring`, `mass-effect` and `wow`. The driver/DLL must already be prepared
 for injection; see `CONTROLLER-QUICKSTART.md`.
 
+### Input-only AV, saved clips and optional wait
+
+`--av-input` selects a real AV owner without PC audio capture or virtual-gamepad
+injection. Combine it with `--video` for the input/video coexistence test.
+Video starts after AV ACTIVE; AV remains active until the owned video sender
+has exited, including final feedback/log drain. A finite five-second video
+grace prevents a stuck sender from keeping AV alive indefinitely. STOP is
+sent through normal AV cleanup; its exact wire bytes and success are logged.
+
+`--clip PATH` selects a saved clip instead of desktop capture; `--loop-clip`
+reopens it at EOF without retaining decoded history. Empty clips terminate.
+Clip paths are made absolute before the child changes directory, and the
+manifest records the file SHA-256 and start offset zero. Source proportions
+are preserved; the active viewport can differ from 720×405 for non-16:9 input.
+
+`--pacing-wait sleep` is the unchanged default. `--pacing-wait precise` opts
+into a blocking Windows high-resolution timer with deadline rechecks, no spin
+and visible fallback. The selected mode, backend/fallback counters and cleanup
+are recorded. This option is experimental: a more precise API name does not
+establish a measured speed improvement. The earlier spin-tail lab adapter is
+not enabled by this flag. A separate process timer-period helper is not
+selected by either launcher mode.
+
+`--pacing-wait hybrid` explicitly requests a bounded 600-microsecond native
+spin tail. Its wait-thread CPU and spin counters are reported. Fallback disables
+the tail; it does not silently busy-spin on unsupported systems. This remains
+an experimental CPU/precision tradeoff, with no default behavior change.
+
+PowerShell equivalents: `-AvInput`, `-Clip PATH`, `-LoopClip`,
+`-PacingWait precise`. All existing media flags remain explicit.
+
+### Owned capture through STOP
+
+`--capture-interface INTERFACE` opts into an installed dumpcap capture. An AV
+owner is required so STOP can delimit coverage. The launcher requires dumpcap
+and neighboring tshark, starts capture before AV, confirms native readiness
+and file creation, and checks capture health during the session. No tools or
+drivers are installed. Use `dumpcap -D` to select the actual intended interface;
+never copy an interface number from another machine.
+
+The filter includes UDP between the explicit sender/receiver addresses on the
+selected video/AV ports, in both directions. Native stderr and numeric capture
+statistics are retained. Capture's safety autostop is the requested media
+duration plus 120 seconds; successful finalization waits for natural exit,
+which can keep the launcher alive for roughly two minutes **after media STOP**.
+`media_end_utc` and final `end_utc` distinguish these intervals. An early capture
+exit aborts the session and cannot report complete coverage. The capture owner
+uses a conservative post-readiness deadline and does not force-stop a successful
+capture merely to finish early.
+
+The launcher then uses tshark to verify the exact successfully sent STOP
+datagram, including cookie, sequence and CRC, at the capture point. Lifecycle
+completion alone is not packet-level STOP evidence. Missing/failed verification,
+forced cleanup or missing capture statistics produces an incomplete result.
+Capture drop counts remain explicit; zero host-capture drops still do not prove
+radio delivery or receiver reception. The selected interface may expose Ethernet
+encapsulation rather than raw 802.11 frames.
+
+`--capture-executable PATH` overrides dumpcap's installed location. PowerShell
+equivalents are `-CaptureInterface` and `-CaptureExecutable`. Dry-run never
+starts capture, AV, media or a virtual controller.
+
 ## Preserved contracts and bounded behavior
 
 - Video remains baseline JPEG in MSV1 on UDP5533,720×480 with720×405 active

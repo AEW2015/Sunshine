@@ -6,13 +6,18 @@ import socket
 import threading
 import time
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+
+from PIL import Image
 
 from audio_codec import BLOCK_SAMPLES, RATE, decode_block, encode_block
 from av_protocol import INPUT, NONCE, Packet, decode
 from gamepad_backend import GamepadDispatcher
 from live_session import run_av
+from reference_loopback import ReferencePeer, load_reference
+from stream_sender import run as run_video
 from windows_audio import test_tone
 
 
@@ -151,6 +156,104 @@ class SyntheticAudio:
 
 class LoopbackTests(unittest.TestCase):
     """@brief Verify real datagrams, negotiated audio modes, selected profile and release."""
+
+    def test_input_only_survives_concurrent_video_and_silent_video_feedback(self):
+        """@brief Real input lease/STOP remains independent of video feedback liveness."""
+        repository = Path(__file__).parent / "artifacts/moonbub-30fps-study"
+        if not repository.exists():
+            self.skipTest("Pinned MoonBub reference repository is not available")
+        import tempfile
+
+        reference = load_reference(repository)
+        for silence in (False, True):
+            with self.subTest(silent_video=silence), tempfile.TemporaryDirectory() as folder:
+                peer = ReferencePeer(reference)
+                original_socket = peer.socket
+                if silence:
+
+                    class QuietReplies:
+                        """@brief Drop only video feedback without suppressing AV snapshots."""
+
+                        def __getattr__(self, name, original_socket=original_socket):
+                            """@brief Delegate the real localhost receive socket lifecycle."""
+                            return getattr(original_socket, name)
+
+                        def sendto(self, raw, endpoint):
+                            """@brief Model missing video ACKs after successful ingress."""
+                            return len(raw)
+
+                    peer.socket = QuietReplies()
+                result, failures = {}, []
+                finished = threading.Event()
+                options = SimpleNamespace(
+                    target="127.0.0.1",
+                    port=peer.port,
+                    source_port=0,
+                    start_frame_id=100,
+                    log=Path(folder) / "video.jsonl",
+                    clip=None,
+                    fps=20,
+                    mbps=4,
+                    max_age_ms=200,
+                    quality=25,
+                    min_quality=25,
+                    frames=20,
+                    packet_timing=True,
+                )
+
+                def send_video(
+                    options=options, result=result, failures=failures, finished=finished
+                ):
+                    """@brief Run an actual finite sender in an owned local worker."""
+                    try:
+                        result["video"] = run_video(
+                            options, (Image.new("RGB", (720, 480), (n, 80, 160)) for n in range(20))
+                        )
+                    except Exception as error:  # noqa: BLE001 - retain worker failures in test owner
+                        failures.append(error)
+                    finally:
+                        finished.set()
+
+                worker = threading.Thread(target=send_video)
+                try:
+                    with LoopbackPeer() as av_peer:
+                        av_options = SimpleNamespace(
+                            receiver="127.0.0.1",
+                            bind="127.0.0.1",
+                            av_port=av_peer.address[1],
+                            av_source_port=0,
+                            gamepad=False,
+                            audio=False,
+                            profile="standard",
+                            gain=0.75,
+                            seconds=3,
+                            source_timeout=2,
+                        )
+                        with patch("live_session.VigemXbox360Backend.create") as gamepad:
+                            av_result = run_av(
+                                av_options,
+                                lambda *a, **kw: None,
+                                ready=worker.start,
+                                stop_when=finished.is_set,
+                            )
+                        worker.join(1)
+                        self.assertFalse(worker.is_alive())
+                        self.assertFalse(failures)
+                        self.assertTrue(av_peer.stopped.wait(1))
+                        self.assertFalse(av_peer.errors)
+                        self.assertGreater(av_result["input_packets"], 20)
+                        self.assertEqual(av_result["input_timeouts"], 0)
+                        self.assertEqual(av_result["audio_sent"], 0)
+                        gamepad.assert_not_called()
+                        if silence:
+                            self.assertEqual(
+                                result["video"]["counts"].get("feedback_accepted", 0), 0
+                            )
+                        else:
+                            self.assertGreater(result["video"]["counts"]["feedback_accepted"], 0)
+                finally:
+                    worker.join(3) if worker.ident is not None else None
+                    peer.close()
 
     def test_real_localhost_audio_input_and_audio_disabled(self):
         """@brief Both modes complete a1s session; no hardware or physical input is touched."""

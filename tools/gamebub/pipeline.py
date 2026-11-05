@@ -7,7 +7,7 @@ Callbacks must return in bounded time; shutdown cannot interrupt a blocked callb
 from collections import Counter
 from dataclasses import dataclass, replace
 from threading import Condition, Thread
-from time import perf_counter_ns
+from time import perf_counter_ns, thread_time_ns
 
 from PIL import Image
 
@@ -37,7 +37,14 @@ class VideoPipeline:
     """
 
     def __init__(
-        self, encode, send, max_age_ns, max_encoded_bytes, clock=perf_counter_ns, encode_frame=None
+        self,
+        encode,
+        send,
+        max_age_ns,
+        max_encoded_bytes,
+        clock=perf_counter_ns,
+        encode_frame=None,
+        cpu_clock=thread_time_ns,
     ):
         """@brief Start workers with bounded queues and injectable callbacks/clock.
 
@@ -48,6 +55,7 @@ class VideoPipeline:
         @param clock Monotonic nanosecond clock shared with submitted timestamps.
         @param encode_frame Optional callable accepting a complete Frame for deadline-aware
             encoding; when omitted, encode is called with the frame's image as before.
+        @param cpu_clock Sender-thread CPU nanoseconds, injectable for accounting tests.
         """
         if any(type(v) is not int or v <= 0 for v in (max_age_ns, max_encoded_bytes)):
             raise ValueError("Pipeline limits must be positive integers")
@@ -60,10 +68,23 @@ class VideoPipeline:
         self.last_capture = -1
         self.counts = Counter()
         self.last_error = None
+        self.cpu_clock = cpu_clock
+        self.sender_cpu_ns = 0
+        self.sender_cpu_final = False
         self.encoder = Thread(target=self._encode_loop, name="gamebub-encoder")
         self.sender = Thread(target=self._send_loop, name="gamebub-sender")
-        self.encoder.start()
-        self.sender.start()
+        try:
+            self.encoder.start()
+            self.sender.start()
+        except BaseException:
+            with self.condition:
+                self.closed = True
+                self.condition.notify_all()
+            if self.encoder.is_alive():
+                self.encoder.join()
+            if self.sender.is_alive():
+                self.sender.join()
+            raise
 
     def submit(self, frame):
         """@brief Copy and submit a capture; replace any raw frame waiting to encode.
@@ -137,6 +158,16 @@ class VideoPipeline:
                 self.condition.notify_all()
 
     def _send_loop(self):
+        """@brief Retain final sender-thread CPU after all active work and idle waits."""
+        started = self.cpu_clock()
+        try:
+            self._send_loop_body()
+        finally:
+            with self.condition:
+                self.sender_cpu_ns = max(0, self.cpu_clock() - started)
+                self.sender_cpu_final = True
+
+    def _send_loop_body(self):
         """@brief Send the latest nonstale encoded frame until the encoder finishes."""
         while True:
             with self.condition:
@@ -174,4 +205,6 @@ class VideoPipeline:
                 "encoded_waiting": int(self.encoded is not None),
                 "counts": dict(self.counts),
                 "last_error": self.last_error,
+                "sender_thread_cpu_ns": self.sender_cpu_ns,
+                "sender_thread_cpu_final": self.sender_cpu_final,
             }

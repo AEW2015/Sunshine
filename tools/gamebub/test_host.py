@@ -386,6 +386,25 @@ class PipelineTests(unittest.TestCase):
         with patch("host.av.open", return_value=container):
             self.assertEqual(list(host.clip_frames(Path("fake"), 30)), [])
 
+    def test_looping_clip_reopens_and_releases_active_reader(self):
+        """@brief Finite replay has bounded decoded state and releases its final decoder."""
+        closed = []
+
+        def reader(path, fps):
+            """@brief Record normal EOF and early-close release for each iteration."""
+            try:
+                yield 1
+                yield 2
+            finally:
+                closed.append(True)
+
+        frames = host.looping_clip_frames(Path("fake"), 20, clip_reader=reader)
+        self.assertEqual([next(frames) for _ in range(5)], [1, 2, 1, 2, 1])
+        frames.close()
+        self.assertEqual(len(closed), 3)
+        empty = host.looping_clip_frames(Path("fake"), 20, clip_reader=lambda *_: (n for n in ()))
+        self.assertEqual(list(empty), [])
+
     def test_last_frame_without_duration_uses_source_rate(self):
         """@brief A final 24-Hz frame is held for its duration, including fallback metadata."""
         for rate in (24, None):

@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 import av
 
-from host import clip_frames
+from host import clip_frames, looping_clip_frames
 from msv1 import MAX_FRAME
 from stream_sender import run
 
@@ -107,17 +107,7 @@ def loop_clip(path, fps):
     @param fps Desired output timeline rate.
     @return Iterator of decoded frames; an empty clip terminates without spinning.
     """
-    while True:
-        frames = clip_frames(path, fps)
-        emitted = False
-        try:
-            for frame in frames:
-                emitted = True
-                yield frame
-        finally:
-            frames.close()
-        if not emitted:
-            return
+    yield from looping_clip_frames(path, fps, clip_reader=clip_frames)
 
 
 def run_reference(args, source=None):
@@ -148,6 +138,7 @@ def run_reference(args, source=None):
         max_jpeg_bytes=getattr(args, "max_jpeg_bytes", MAX_FRAME),
         jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
         frames=args.frames,
+        pacing_wait=getattr(args, "pacing_wait", "sleep"),
     )
     try:
         sender = run(options, source)
@@ -179,6 +170,7 @@ def main(argv=None):
         "--loop", action="store_true", help="Repeat the clip until frame count is reached"
     )
     parser.add_argument("--fps", type=int, default=30)
+    parser.add_argument("--pacing-wait", choices=("sleep", "precise", "hybrid"), default="sleep")
     parser.add_argument("--mbps", type=float, default=20)
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)

@@ -160,6 +160,69 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(sock.sent[-1].kind, 4)
         self.assertTrue(sock.closed)
         self.assertEqual(events[-1][0], "av_summary")
+        self.assertTrue(result["stop_sent"])
+        stop_event = next(fields for kind, fields in events if kind == "stop_sent")
+        self.assertEqual(decode(bytes.fromhex(stop_event["wire_hex"])).kind, 4)
+
+    def test_partial_stop_send_is_reported_and_socket_is_closed(self):
+        """@brief A short control send cannot claim successful STOP transmission."""
+        sock = PeerSocket()
+        original = sock.send
+
+        def short_stop(raw):
+            """@brief Preserve handshake while simulating a partial STOP send."""
+            if decode(raw).kind == 4:
+                return len(raw) - 1
+            return original(raw)
+
+        sock.send = short_stop
+        result = live_session.run_av(
+            self.args(), lambda *a, **kw: None, clock=Clock(), socket_factory=lambda *a: sock
+        )
+        self.assertFalse(result["stop_sent"])
+        self.assertIn("Partial AV STOP", result["stop_error"])
+        self.assertTrue(sock.closed)
+
+    def test_owned_completion_sends_stop_before_nominal_duration(self):
+        """@brief A completion predicate ends AV through its normal STOP/cleanup path."""
+        sock = PeerSocket()
+        checks = []
+
+        def finished():
+            """@brief Simulate video closing after several AV iterations."""
+            checks.append(True)
+            return len(checks) == 4
+
+        result = live_session.run_av(
+            self.args(seconds=60),
+            lambda *args, **fields: None,
+            clock=Clock(),
+            socket_factory=lambda *args: sock,
+            stop_when=finished,
+        )
+        self.assertEqual(len(checks), 4)
+        self.assertEqual(result["input_timeouts"], 0)
+        self.assertEqual(sock.sent[-1].kind, 4)
+        self.assertTrue(sock.closed)
+
+    def test_completion_predicate_failure_still_sends_stop(self):
+        """@brief Owner errors cannot bypass session/socket cleanup."""
+        sock = PeerSocket()
+
+        def failed():
+            """@brief Simulate an unexpected owner-state inspection failure."""
+            raise RuntimeError("owner failure")
+
+        with self.assertRaisesRegex(RuntimeError, "owner failure"):
+            live_session.run_av(
+                self.args(),
+                lambda *args, **fields: None,
+                clock=Clock(),
+                socket_factory=lambda *args: sock,
+                stop_when=failed,
+            )
+        self.assertEqual(sock.sent[-1].kind, 4)
+        self.assertTrue(sock.closed)
 
     def test_timeout_neutralizes_even_when_no_buttons_held(self):
         """@brief Neutral input still has a finite liveness lease independent of audio/video."""

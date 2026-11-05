@@ -17,6 +17,8 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
+from capture_evidence import verify_stop
+from capture_owner import CaptureOwner
 from event_log import EventLog
 from gamepad_backend import PROFILES
 from live_session import run_av
@@ -31,11 +33,21 @@ def parser():
     result.add_argument("--bind", default="192.168.0.47")
     result.add_argument("--seconds", type=float, default=60)
     result.add_argument("--video", action="store_true")
+    result.add_argument("--clip", type=Path, help="Use a saved clip instead of desktop capture")
+    result.add_argument("--loop-clip", action="store_true")
     result.add_argument("--audio", action="store_true")
     result.add_argument("--gamepad", action="store_true")
+    result.add_argument(
+        "--av-input",
+        action="store_true",
+        help="Keep input-only AV active without audio capture or virtual-gamepad injection",
+    )
     result.add_argument("--profile", choices=PROFILES, default="standard")
     result.add_argument("--gain", type=float, default=0.75)
     result.add_argument("--fps", type=int, default=5)
+    result.add_argument("--pacing-wait", choices=("sleep", "precise", "hybrid"), default="sleep")
+    result.add_argument("--capture-interface", help="Explicit dumpcap interface; capture is opt-in")
+    result.add_argument("--capture-executable", default=r"C:\Program Files\Wireshark\dumpcap.exe")
     result.add_argument("--quality", type=int, default=25)
     result.add_argument("--mbps", type=float, default=2)
     result.add_argument("--deadline-ms", type=float, default=200)
@@ -62,8 +74,14 @@ def parser():
 
 def validate(args):
     """@brief Reject invalid settings before directories, processes or traffic are created."""
-    if not (args.video or args.audio or args.gamepad):
-        raise ValueError("Select at least one of --video, --audio or --gamepad")
+    if not (args.video or args.audio or args.gamepad or args.av_input):
+        raise ValueError("Select at least one of --video, --audio, --gamepad or --av-input")
+    if args.clip is not None and not args.video:
+        raise ValueError("--clip requires --video")
+    if args.loop_clip and args.clip is None:
+        raise ValueError("--loop-clip requires --clip")
+    if args.capture_interface and not (args.av_input or args.audio or args.gamepad):
+        raise ValueError("Capture requires an AV owner so STOP can delimit coverage")
     if any(
         not math.isfinite(v)
         for v in (args.seconds, args.gain, args.mbps, args.deadline_ms, args.source_timeout)
@@ -91,20 +109,25 @@ def validate(args):
 
 def video_command(args):
     """@brief Build the existing fixed-format sender command with no profile mutation."""
+    source = (
+        ["--clip", str(args.clip)] if args.clip else ["--desktop", "--desktop-backend", "ddagrab"]
+    )
+    if args.loop_clip:
+        source.append("--loop-clip")
     return [
         getattr(sys, "_base_executable", sys.executable),
         "-u",
         str(HERE / "stream_sender.py"),
         args.receiver,
-        "--desktop",
-        "--desktop-backend",
-        "ddagrab",
+        *source,
         "--desktop-filter",
         "bilinear",
         "--frames",
         str(math.ceil(args.seconds * args.fps)),
         "--fps",
         str(args.fps),
+        "--pacing-wait",
+        args.pacing_wait,
         "--quality",
         str(args.quality),
         "--min-quality",
@@ -147,6 +170,7 @@ class VideoProcess:
                 env=environment,
                 stdout=self.stdout,
                 stderr=self.stderr,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except BaseException:
             for output in (self.stdout, self.stderr):
@@ -191,12 +215,20 @@ def verify_video_route(args):
 def run(args):
     """@brief Create a new evidence directory and run only the explicitly selected paths."""
     validate(args)
+    clip_hash = None
+    if args.clip is not None:
+        args.clip = args.clip.resolve()
+        with args.clip.open("rb") as source:
+            clip_hash = hashlib.file_digest(source, "sha256").hexdigest()
     route = verify_video_route(args) if args.video and not args.dry_run else None
     args.output = args.output.resolve()
     args.output.mkdir(parents=True, exist_ok=False)
     manifest = {
         **vars(args),
         "output": str(args.output),
+        "clip": str(args.clip.resolve()) if args.clip else None,
+        "clip_sha256": clip_hash,
+        "clip_start_offset_seconds": 0 if args.clip else None,
         "start_utc": datetime.now(UTC).isoformat(),
         "canvas": [720, 480],
         "active_16_9": [720, 405],
@@ -215,50 +247,134 @@ def run(args):
                 "av_session.py",
                 "gamepad_backend.py",
                 "stream_sender.py",
+                "host.py",
+                "msv1.py",
+                "pipeline.py",
+                "event_log.py",
+                "pacing_wait.py",
+                "capture_owner.py",
+                "capture_evidence.py",
             )
         },
     }
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     if args.dry_run:
         return {"dry_run": True, "video_command": video_command(args) if args.video else None}
-    result, video = {"end_to_end_verified": False}, None
+    result, video, capture = {"end_to_end_verified": False}, None, None
+    stop_wire = None
     with (args.output / "av.jsonl").open("x", encoding="utf-8") as output:
         log = EventLog(output)
 
         def event(kind, **fields):
             """@brief Submit bounded host events with one QPC clock domain."""
+            nonlocal stop_wire
             log.submit({"event": kind, "monotonic_ns": time.perf_counter_ns(), **fields})
+            if kind == "av_summary":
+                result["av"] = fields
+            if kind == "stop_sent" and capture is not None:
+                stop_wire = bytes.fromhex(fields["wire_hex"])
+                capture.record_stop()
 
         def ready():
             """@brief Start video only after AV ACTIVE, or directly in video-only mode."""
             nonlocal video
+            if capture is not None:
+                capture.health()
             if args.video:
                 video = VideoProcess(args)
                 event("video_started", pid=video.process.pid)
 
         def health():
             """@brief Abort AV promptly if its owned video sender fails."""
+            if capture is not None:
+                capture.health()
             if video is not None:
                 code = video.process.poll()
                 if code is not None and code != 0:
                     raise RuntimeError(f"Owned video sender exited with{code}")
 
+        def video_finished():
+            """@brief Keep AV active until the owned sender has closed its feedback/logs."""
+            return video is not None and video.process.poll() == 0
+
         try:
-            if args.audio or args.gamepad:
-                result["av"] = run_av(args, event, ready, health=health)
+            if args.capture_interface:
+                import ipaddress
+
+                source_ip = ipaddress.IPv4Address(args.bind)
+                receiver_ip = ipaddress.IPv4Address(socket.gethostbyname(args.receiver))
+                if source_ip.is_unspecified:
+                    raise ValueError("Capture requires a concrete source IPv4 address")
+                if (
+                    not Path(args.capture_executable).is_file()
+                    or not Path(args.capture_executable).with_name("tshark.exe").is_file()
+                ):
+                    raise FileNotFoundError(
+                        "Capture requires installed dumpcap.exe and neighboring tshark.exe"
+                    )
+                capture = CaptureOwner(
+                    args.output,
+                    args.capture_interface,
+                    f"udp and host {source_ip} and host {receiver_ip} and (port {args.video_port} or port {args.av_port})",
+                    args.seconds + 120,
+                    executable=args.capture_executable,
+                )
+                event("capture_started", **capture.start())
+            av_active = args.audio or args.gamepad or args.av_input
+            if av_active:
+                # Bound capture startup and final feedback drain, while STOP follows
+                # actual video completion rather than the nominal slot duration.
+                av_args = (
+                    argparse.Namespace(**{**vars(args), "seconds": args.seconds + 5})
+                    if args.video
+                    else args
+                )
+                result["av"] = run_av(
+                    av_args,
+                    event,
+                    ready,
+                    health=health,
+                    stop_when=video_finished,
+                )
+                if video is not None and video.process.poll() is None:
+                    raise TimeoutError("Owned video sender exceeded its finite AV grace")
             else:
                 ready()
             if video is not None:
-                result["video"] = video.close(
-                    grace=5 if args.audio or args.gamepad else args.seconds + 5
-                )
+                result["video"] = video.close(grace=5 if av_active else args.seconds + 5)
                 video = None
         except BaseException as error:
             result["error"] = f"{type(error).__name__}: {error}"
             raise
         finally:
             if video is not None:
-                result["video"] = video.close(grace=0)
+                try:
+                    result["video"] = video.close(grace=0)
+                except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+                    result["video"] = {"forced_stop": True, "cleanup_error": str(error)}
+            result["media_end_utc"] = datetime.now(UTC).isoformat()
+            if capture is not None and capture.process is not None:
+                try:
+                    result["capture"] = capture.close()
+                    result["capture"]["complete"] = False
+                    if result["capture"]["lifecycle_complete"] and stop_wire is not None:
+                        verification = verify_stop(
+                            capture.capture_path,
+                            stop_wire,
+                            args.bind,
+                            tshark=Path(args.capture_executable).with_name("tshark.exe"),
+                        )
+                        result["capture"].update(verification)
+                        result["capture"]["completion_scope"] = (
+                            "Lifecycle and exact STOP verified at the capture point; RF delivery is unverified"
+                        )
+                        result["capture"]["complete"] = verification["stop_packet_verified"]
+                except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
+                    result["capture"] = {
+                        **result.get("capture", {}),
+                        "complete": False,
+                        "verification_error": str(error),
+                    }
             result["logging"] = log.close()
             result["end_utc"] = datetime.now(UTC).isoformat()
             (args.output / "session-summary.json").write_text(
@@ -286,6 +402,7 @@ def main(argv=None):
             or result.get("av", {}).get("cleanup_errors")
             or result.get("av", {}).get("stop_error")
             or result.get("logging", {}).get("error")
+            or ("capture" in result and not result["capture"].get("complete", False))
         )
     )
 

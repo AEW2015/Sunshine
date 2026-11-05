@@ -15,6 +15,7 @@
 #include "composed_case.h"
 #include "encoder_benchmark.h"
 #include "encoder_case.h"
+#include "encoder_sequence.h"
 #include "hud_delta_case.h"
 #include "packet_model.h"
 #include "recovery_case.h"
@@ -104,6 +105,23 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
+  if (argc == 4 && (std::string_view(argv[1]) == "--encoder-sequence" || std::string_view(argv[1]) == "--encoder-sequence-cached")) {
+    try {
+      const std::string_view text(argv[3]);
+      unsigned frames = 0;
+      const auto parsed = std::from_chars(text.data(), text.data() + text.size(), frames);
+      body::require(parsed.ec == std::errc() && parsed.ptr == text.data() + text.size() && frames >= 1 && frames <= 1800, "sequence frame count must be1..1800");
+      benchmark::Options options;
+      options.frames = frames;
+      options.shift_pixels = 0;
+      options.reuse_analysis = std::string_view(argv[1]) == "--encoder-sequence-cached";
+      std::cout << sequence::run(argv[2], options).dump() << '\n';
+      return 0;
+    } catch (const std::exception &error) {
+      std::cerr << "Encoder sequence rejected: " << error.what() << '\n';
+      return 1;
+    }
+  }
   if (argc == 3 && std::string_view(argv[1]) == "--encoder-case") {
     try {
       std::cout << encoder_case::run(argv[2]).dump() << '\n';
@@ -179,6 +197,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES | --encoder-sequence MANIFEST.json FRAMES | --encoder-sequence-cached MANIFEST.json FRAMES\n";
   return 2;
 }

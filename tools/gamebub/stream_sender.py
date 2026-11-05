@@ -17,7 +17,7 @@ from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
 from event_log import EventLog
-from host import WIDTH, canvas, clip_frames, shift_canvas_right
+from host import WIDTH, canvas, clip_frames, looping_clip_frames, shift_canvas_right
 from msv1 import (
     FEEDBACK,
     MAX_FRAME,
@@ -29,6 +29,7 @@ from msv1 import (
     parse_feedback,
     send_frame,
 )
+from pacing_wait import PreciseWait
 from pipeline import Frame, VideoPipeline
 from quality import QualityController
 
@@ -276,6 +277,7 @@ class Session:
         *,
         max_jpeg_bytes=MAX_FRAME,
         jpeg_retry_quality_drop=0,
+        pacing_wait="sleep",
     ):
         """@brief Configure a connected nonblocking UDP socket and per-run log.
 
@@ -289,6 +291,7 @@ class Session:
         @param packet_timing Record per-datagram timing in the bounded event log.
         @param max_jpeg_bytes Maximum complete JPEG bytes for this receiver session.
         @param jpeg_retry_quality_drop One optional quality reduction after size rejection.
+        @param pacing_wait Explicit optional precise blocking wait; default keeps ordinary sleep.
         """
         if (
             type(fps) is not int
@@ -302,12 +305,18 @@ class Session:
             or not 1 <= max_jpeg_bytes <= MAX_FRAME
             or type(jpeg_retry_quality_drop) is not int
             or not 0 <= jpeg_retry_quality_drop <= 94
+            or pacing_wait not in ("sleep", "precise", "hybrid")
         ):
             raise ValueError("Invalid session rate, deadline or quality")
         self.sock, self.log, self.fps = sock, EventLog(log), fps
         self.packet_timing = packet_timing
         self.max_jpeg_bytes = max_jpeg_bytes
         self.jpeg_retry_quality_drop = jpeg_retry_quality_drop
+        self.precise_wait = (
+            PreciseWait(spin_tail_seconds=0.0006 if pacing_wait == "hybrid" else 0)
+            if pacing_wait != "sleep"
+            else None
+        )
         self.rate = mbps * 1e6 / 8
         self.age_ns = int(max_age_ms * 1e6)
         self.quality = QualityController(quality, min_quality)
@@ -320,14 +329,31 @@ class Session:
         self.stop = threading.Event()
         self.pacer = Pacer()
         self.start_ns = time.perf_counter_ns()
+        self.process_cpu_started = time.process_time()
         # Capture startup and a paced first frame can be slower than the liveness timeout.
         self.gate = FeedbackGate(None)
         self.controller = ControllerTracker()
         self.feedback_thread = threading.Thread(target=self._feedback_loop, name="gamebub-feedback")
-        self.feedback_thread.start()
-        self.pipeline = VideoPipeline(
-            self._encode, self._send, self.age_ns, max_jpeg_bytes, encode_frame=self._encode_frame
-        )
+        try:
+            self.feedback_thread.start()
+            self.pipeline = VideoPipeline(
+                self._encode,
+                self._send,
+                self.age_ns,
+                max_jpeg_bytes,
+                encode_frame=self._encode_frame,
+            )
+        except BaseException as error:
+            self.stop.set()
+            if self.feedback_thread.is_alive():
+                self.feedback_thread.join()
+            try:
+                if self.precise_wait is not None:
+                    self.precise_wait.close()
+            except OSError as cleanup_error:
+                error.add_note(f"Pacing wait cleanup also failed: {cleanup_error}")
+            self.log.close()
+            raise
 
     def _event(self, kind, **fields):
         """@brief Serialize one event under the session lock and return enqueue status."""
@@ -484,7 +510,8 @@ class Session:
 
         def guarded_sleep(seconds):
             """@brief Break long pacing waits to observe feedback silence promptly."""
-            time.sleep(min(seconds, 0.05))
+            waiter = getattr(self, "precise_wait", None) or time.sleep
+            waiter(min(seconds, 0.05))
             if seconds > 0.05:
                 with self.lock:
                     expire_and_check(time.perf_counter_ns())
@@ -750,6 +777,13 @@ class Session:
     def close(self):
         """@brief Drain workers, allow a short ACK grace period and return a summary."""
         self.pipeline.close()
+        precise_wait = getattr(self, "precise_wait", None)
+        wait_error = None
+        if precise_wait is not None:
+            try:
+                precise_wait.close()
+            except OSError as error:
+                wait_error = str(error)
         self.stop.wait(0.3)
         self.stop.set()
         self.feedback_thread.join()
@@ -761,12 +795,18 @@ class Session:
                 "scope": "MSV1 video test; feedback is ingress only",
                 "end_to_end_verified": False,
                 "duration_s": duration,
+                "process_cpu_seconds": time.process_time() - self.process_cpu_started,
                 "quality_final": self.quality.value,
                 "counts": dict(self.counts),
                 "pending_feedback": len(self.pending),
                 "feedback_probing": self.gate.probing,
                 "pipeline": self.pipeline.snapshot(),
+                "pacing_wait": precise_wait.snapshot()
+                if precise_wait is not None
+                else {"backend": "sleep"},
             }
+            if wait_error is not None:
+                result["pacing_wait"]["cleanup_error"] = wait_error
             result["wire_mbps"] = self.counts["wire_bytes"] * 8 / duration / 1e6
             result["encoded_mbps"] = self.counts["encoded_bytes"] * 8 / duration / 1e6
             result["encoded_fps"] = result["pipeline"]["counts"].get("encoded", 0) / duration
@@ -856,11 +896,12 @@ def run(args, source=None):
         with session.lock:
             session._event(kind, **fields)
 
+    clip_source = looping_clip_frames if getattr(args, "loop_clip", False) else clip_frames
     frames = (
         source
         if source is not None
         else (
-            clip_frames(args.clip, args.fps)
+            clip_source(args.clip, args.fps)
             if args.clip
             else recovering_desktop_frames(args.fps, capture_event)
             if dxgi
@@ -885,6 +926,7 @@ def run(args, source=None):
             packet_timing=getattr(args, "packet_timing", False),
             max_jpeg_bytes=getattr(args, "max_jpeg_bytes", MAX_FRAME),
             jpeg_retry_quality_drop=getattr(args, "jpeg_retry_quality_drop", 0),
+            pacing_wait=getattr(args, "pacing_wait", "sleep"),
         )
         filter_name = getattr(args, "desktop_filter", "bilinear")
         with session.lock:
@@ -917,9 +959,12 @@ def run(args, source=None):
                 max_jpeg_bytes=session.max_jpeg_bytes,
                 jpeg_retry_quality_drop=session.jpeg_retry_quality_drop,
                 shift_right_px=shift_right_px,
+                pacing_wait=getattr(args, "pacing_wait", "sleep"),
             )
         started = time.perf_counter_ns()
         slot = 0
+        previous_source_pts = None
+        source_loop = 0
         try:
             while slot < args.frames:
                 due = started + slot * 1_000_000_000 // args.fps
@@ -952,6 +997,27 @@ def run(args, source=None):
                 if shift_right_px:
                     prepared = shift_canvas_right(prepared, shift_right_px)
                 frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
+                if (
+                    getattr(args, "clip", None)
+                    and isinstance(image, av.VideoFrame)
+                    and image.time is not None
+                ):
+                    source_pts = round(image.time * 1_000_000)
+                    repeated = source_pts == previous_source_pts
+                    if previous_source_pts is not None and source_pts < previous_source_pts:
+                        source_loop += 1
+                    with session.lock:
+                        session.counts["source_samples"] += 1
+                        session.counts["source_timestamp_repeats"] += int(repeated)
+                        session._event(
+                            "source_sample",
+                            frame_id=frame_id,
+                            capture_us=stamp_us,
+                            source_pts_us=source_pts,
+                            source_loop=source_loop,
+                            repeated_source_timestamp=repeated,
+                        )
+                    previous_source_pts = source_pts
                 session.pipeline.submit(Frame(frame_id, now, stamp_us, prepared))
                 with session.lock:
                     session.counts["skipped_slots"] += skipped
@@ -974,6 +1040,9 @@ def main(argv=None):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--clip", type=Path)
     group.add_argument("--desktop", action="store_true")
+    parser.add_argument(
+        "--loop-clip", action="store_true", help="Repeat a saved clip from its beginning"
+    )
     parser.add_argument(
         "--desktop-backend",
         choices=("imagegrab", "ddagrab"),
@@ -1001,6 +1070,12 @@ def main(argv=None):
     )
     parser.add_argument("--frames", type=int, default=300)
     parser.add_argument("--fps", type=int, default=30)
+    parser.add_argument(
+        "--pacing-wait",
+        choices=("sleep", "precise", "hybrid"),
+        default="sleep",
+        help="Opt-in Windows wait: precise blocks; hybrid adds a bounded 600us spin tail; fallback reported",
+    )
     parser.add_argument("--mbps", type=float, default=20)
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
@@ -1024,6 +1099,8 @@ def main(argv=None):
         help="Retry an oversized JPEG once at lower quality; 0 disables",
     )
     args = parser.parse_args(argv)
+    if args.loop_clip and not args.clip:
+        parser.error("--loop-clip requires --clip")
     if args.desktop_backend != "imagegrab" and not args.desktop:
         parser.error("--desktop-backend requires --desktop")
     if (
@@ -1044,7 +1121,12 @@ def main(argv=None):
         print(json.dumps(result, indent=2))
     except (OSError, ValueError, av.FFmpegError) as error:
         parser.error(str(error))
-    return 0 if result["counts"].get("feedback_accepted", 0) else 2
+    return (
+        0
+        if result["counts"].get("feedback_accepted", 0)
+        and not result.get("pacing_wait", {}).get("cleanup_error")
+        else 2
+    )
 
 
 if __name__ == "__main__":

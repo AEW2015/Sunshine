@@ -326,6 +326,27 @@ def clip_frames(path: Path, fps: int) -> Iterator[av.VideoFrame]:
                 tick += 1
 
 
+def looping_clip_frames(path, fps, *, clip_reader=clip_frames):
+    """@brief Reopen a saved clip without retaining decoded frames or spinning on empty input.
+
+    @param path Source clip path.
+    @param fps Desired resampled timeline rate.
+    @param clip_reader Injectable finite clip iterator factory.
+    @return Repeated decoded frames; closing releases the active reader.
+    """
+    while True:
+        frames = clip_reader(path, fps)
+        emitted = False
+        try:
+            for frame in frames:
+                emitted = True
+                yield frame
+        finally:
+            frames.close()
+        if not emitted:
+            return
+
+
 @dataclass
 class LinkModel:
     """@brief Zero-queue simulated link; never a receiver or Wi-Fi measurement."""

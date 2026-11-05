@@ -2,6 +2,7 @@
 
 import threading
 import unittest
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -21,6 +22,42 @@ class PipelineTests(unittest.TestCase):
     def frame(self, number, captured=100):
         """@brief Construct a timestamped input for the pipeline."""
         return Frame(number, captured, number, self.image)
+
+    def test_sender_cpu_is_final_only_after_worker_shutdown(self):
+        """@brief CPU accounting includes the sender lifetime and marks a completed sample."""
+        cpu = iter((100, 5100))
+        pipeline = VideoPipeline(
+            lambda image: b"x",
+            lambda *args: True,
+            100,
+            10,
+            clock=lambda: 100,
+            cpu_clock=lambda: next(cpu),
+        )
+        self.assertFalse(pipeline.snapshot()["sender_thread_cpu_final"])
+        pipeline.close()
+        snapshot = pipeline.snapshot()
+        self.assertTrue(snapshot["sender_thread_cpu_final"])
+        self.assertEqual(snapshot["sender_thread_cpu_ns"], 5000)
+
+    def test_sender_start_failure_releases_started_encoder(self):
+        """@brief A later startup error cannot strand the first worker indefinitely."""
+        created = []
+
+        def factory(*args, **kwargs):
+            """@brief Start a real encoder but make the owned sender fail before launch."""
+            worker = threading.Thread(*args, **kwargs)
+            if kwargs["name"] == "gamebub-sender":
+                worker.start = lambda: (_ for _ in ()).throw(RuntimeError("sender startup"))
+            created.append(worker)
+            return worker
+
+        with (
+            patch("pipeline.Thread", side_effect=factory),
+            self.assertRaisesRegex(RuntimeError, "sender startup"),
+        ):
+            VideoPipeline(lambda image: b"x", lambda *args: True, 100, 10, clock=lambda: 100)
+        self.assertFalse(any(worker.is_alive() for worker in created))
 
     def test_encoder_overlaps_blocked_sender_and_keeps_latest_encoded(self):
         """@brief A blocked sender does not prevent encoding or create an unbounded queue."""

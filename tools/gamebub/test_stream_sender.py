@@ -10,6 +10,7 @@ import time
 import unittest
 import zlib
 from collections import Counter, OrderedDict
+from fractions import Fraction
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, Mock, patch
@@ -52,6 +53,50 @@ class MemoryEvents:
 
 class StreamSenderTests(unittest.TestCase):
     """@brief Exercise capture, JPEG, packetization and ingress feedback on loopback."""
+
+    def test_saved_clip_pts_repeats_and_loop_resets_are_reported(self):
+        """@brief Fresh frame IDs do not disguise repeated source timestamps in rate reports."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = SimpleNamespace(
+                target="127.0.0.1",
+                port=5533,
+                source_port=0,
+                start_frame_id=0,
+                log=Path(directory) / "log.jsonl",
+                clip=Path("synthetic"),
+                frames=6,
+                fps=20,
+                mbps=4,
+                max_age_ms=200,
+                quality=25,
+                min_quality=25,
+            )
+            frames = []
+            for pts in (0, 33, 33, 67, 0, 33):
+                frame = av.VideoFrame.from_image(Image.new("RGB", (16, 9), (30, 60, 90)))
+                frame.pts = pts
+                frame.time_base = Fraction(1, 1000)
+                frames.append(frame)
+            session = MagicMock()
+            session.lock = threading.Lock()
+            session.counts = Counter()
+            session.close.return_value = {}
+            with (
+                patch("stream_sender.Session", return_value=session),
+                patch("stream_sender.time.sleep"),
+            ):
+                run(args, iter(frames))
+            samples = [
+                call.kwargs
+                for call in session._event.call_args_list
+                if call.args[0] == "source_sample"
+            ]
+            self.assertEqual(
+                [r["source_pts_us"] for r in samples], [0, 33000, 33000, 67000, 0, 33000]
+            )
+            self.assertEqual([r["source_loop"] for r in samples], [0, 0, 0, 0, 1, 1])
+            self.assertEqual(session.counts["source_timestamp_repeats"], 1)
+            self.assertEqual(session.counts["source_samples"], 6)
 
     def test_desktop_duplication_opens_and_closes_filter_graph(self):
         """@brief The optional graph yields decoded frames and releases its device on close."""
@@ -1280,6 +1325,7 @@ class StreamSenderTests(unittest.TestCase):
                     "max_jpeg_bytes": 262144,
                     "jpeg_retry_quality_drop": 0,
                     "shift_right_px": 0,
+                    "pacing_wait": "sleep",
                 }
             ],
         )
@@ -1379,6 +1425,70 @@ class StreamSenderTests(unittest.TestCase):
         result = session.close()
         self.assertIn("disk full", result["logging"]["error"])
         self.assertGreaterEqual(result["logging"]["dropped"], 1)
+
+    def test_optional_wait_is_owned_until_sender_worker_has_stopped(self):
+        """@brief Precise waits are opt-in and cleanup cannot strand feedback/log workers."""
+        for close_failure, mode in ((False, "precise"), (True, "precise"), (False, "hybrid")):
+            with self.subTest(close_failure=close_failure, mode=mode):
+                sock = Mock()
+                sock.recv.side_effect = BlockingIOError()
+                sock.send.side_effect = len
+                waiter = MagicMock()
+                waiter.side_effect = time.sleep
+                waiter.snapshot.return_value = {"backend": "test-precise", "closed": True}
+                if close_failure:
+                    waiter.close.side_effect = OSError("timer close")
+                with patch("stream_sender.PreciseWait", return_value=waiter) as factory:
+                    session = Session(sock, io.StringIO(), 20, 4, 200, 25, 25, pacing_wait=mode)
+                factory.assert_called_once_with(spin_tail_seconds=0.0006 if mode == "hybrid" else 0)
+                image = Image.new("RGB", (720, 480), (30, 60, 90))
+                now = time.perf_counter_ns()
+                session.pipeline.submit(Frame(7, now, 123, image))
+                summary = session.close()
+                waiter.close.assert_called_once()
+                self.assertGreater(waiter.call_count, 0)
+                self.assertFalse(session.pipeline.sender.is_alive())
+                self.assertFalse(session.feedback_thread.is_alive())
+                self.assertEqual(summary["pacing_wait"]["backend"], "test-precise")
+                self.assertEqual("cleanup_error" in summary["pacing_wait"], close_failure)
+
+    def test_invalid_wait_mode_rejected_before_resources(self):
+        """@brief Reject unsupported wait selection before starting timers or threads."""
+        with patch("stream_sender.PreciseWait") as waiter, self.assertRaises(ValueError):
+            Session(None, None, 20, 4, 200, 25, 25, pacing_wait="unknown")
+        waiter.assert_not_called()
+
+    def test_wait_is_closed_if_worker_initialization_fails(self):
+        """@brief Native timer ownership does not leak when later startup fails."""
+        for close_failure in (False, True):
+            with self.subTest(close_failure=close_failure):
+                sock = Mock()
+                sock.recv.side_effect = BlockingIOError()
+                waiter = MagicMock()
+                if close_failure:
+                    waiter.close.side_effect = OSError("cleanup")
+                with (
+                    patch("stream_sender.PreciseWait", return_value=waiter),
+                    patch(
+                        "stream_sender.VideoPipeline", side_effect=RuntimeError("worker startup")
+                    ),
+                    self.assertRaisesRegex(RuntimeError, "worker startup"),
+                ):
+                    Session(sock, io.StringIO(), 20, 4, 200, 25, 25, pacing_wait="precise")
+                waiter.close.assert_called_once()
+
+    def test_default_session_cleans_log_if_feedback_worker_cannot_start(self):
+        """@brief Early ordinary-wait startup failure requires no timer or orphan thread."""
+        sock = Mock()
+        thread = Mock()
+        thread.start.side_effect = RuntimeError("feedback startup")
+        thread.is_alive.return_value = False
+        with (
+            patch("stream_sender.threading.Thread", return_value=thread),
+            self.assertRaisesRegex(RuntimeError, "feedback startup"),
+        ):
+            Session(sock, io.StringIO(), 20, 4, 200, 25, 25)
+        thread.join.assert_not_called()
 
     def test_adaptation_and_network_errors(self):
         """@brief Congestion and encoder/socket failures lower quality within bounds."""

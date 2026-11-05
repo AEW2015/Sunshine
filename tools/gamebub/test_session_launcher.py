@@ -118,11 +118,15 @@ class LauncherTests(unittest.TestCase):
             child.process.pid = 123
             child.close.return_value = {"exit_code": 0, "forced_stop": False}
 
-            def av(options, event, ready, health):
+            def av(options, event, ready, health, stop_when):
                 event("active")
                 ready()
                 child.process.poll.return_value = None
                 health()
+                self.assertEqual(options.seconds, args.seconds + 5)
+                self.assertFalse(stop_when())
+                child.process.poll.return_value = 0
+                self.assertTrue(stop_when())
                 return {"audio_worker": {"shutdown_complete": True}}
 
             with (
@@ -143,7 +147,7 @@ class LauncherTests(unittest.TestCase):
             child.process.pid = 123
             child.close.return_value = {"exit_code": 2, "forced_stop": True}
 
-            def failed(options, event, ready, health):
+            def failed(options, event, ready, health, stop_when):
                 ready()
                 child.process.poll.return_value = 2
                 health()
@@ -218,9 +222,10 @@ class LauncherTests(unittest.TestCase):
             args = self.args(Path(directory), ["--audio"])
             args.video = False
 
-            def av_only(options, event, ready, health):
+            def av_only(options, event, ready, health, stop_when):
                 ready()
                 health()
+                self.assertFalse(stop_when())
                 return {"cleanup_errors": []}
 
             with patch.object(launcher, "run_av", side_effect=av_only):
@@ -241,6 +246,243 @@ class LauncherTests(unittest.TestCase):
             with patch("sys.argv", argv), self.assertRaises(SystemExit) as stopped:
                 runpy.run_path(launcher.__file__, run_name="__main__")
             self.assertEqual(stopped.exception.code, 0)
+
+    def test_explicit_input_only_without_audio_or_injection(self):
+        """@brief Input-only selects AV directly without requesting devices or video."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--av-input"])
+            args.video = False
+
+            def av_only(options, event, ready, health, stop_when):
+                """@brief Check input-only intent at the actual owner boundary."""
+                self.assertFalse(options.audio)
+                self.assertFalse(options.gamepad)
+                self.assertEqual(options.seconds, args.seconds)
+                ready()
+                health()
+                self.assertFalse(stop_when())
+                return {"input_packets": 4}
+
+            with patch.object(launcher, "run_av", side_effect=av_only):
+                result = launcher.run(args)
+            self.assertEqual(result["av"]["input_packets"], 4)
+
+    def test_saved_clip_preview_records_identity_and_looping(self):
+        """@brief Reproducible clip runs require no artifact-only command replacement."""
+        import hashlib
+
+        with tempfile.TemporaryDirectory() as directory:
+            clip = Path(directory) / "source.webm"
+            clip.write_bytes(b"pinned-source-test")
+            args = self.args(
+                Path(directory), ["--clip", str(clip), "--loop-clip", "--av-input", "--dry-run"]
+            )
+            preview = launcher.run(args)
+            manifest = json.loads((args.output / "manifest.json").read_text())
+            self.assertEqual(manifest["clip_sha256"], hashlib.sha256(clip.read_bytes()).hexdigest())
+            self.assertEqual(manifest["clip_start_offset_seconds"], 0)
+            self.assertIn("--loop-clip", preview["video_command"])
+            self.assertNotIn("--desktop", preview["video_command"])
+            args.video = False
+            with self.assertRaisesRegex(ValueError, "requires --video"):
+                launcher.validate(args)
+            args.video = True
+            args.clip = None
+            with self.assertRaisesRegex(ValueError, "requires --clip"):
+                launcher.validate(args)
+
+    def test_relative_clip_is_resolved_before_child_changes_directory(self):
+        """@brief Root-relative source paths survive VideoProcess's tools-directory cwd."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            clip = root / "movie.webm"
+            clip.write_bytes(b"source")
+            args = self.args(root, ["--clip", "movie.webm", "--dry-run"])
+            with patch("os.getcwd", return_value=str(root)):
+                preview = launcher.run(args)
+            command = preview["video_command"]
+            self.assertEqual(command[command.index("--clip") + 1], str(clip))
+
+    def test_video_exceeding_av_grace_is_failure(self):
+        """@brief A nominal AV deadline cannot hide a still-running video process."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--av-input"])
+            child = MagicMock()
+            child.process.poll.return_value = None
+            child.process.pid = 321
+            child.close.return_value = {"exit_code": 1, "forced_stop": True}
+
+            def finite(options, event, ready, health, stop_when):
+                """@brief Simulate an exhausted finite AV grace before child completion."""
+                ready()
+                return {}
+
+            with (
+                patch.object(launcher, "run_av", side_effect=finite),
+                patch.object(launcher, "VideoProcess", return_value=child),
+                self.assertRaisesRegex(TimeoutError, "finite AV grace"),
+            ):
+                launcher.run(args)
+            child.close.assert_called_once_with(grace=0)
+
+    def test_capture_starts_before_av_and_finalizes_after_stop(self):
+        """@brief Lifecycle and exact STOP inspection gate successful capture reporting."""
+        from av_protocol import Packet
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dumpcap = root / "dumpcap.exe"
+            dumpcap.touch()
+            (root / "tshark.exe").touch()
+            args = self.args(
+                root,
+                [
+                    "--av-input",
+                    "--capture-interface",
+                    "loopback",
+                    "--capture-executable",
+                    str(dumpcap),
+                ],
+            )
+            args.video = False
+            capture = MagicMock()
+            capture.start.return_value = {"active": True}
+            capture.close.return_value = {"lifecycle_complete": True, "complete": True}
+            capture.capture_path = root / "link.pcapng"
+            calls = []
+            capture.start.side_effect = lambda: calls.append("capture") or {"active": True}
+
+            def av(options, event, ready, health, stop_when):
+                """@brief Model a full active/STOP session after capture confirmation."""
+                self.assertEqual(calls, ["capture"])
+                calls.append("av")
+                ready()
+                health()
+                event("stop_sent", wire_hex=Packet(b"MSC1", 4, 1).encode().hex())
+                return {"stop_sent": True}
+
+            with (
+                patch.object(launcher, "CaptureOwner", return_value=capture),
+                patch.object(launcher, "run_av", side_effect=av),
+                patch.object(
+                    launcher, "verify_stop", return_value={"stop_packet_verified": True}
+                ) as verify,
+            ):
+                result = launcher.run(args)
+            capture.record_stop.assert_called_once()
+            capture.close.assert_called_once()
+            verify.assert_called_once()
+            self.assertTrue(result["capture"]["complete"])
+
+    def test_capture_verification_failure_remains_in_summary(self):
+        """@brief A finalized file without verified STOP is not a complete capture."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dumpcap = root / "dumpcap.exe"
+            dumpcap.touch()
+            (root / "tshark.exe").touch()
+            args = self.args(
+                root,
+                [
+                    "--av-input",
+                    "--capture-interface",
+                    "loopback",
+                    "--capture-executable",
+                    str(dumpcap),
+                ],
+            )
+            args.video = False
+            capture = MagicMock()
+            capture.start.return_value = {"active": True}
+            capture.close.return_value = {"lifecycle_complete": True, "complete": True}
+
+            def av(options, event, ready, health, stop_when):
+                """@brief Omit STOP to leave savefile identity unverified."""
+                return {}
+
+            with (
+                patch.object(launcher, "CaptureOwner", return_value=capture),
+                patch.object(launcher, "run_av", side_effect=av),
+            ):
+                result = launcher.run(args)
+            self.assertFalse(result["capture"]["complete"])
+
+    def test_capture_failure_between_ready_and_active_prevents_video(self):
+        """@brief A capture that ended during handshake cannot precede a new video child."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dumpcap = root / "dumpcap.exe"
+            dumpcap.touch()
+            (root / "tshark.exe").touch()
+            args = self.args(
+                root,
+                [
+                    "--av-input",
+                    "--capture-interface",
+                    "loopback",
+                    "--capture-executable",
+                    str(dumpcap),
+                ],
+            )
+            capture = MagicMock()
+            capture.start.return_value = {"active": True}
+            capture.health.side_effect = RuntimeError("capture expired")
+            capture.close.return_value = {"lifecycle_complete": False}
+
+            def active(options, event, ready, health, stop_when):
+                """@brief Reach the ready callback after simulated AV handshake."""
+                ready()
+
+            with (
+                patch.object(launcher, "CaptureOwner", return_value=capture),
+                patch.object(launcher, "run_av", side_effect=active),
+                patch.object(launcher, "VideoProcess") as video,
+                self.assertRaisesRegex(RuntimeError, "capture expired"),
+            ):
+                launcher.run(args)
+            video.assert_not_called()
+            capture.close.assert_called_once()
+            summary = json.loads((args.output / "session-summary.json").read_text())
+            self.assertFalse(summary["capture"]["complete"])
+
+    def test_capture_tool_error_does_not_lose_final_session_summary(self):
+        """@brief Inspection failure remains explicit while logs/resources finish closing."""
+        from av_protocol import Packet
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dumpcap = root / "dumpcap.exe"
+            dumpcap.touch()
+            (root / "tshark.exe").touch()
+            args = self.args(
+                root,
+                [
+                    "--av-input",
+                    "--capture-interface",
+                    "loopback",
+                    "--capture-executable",
+                    str(dumpcap),
+                ],
+            )
+            args.video = False
+            capture = MagicMock()
+            capture.start.return_value = {"active": True}
+            capture.close.return_value = {"lifecycle_complete": True}
+
+            def active(options, event, ready, health, stop_when):
+                """@brief Emit exact STOP bytes before modeled inspection failure."""
+                event("stop_sent", wire_hex=Packet(b"MSC1", 4, 1).encode().hex())
+                return {}
+
+            with (
+                patch.object(launcher, "CaptureOwner", return_value=capture),
+                patch.object(launcher, "run_av", side_effect=active),
+                patch.object(launcher, "verify_stop", side_effect=OSError("tshark failed")),
+            ):
+                summary = launcher.run(args)
+            self.assertEqual(summary["logging"]["error"], None)
+            self.assertFalse(summary["capture"]["complete"])
+            self.assertIn("tshark failed", summary["capture"]["verification_error"])
 
 
 if __name__ == "__main__":
