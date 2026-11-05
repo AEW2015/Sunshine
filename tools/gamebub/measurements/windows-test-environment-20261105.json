@@ -1,0 +1,21 @@
+{
+  "recorded_utc": "2026-11-05T11:50:09.7136858Z",
+  "cpu": [
+    {
+      "Name": "Intel(R) Core(TM) i7-10875H CPU @ 2.30GHz",
+      "NumberOfCores": 8,
+      "NumberOfLogicalProcessors": 16
+    }
+  ],
+  "os": {
+    "Caption": "Microsoft Windows 10 Pro",
+    "Version": "10.0.19045",
+    "BuildNumber": "19045"
+  },
+  "lab_python": "3.11.9",
+  "pyav": "18.1.0",
+  "pillow": "13.0.0",
+  "libjpeg_turbo": "3.2.0",
+  "ucrt64_gcc": "16.2.0 MSYS2 Rev6",
+  "scope": "Local queried environment; does not promise identical performance on other hosts"
+}

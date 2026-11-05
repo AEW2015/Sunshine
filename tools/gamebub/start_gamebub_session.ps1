@@ -23,6 +23,8 @@ param(
     [ValidateRange(1,30)][int]$FPS = 5,
     [ValidateSet('sleep','precise','hybrid')][string]$PacingWait = 'sleep',
     [ValidateRange(0,1000)][int]$PacingSpinUs = 600,
+    [ValidateRange(0,65535)][int]$VideoSourcePort = 0,
+    [ValidateRange(0,65535)][int]$AvSourcePort = 0,
     [string]$CaptureInterface,
     [string]$CaptureExecutable = 'C:\Program Files\Wireshark\dumpcap.exe',
     [ValidateRange(1,95)][int]$Quality = 25,
@@ -44,6 +46,8 @@ if ($Gamepad) {$sessionArgs += '--gamepad'}
 if ($AvInput) {$sessionArgs += '--av-input'}
 if ($PacingWait -ne 'sleep') {$sessionArgs += @('--pacing-wait',$PacingWait)}
 if ($PacingSpinUs -ne 600) {$sessionArgs += @('--pacing-spin-us',$PacingSpinUs)}
+if ($VideoSourcePort) {$sessionArgs += @('--video-source-port',$VideoSourcePort)}
+if ($AvSourcePort) {$sessionArgs += @('--av-source-port',$AvSourcePort)}
 if ($CaptureInterface) {$sessionArgs += @('--capture-interface',$CaptureInterface,'--capture-executable',$CaptureExecutable)}
 if ($DryRun) {$sessionArgs += '--dry-run'}
 & $sessionPython @sessionArgs

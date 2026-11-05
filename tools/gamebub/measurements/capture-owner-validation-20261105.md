@@ -35,6 +35,17 @@ The run summary is
 Both loopback peers report that no hardware was contacted. The pcapng and
 native stderr remain ignored artifacts in that same run directory.
 
+## Invalid-interface preflight failure
+
+The isolated failure run at
+[`capture-interface-name-failure-20261105`](../artifacts/capture-interface-name-failure-20261105/session-summary.json)
+selected `invalid-gamebub-interface`. Dumpcap exited with code 1 before
+readiness; AV/video never started, no capture file was created, and no capture
+statistics were available. The result marks statistics unknown and lifecycle
+incomplete. This confirms that a bad interface aborts before media startup; it
+does not provide a zero-drop result. The standalone launcher left the installed
+Sunshine service untouched.
+
 ## Lifecycle and verification scope
 
 These runs show that capture was active before media, remained active through

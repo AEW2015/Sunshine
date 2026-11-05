@@ -31,13 +31,13 @@ Sunshine service and receiver configuration were not changed.
 
 ## Validation evidence
 
-- Native: **168 GameBub tests across 23 suites passed**, including pending-ACK,
+- Native: **173 GameBub tests across 24 suites passed**, including pending-ACK,
   sequence and ownership tests. The original full **20 encoder golden cases**
   still match, including ten mandatory cases and thirteen policy attempts.
-- Last full Python run: **544 tests, five optional skips**, with native CLI,
+- Last full Python run: **548 tests, five optional skips**, with native CLI,
   body/encoder, wire/reset and HD22 fixture integrations enabled. Its CLI fixture
-  executable was the immutable pre-budget snapshot to avoid a concurrent link;
-  latest native budgeted-key checks passed separately as described below.
+  executable was the immutable sequence-validated snapshot to avoid a concurrent
+  link. Latest native budgeted-key and sequence checks passed separately.
 - Explicit `--clip-selection native` requires matching nominal source/sender
   rates and checked rational CFR cadence. It avoids the legacy sampler's
   repeated source frames at rounded PTS boundaries. Legacy selection remains
@@ -68,6 +68,7 @@ method, raw artifact locations, scope and CPU-accounting limitations.
 | Native decoded source, 30 fps / 8 Mbps / Q25, 600 us tail | 900 / 900 | 0 | 0 |
 | Native source, 30 fps / 8 Mbps / Q25, 400 us + input-only AV, ten minutes | 17,997 / 18,000 | 3 | 0 |
 | Native source, same video settings + full-rate synthetic audio, five minutes | 8,999 / 9,000 | 1 | 0 |
+| Same native video/audio settings, 30 minutes | 53,998 / 54,000 | 2 | 0 |
 
 The five-minute run measured 19.73 sent fps including drain, zero input
 timeouts/pending ACKs/backend failures, and clean STOP. Measured sender-thread
@@ -90,6 +91,15 @@ queued at STOP and no gaps, stale drops or queue evictions. These use synthetic
 PCM and software peers, with no DAC, receiver-buffer or hardware playback claim.
 The earlier legacy-sampler combined run is explicitly disqualified as unique
 30 fps motion evidence because it repeated 3,000 source timestamps in 9,000 slots.
+
+The [30-minute combined study](measurements/localhost-av-native-30fps-30m-20261105.md)
+measured 29.994 sent fps. All 172,184 sent audio blocks decoded locally; three
+publisher evictions and two queued blocks account for the remaining five of
+172,189 published blocks. The cause of those queue stalls remains unknown.
+Bounded eviction metadata was added afterward. Its
+[controlled 121 ms stall test](measurements/audio-eviction-trace-validation-20261105.md)
+matched all eight evicted sequence IDs to peer gaps; its unfaulted five-minute
+check had no audio gaps. The trace retains no PCM and changes no queue policy.
 
 ## Custom-codec finding
 
@@ -114,18 +124,21 @@ and tags only for proven nonfits. Quiet paired means fell about 29.8%, from
 45.5 to 31.95 ms including independent validation. Accepted-only means remained
 about 35 ms, and 26/60 frames still exceeded the cap. This is not a complete
 30 fps custom streaming result. The default strategy remains selected.
+The [same-process study](measurements/cp23-same-process-sequence-20261105.md)
+checked 7,200 rows across four runs of 1,800 independent fixtures. Output hashes,
+admission and source retirement all matched. Inclusive wall time improved about
+27.3%; observed live OS peak working sets were around 32 MB, including bounded
+metadata. These are component measurements, not stateful streaming or hardware.
 No CP25 selection, custom network endpoint, decoder image or physical 30 fps
 qualification has been introduced.
 
 ## Remaining overnight work
 
-1. Finish the active 30-minute native 30 fps/full-rate synthetic AV soak with
-   memory sampling. Packet timing is explicitly off to preserve finite logs;
-   short runs retain packet timing. No hardware sender is active in this work.
-2. Preserve native conformance and distinguish fresh-process measurements from
-   sustained same-process custom-codec work. Keep real audio/hardware gates separate.
-4. Rerun complete regression/format/coverage checks, push the candidate and
-   publish a short morning test recipe and remaining hardware gates.
+1. Finish the final repeat of native 30 fps/full-rate synthetic AV with eviction
+   tracing and memory sampling. Packet timing is explicitly off to preserve
+   finite logs; short runs retain it. No hardware sender is active in this work.
+2. Finish the morning handoff and preserve the exact remaining hardware gates.
+3. Publish final validation and the candidate without changing the installation.
 
 The morning JPEG comparison should use one fixed receiver build and the same
 new launcher for both control/candidate, changing only the selected wait.
@@ -141,4 +154,7 @@ viewport and full 720×480 canvas. Neither study establishes FPGA playback.
 The required `uv run --locked lb-update-clang-format` completed successfully
 after a temporary process-only traversal filter excluded ignored lab artifacts
 and the nested venv. All 276 source inputs were preserved and checked; it made
-zero content changes. The installed service remains running and was not replaced.
+zero content changes. A second pass covered 277 inputs after the sequence
+helper, also with zero changes. The installed service remains running and was
+not replaced. The [test environment](measurements/windows-test-environment-20261105.json)
+records the queried OS, CPU, compiler and multimedia library versions.

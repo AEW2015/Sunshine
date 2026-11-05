@@ -1,5 +1,32 @@
 ﻿# GameBub v20 first milestone
 
+## November 5 additive checkpoints
+
+The original pinned v20 milestones below remain historical scopes, not a claim
+of a complete custom hardware path. The selected first composed fixture is
+CP23/HC22/HD22 pinned to MoonBub `4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189`.
+The standalone executable keeps its existing name and build directory.
+
+- [Independent CP23 encoder](measurements/cp23-independent-encoder-20261105.md):
+  exact key/four-LEGACY-HUD packets and reconstructed ACKs; no P/HD22 state.
+- [Budgeted keys](measurements/cp23-budgeted-key-20261105.md): opt-in private
+  preparation skips reconstruction only for proven oversized candidates.
+- [Same-process replay](measurements/cp23-same-process-sequence-20261105.md):
+  bounded input, explicit repetition, exact output checks and external resources.
+- [Morning hardware handoff](MOONBUB-MORNING-HANDOFF-20261105.md): use existing
+  JPEG/AV first; custom decoder, loader and live endpoint remain separate gates.
+
+The existing isolated native build also provides:
+
+```powershell
+& C:/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64 -c './cmake-build-gamebub-v20/gamebub-v20-conformance.exe --composed-sequence tools/gamebub/artifacts/encoder-sequence-20261105/xonotic-native-60/manifest.json 1800 --repeat --budgeted-keys'
+```
+
+Export that saved-RGB manifest first using the linked sequence instructions;
+ignored local artifacts are not bundled in a fresh checkout. The command
+repeats 60 sources explicitly and constructs fresh independent codec fixtures,
+not a stateful stream or transport epoch reset. It emits a bounded JSON report.
+
 ## Goal and boundary
 
 The first milestone is offline native conformance for the custom v20 codec, delivered as a Windows `gamebub-v20-conformance` executable and fixture runner, alongside one consolidated launcher for the existing JPEG AV path. It does not add a live custom-codec endpoint or change Sunshine/Moonlight negotiation. Keep the installed JPEG service and ordinary streaming baseline intact.

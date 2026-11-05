@@ -12,10 +12,10 @@ import live_audio
 class AudioTests(unittest.TestCase):
     """@brief Exercise queue ownership, late callbacks and explicit native cleanup limits."""
 
-    def audio(self):
+    def audio(self, clock=None):
         """@brief Return a prepared worker with fake native constants only."""
         backend = SimpleNamespace(paContinue=1, paAbort=2, paComplete=3, paInt16=8)
-        audio = live_audio.LoopbackAudio(backend=backend, clock=lambda: 100)
+        audio = live_audio.LoopbackAudio(backend=backend, clock=clock or (lambda: 100))
         audio.channels = 2
         return audio
 
@@ -64,6 +64,109 @@ class AudioTests(unittest.TestCase):
         with patch.object(live_audio.threading, "Thread") as thread:
             self.audio().start()
             thread.return_value.start.assert_called_once()
+
+    def test_eviction_trace_records_metadata_and_wraps_sequence_ids(self):
+        """@brief Trace only actual evictions with old/new IDs and capture timestamps."""
+        clock = MagicMock(return_value=1234)
+        audio = self.audio(clock=clock)
+        audio.counts["encoded"] = 0xFFFFFFFC
+        with patch.object(live_audio, "validate_block"):
+            for sequence in range(4):
+                audio.publish(b"encoded-payload", 500 + sequence)
+            clock.assert_not_called()
+            audio.publish(b"encoded-payload", 504)
+        summary = audio.close()
+        self.assertIsNone(audio.error)
+        self.assertEqual(summary["queue_drops"], 1)
+        self.assertEqual(
+            summary["eviction_trace"],
+            (
+                {
+                    "evicted_sequence": 0xFFFFFFFC,
+                    "evicted_capture_ns": 500,
+                    "new_sequence": 0,
+                    "publish_ns": 1234,
+                    "shutdown": False,
+                    "clock_error": None,
+                },
+            ),
+        )
+        self.assertEqual(summary["eviction_trace_overwritten"], 0)
+        self.assertNotIn("block", summary["eviction_trace"][0])
+        self.assertNotIn("payload", summary["eviction_trace"][0])
+        clock.assert_called_once_with()
+
+    def test_eviction_clock_failure_is_telemetry_only_and_still_publishes(self):
+        """@brief A telemetry-clock failure preserves queue-drop and new-block behavior."""
+        clock = MagicMock()
+        audio = self.audio(clock=clock)
+        with patch.object(live_audio, "validate_block"):
+            for sequence in range(4):
+                audio.publish(b"encoded-payload", 100 + sequence)
+            clock.assert_not_called()
+            clock.side_effect = OSError("telemetry clock unavailable")
+            audio.publish(b"new-block", 104)
+        summary = audio.close()
+        self.assertIsNone(audio.error)
+        self.assertEqual(summary["queue_drops"], 1)
+        self.assertEqual(summary["trace_clock_errors"], 1)
+        self.assertEqual(
+            summary["eviction_trace"],
+            (
+                {
+                    "evicted_sequence": 0,
+                    "evicted_capture_ns": 100,
+                    "new_sequence": 4,
+                    "publish_ns": None,
+                    "shutdown": False,
+                    "clock_error": "OSError",
+                },
+            ),
+        )
+        self.assertEqual([audio.blocks.get_nowait()[0] for _ in range(4)], [1, 2, 3, 4])
+
+    def test_eviction_trace_is_bounded_and_close_returns_a_stable_snapshot(self):
+        """@brief Retain only 32 metadata records and count older records as overwritten."""
+        audio = self.audio(clock=iter(range(1000, 1100)).__next__)
+        with patch.object(live_audio, "validate_block"):
+            for sequence in range(40):
+                audio.publish(b"payload-not-retained", sequence)
+        summary = audio.close()
+        self.assertEqual(summary["queue_drops"], 36)
+        self.assertEqual(len(summary["eviction_trace"]), 32)
+        self.assertEqual(summary["eviction_trace_overwritten"], 4)
+        self.assertEqual(
+            [record["evicted_sequence"] for record in summary["eviction_trace"]],
+            list(range(4, 36)),
+        )
+        self.assertTrue(all("payload" not in record for record in summary["eviction_trace"]))
+        snapshot = summary["eviction_trace"]
+        with patch.object(live_audio, "validate_block"):
+            audio.publish(b"later-payload", 40)
+        self.assertEqual(len(snapshot), 32)
+        self.assertEqual(snapshot[0]["evicted_sequence"], 4)
+        self.assertEqual(summary["queue_drops"], 36)
+
+    def test_eviction_trace_marks_shutdown_and_empty_race_adds_no_record(self):
+        """@brief Label shutdown-time drops and ignore a full-check/get-empty race."""
+        audio = self.audio()
+        with patch.object(live_audio, "validate_block"):
+            for sequence in range(4):
+                audio.publish(b"payload", sequence)
+            audio.stop.set()
+            audio.publish(b"payload", 4)
+        self.assertTrue(audio.close()["eviction_trace"][0]["shutdown"])
+
+        raced = self.audio()
+        raced.blocks = MagicMock()
+        raced.blocks.full.return_value = True
+        raced.blocks.get_nowait.side_effect = queue.Empty
+        with patch.object(live_audio, "validate_block"):
+            raced.publish(b"payload", 1)
+        summary = raced.close()
+        self.assertEqual(summary["queue_drops"], 0)
+        self.assertEqual(summary["eviction_trace"], ())
+        self.assertEqual(summary["eviction_trace_overwritten"], 0)
 
     def test_worker_product_encoding_and_tail(self):
         """@brief The worker uses AudioEncoder rather than FFmpeg ADPCM and reports its tail."""

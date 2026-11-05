@@ -75,6 +75,9 @@ source IPv4 address. The standalone sender keeps its wildcard default unless
 `--bind` is selected. Video logs record the actual local and peer endpoints;
 the capture filter must match those addresses. This avoids silently choosing
 another source interface for video on a host with multiple adapters.
+`-VideoSourcePort` and `-AvSourcePort` expose the existing source-port options
+in PowerShell. Their defaults remain ephemeral; distinct free nonzero ports
+can be reused across a matched comparison without retaining old session cookies.
 Route preflight binds that source before connecting its probe, so a valid
 explicit bind need not match Windows' wildcard default. Lost log records or
 log I/O errors produce a nonzero CLI result; they describe incomplete evidence

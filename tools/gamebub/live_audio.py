@@ -8,6 +8,7 @@ import array
 import queue
 import threading
 import time
+from collections import deque
 
 from audio_codec import AudioEncoder, validate_block
 
@@ -21,6 +22,8 @@ class LoopbackAudio:
             raise ValueError("Gain must be within[0,1]")
         self.gain, self.backend, self.clock = gain, backend, clock
         self.pcm, self.blocks = queue.Queue(8), queue.Queue(4)
+        self.eviction_trace = deque(maxlen=32)
+        self.eviction_trace_lock = threading.Lock()
         self.stop = threading.Event()
         self.thread = None
         self.error = None
@@ -30,6 +33,7 @@ class LoopbackAudio:
             "encoded": 0,
             "pcm_drops": 0,
             "queue_drops": 0,
+            "trace_clock_errors": 0,
             "capture_errors": 0,
             "captured_frames": 0,
             "encoded_source_frames": 0,
@@ -66,17 +70,41 @@ class LoopbackAudio:
         return None, self.backend.paContinue
 
     def publish(self, block, stamp):
-        """@brief Allocate an independent sequence before evicting the oldest block."""
+        """@brief Allocate sequence and record metadata for each actual oldest-block eviction.
+
+        @param block Encoded ADPCM payload, kept only in the bounded send queue.
+        @param stamp Monotonic capture time for this newly published block.
+        @note A trace-clock failure is counted separately and does not block publication.
+        """
         validate_block(block)
         sequence = self.counts["encoded"] & 0xFFFFFFFF
         self.counts["encoded"] += 1
         if self.blocks.full():
             try:
-                self.blocks.get_nowait()
+                evicted_sequence, evicted_capture_ns, _evicted_block = self.blocks.get_nowait()
             except queue.Empty:
                 pass
             else:
-                self.counts["queue_drops"] += 1
+                try:
+                    publish_ns = self.clock()
+                    clock_error = None
+                except Exception as error:  # noqa: BLE001 - telemetry cannot fail audio publication
+                    publish_ns = None
+                    clock_error = type(error).__name__
+                shutdown = self.stop.is_set()
+                with self.eviction_trace_lock:
+                    self.counts["queue_drops"] += 1
+                    self.counts["trace_clock_errors"] += int(clock_error is not None)
+                    self.eviction_trace.append(
+                        {
+                            "evicted_sequence": evicted_sequence,
+                            "evicted_capture_ns": evicted_capture_ns,
+                            "new_sequence": sequence,
+                            "publish_ns": publish_ns,
+                            "shutdown": shutdown,
+                            "clock_error": clock_error,
+                        }
+                    )
         self.blocks.put_nowait((sequence, stamp, block))
 
     def start(self):
@@ -136,15 +164,25 @@ class LoopbackAudio:
             self.stop.set()
 
     def close(self, timeout=2):
-        """@brief Bound join; return incomplete shutdown explicitly if native cleanup hangs."""
+        """@brief Bound join and snapshot counts plus bounded eviction metadata.
+
+        @param timeout Maximum worker join time in seconds.
+        @return Counts, detached eviction trace snapshot, queued work and shutdown status.
+        """
         self.stop.set()
         if self.thread is not None:
             self.thread.join(timeout)
+        with self.eviction_trace_lock:
+            counts = dict(self.counts)
+            eviction_trace = tuple(dict(record) for record in self.eviction_trace)
+            eviction_trace_overwritten = max(counts["queue_drops"] - len(eviction_trace), 0)
         with self.pcm.mutex:
             queued_pcm_blocks = len(self.pcm.queue)
             queued_pcm_bytes = sum(len(raw) for raw, _ in self.pcm.queue)
         return {
-            **self.counts,
+            **counts,
+            "eviction_trace": eviction_trace,
+            "eviction_trace_overwritten": eviction_trace_overwritten,
             "queued_unsent": self.blocks.qsize(),
             "queued_pcm_blocks": queued_pcm_blocks,
             "queued_pcm_bytes": queued_pcm_bytes,

@@ -20,6 +20,7 @@
 #include "tools/gamebub/native/body_case.h"
 #include "tools/gamebub/native/composed_encoder.h"
 #include "tools/gamebub/native/composed_encoder_case.h"
+#include "tools/gamebub/native/composed_sequence.h"
 #include "tools/gamebub/native/transport_case.h"
 
 namespace {
@@ -29,6 +30,7 @@ namespace {
   namespace bc = gamebub::v20::body_case;
   namespace candidate = gamebub::v20::candidate;
   namespace inner = gamebub::v20::encoder;
+  namespace replay = gamebub::v24::composed_sequence;
 
   std::uint64_t fake_ticks {};  ///< Test-only deterministic clock state, never used by encoder defaults.
 
@@ -88,6 +90,43 @@ namespace {
     fill(22, 82, 182, 96, {230, 210, 11});
     return std::make_shared<const candidate::Source>(std::span<const std::uint8_t>(rgb));
   }
+
+  /** @brief Own two known temporary source files and a finite native-frame manifest. */
+  struct SavedSequence {
+    std::filesystem::path root;  ///< Unique directory, removed nonrecursively after known files.
+    bc::Json metadata;  ///< Mutable declarations for malformed-input regressions.
+
+    /** @brief Write original synthetic RGB8 with exact source hashes and distinct decoded IDs. */
+    SavedSequence() {
+      root = std::filesystem::temp_directory_path() / ("gamebub-composed-sequence-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+      std::filesystem::create_directory(root);
+      const auto source = uniform();
+      metadata = {{"schema", gamebub::v20::sequence::schema}, {"label", "synthetic-two-native-sources"}, {"geometry", {{"width", 720}, {"height", 480}, {"channels", 3}}}, {"source", {{"kind", "saved_clip"}, {"file_name", "synthetic-test-only.webm"}, {"bytes", 123}, {"sha256", std::string(64, 'a')}, {"requested_offset_us", 0}, {"selection_mode", "native-decoded"}, {"native_rate", {{"numerator", 30}, {"denominator", 1}}}, {"sample_fps", nullptr}, {"first_sample_index", nullptr}, {"first_decoded_id", 5}, {"pts_origin_us", 7000}, {"resampling_policy", gamebub::v20::sequence::native_policy}, {"canvas_policy", gamebub::v20::sequence::canvas_policy}, {"loop", false}, {"repeated_source_timestamps", false}}}, {"frames", bc::Json::array()}};
+      for (unsigned index = 0; index < 2; ++index) {
+        std::vector<std::uint8_t> pixels(source->rgb8().begin(), source->rgb8().end());
+        pixels[0] += index;
+        const auto name = "frame" + std::to_string(index) + ".rgb";
+        std::ofstream file(root / name, std::ios::binary);
+        file.write(reinterpret_cast<const char *>(pixels.data()), pixels.size());
+        metadata["frames"].push_back({{"id", 5 + index}, {"pts_us", 7000 + index * 33000}, {"relative_pts_us", index * 33000}, {"rgb", {{"path", name}, {"bytes", pixels.size()}, {"sha256", bc::digest(pixels)}, {"dtype", "|u1"}, {"shape", {480, 720, 3}}}}});
+      }
+      save();
+    }
+
+    /** @brief Rewrite only the owned manifest during input-validation tests. */
+    void save() const {
+      std::ofstream(root / "manifest.json") << metadata;
+    }
+
+    /** @brief Release only known owned files, never recursively traverse a computed path. */
+    ~SavedSequence() {
+      std::error_code ignored;
+      for (const auto name : {"frame0.rgb", "frame1.rgb", "manifest.json"}) {
+        std::filesystem::remove(root / name, ignored);
+      }
+      std::filesystem::remove(root, ignored);
+    }
+  };
 }  // namespace
 
 TEST(GamebubComposedEncoder, ReproducesAllTwelvePublishedStaticInstancesExactly) {
@@ -572,4 +611,128 @@ TEST(GamebubKeyBudget, CacheIdentityFailureReleasesOnlyItsPrivateFrame) {
     EXPECT_EQ(builder.analysis_builds(), 1);
     EXPECT_EQ(source.use_count(), count_before + (changed == 0 ? 0 : 1));
   }
+}
+
+TEST(GamebubComposedSequence, ExplicitOptionsAreBoundedUniqueAndOffByDefault) {
+  const std::array<std::string_view, 1> one {"1"};
+  const auto defaults = replay::parse(one);
+  EXPECT_EQ(defaults.iterations, 1);
+  EXPECT_FALSE(defaults.repeat);
+  EXPECT_FALSE(defaults.budgeted_keys);
+  EXPECT_FALSE(defaults.profile_substages);
+  const std::array<std::string_view, 4> enabled {"1800", "--repeat", "--budgeted-keys", "--profile-substages"};
+  const auto options = replay::parse(enabled);
+  EXPECT_EQ(options.iterations, 1800);
+  EXPECT_TRUE(options.repeat && options.budgeted_keys && options.profile_substages);
+  EXPECT_THROW(replay::parse({}), std::invalid_argument);
+  for (const auto text : {"", "0", "1801", "-1", "1x", "999999999999999999999"}) {
+    const std::array<std::string_view, 1> invalid {text};
+    EXPECT_THROW(replay::parse(invalid), std::invalid_argument);
+  }
+  for (const auto flag : {"--repeat", "--budgeted-keys", "--profile-substages"}) {
+    const std::array<std::string_view, 3> duplicate {"1", flag, flag};
+    EXPECT_THROW(replay::parse(duplicate), std::invalid_argument);
+  }
+  const std::array<std::string_view, 2> unknown {"1", "--implicit-loop"};
+  EXPECT_THROW(replay::parse(unknown), std::invalid_argument);
+  const std::array<std::string_view, 5> excessive {"1", "--repeat", "--repeat", "--repeat", "--repeat"};
+  EXPECT_THROW(replay::parse(excessive), std::invalid_argument);
+  EXPECT_THROW(replay::run("not-read.json", {0}), std::invalid_argument);
+  EXPECT_THROW(replay::run("not-read.json", {1801}), std::invalid_argument);
+}
+
+TEST(GamebubComposedSequence, SameProcessKnownSourcesKeepExactHashesRetireAndChargeCosts) {
+  SavedSequence sources;
+  const auto result = replay::run(sources.root / "manifest.json", {2});
+  EXPECT_EQ(result.at("completed_iterations"), 2);
+  EXPECT_EQ(result.at("accepted_frames"), 2);
+  EXPECT_EQ(result.at("cycles"), 1);
+  EXPECT_FALSE(result.at("repeat_occurred").get<bool>());
+  EXPECT_EQ(result.at("source_snapshots_retired"), 2);
+  EXPECT_FALSE(result.at("source_pixels_retained_after_iteration").get<bool>());
+  EXPECT_EQ(result.at("maximum_active_source_snapshots"), 1);
+  EXPECT_EQ(result.at("frames")[0].at("packet_sha256"), "a44fcd4a62027dc9c609c4b64a68145ee9f915880a7ec312ade811525eceb24b");
+  EXPECT_EQ(result.at("frames")[0].at("ack_sha256"), "d9372f51eb797f5c369d359ca700c6ae36c6a7a499bf600ef78018696f5fa530");
+  EXPECT_EQ(result.at("frames")[0].at("source_id"), 5);
+  EXPECT_EQ(result.at("frames")[1].at("source_id"), 6);
+  EXPECT_EQ(result.at("timings_ns").at("encode").at("count"), 2);
+  EXPECT_EQ(result.at("timings_ns").at("source_prepare").at("count"), 2);
+  EXPECT_GT(result.at("metadata_validation_ns").get<std::uint64_t>(), 0);
+  for (const auto &row : result.at("frames")) {
+    EXPECT_TRUE(row.at("source_snapshot_retired").get<bool>());
+    EXPECT_EQ(row.at("codec_frame"), 0);
+    EXPECT_EQ(row.at("hud_generation"), 1);
+    EXPECT_GT(row.at("source_file_read_ns").get<std::uint64_t>(), 0);
+    EXPECT_GT(row.at("source_hash_ns").get<std::uint64_t>(), 0);
+  }
+  const auto budgeted = replay::run(sources.root / "manifest.json", {2, false, true, true});
+  for (unsigned i = 0; i < 2; ++i) {
+    EXPECT_EQ(result.at("frames")[i].at("packet_sha256"), budgeted.at("frames")[i].at("packet_sha256"));
+    EXPECT_EQ(result.at("frames")[i].at("ack_sha256"), budgeted.at("frames")[i].at("ack_sha256"));
+    EXPECT_FALSE(budgeted.at("frames")[i].at("inner_profile").is_null());
+  }
+}
+
+TEST(GamebubComposedSequence, RepetitionRequiresPermissionAndKeepsOriginalIdentitySeparate) {
+  SavedSequence sources;
+  EXPECT_THROW(replay::run(sources.root / "manifest.json", {5}), std::invalid_argument);
+  const auto result = replay::run(sources.root / "manifest.json", {5, true, true});
+  EXPECT_EQ(result.at("cycles"), 3);
+  EXPECT_EQ(result.at("unique_sources_loaded"), 2);
+  EXPECT_EQ(result.at("retained_metadata_rows"), 5);
+  EXPECT_TRUE(result.at("repeat_requested").get<bool>());
+  EXPECT_TRUE(result.at("repeat_occurred").get<bool>());
+  for (unsigned i = 0; i < 5; ++i) {
+    const auto &row = result.at("frames")[i];
+    EXPECT_EQ(row.at("source_id"), 5 + i % 2);
+    EXPECT_EQ(row.at("source_pts_us"), 7000 + (i % 2) * 33000);
+    EXPECT_EQ(row.at("cycle"), i / 2);
+    EXPECT_EQ(row.at("codec_epoch"), i + 1);
+    EXPECT_TRUE(row.at("source_snapshot_retired").get<bool>());
+  }
+  EXPECT_EQ(result.at("source_snapshots_retired"), 5);
+  EXPECT_FALSE(result.at("stateful_stream").get<bool>());
+  EXPECT_FALSE(result.at("transport_epochs_exercised").get<bool>());
+}
+
+TEST(GamebubComposedSequence, LateHashAndPathFailuresDoNotPoisonTheNextIndependentRun) {
+  SavedSequence sources;
+  const auto good_hash = sources.metadata["frames"][1]["rgb"]["sha256"];
+  sources.metadata["frames"][1]["rgb"]["sha256"] = std::string(64, '0');
+  sources.save();
+  EXPECT_THROW(replay::run(sources.root / "manifest.json", {2}), std::invalid_argument);
+  EXPECT_EQ(replay::run(sources.root / "manifest.json", {1}).at("source_snapshots_retired"), 1);
+  sources.metadata["frames"][1]["rgb"]["sha256"] = good_hash;
+  sources.metadata["frames"][1]["rgb"]["path"] = "../escape.rgb";
+  sources.save();
+  EXPECT_THROW(replay::run(sources.root / "manifest.json", {1}), std::invalid_argument);
+  sources.metadata["frames"][1]["rgb"]["path"] = "frame1.rgb";
+  sources.save();
+  EXPECT_EQ(replay::run(sources.root / "manifest.json", {2}).at("source_snapshots_retired"), 2);
+}
+
+TEST(GamebubComposedSequence, RejectedEntropyStillReportsEveryPaidCandidateAndRetiresSource) {
+  SavedSequence sources;
+  std::vector<std::uint8_t> noise(720 * 480 * 3);
+  std::uint32_t generator = 0x12345678;
+  for (auto &value : noise) {
+    generator ^= generator << 13;
+    generator ^= generator >> 17;
+    generator ^= generator << 5;
+    value = static_cast<std::uint8_t>(generator);
+  }
+  {
+    std::ofstream file(sources.root / "frame0.rgb", std::ios::binary);
+    file.write(reinterpret_cast<const char *>(noise.data()), noise.size());
+  }
+  sources.metadata["frames"][0]["rgb"]["sha256"] = bc::digest(noise);
+  sources.save();
+  const auto result = replay::run(sources.root / "manifest.json", {1, false, true, true});
+  EXPECT_EQ(result.at("accepted_frames"), 0);
+  EXPECT_EQ(result.at("rejected_frames"), 1);
+  EXPECT_EQ(result.at("candidate_attempts"), 4);
+  EXPECT_EQ(result.at("skipped_reconstructions"), 4);
+  EXPECT_TRUE(result.at("frames")[0].at("packet_sha256").is_null());
+  EXPECT_TRUE(result.at("frames")[0].at("ack_sha256").is_null());
+  EXPECT_TRUE(result.at("frames")[0].at("source_snapshot_retired").get<bool>());
 }

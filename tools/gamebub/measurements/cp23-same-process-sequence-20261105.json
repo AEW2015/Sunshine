@@ -1,0 +1,362 @@
+{
+  "scope": "same_process_fresh_independent_cp23_explicit_repeat_abba",
+  "executable_sha256": "15a08cc10367e9f26531b8f6cf1503f97217ca3f8bf56bc9497087f8dcbf22af",
+  "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "source_provenance": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "runs": [
+    {
+      "name": "legacy-A1",
+      "budgeted_keys": false,
+      "completed_at_utc": "2026-11-05T11:37:43.507684+00:00",
+      "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+      "accepted": 1020,
+      "rejected": 780,
+      "candidate_attempts": 5640,
+      "retired_sources": 1800,
+      "cycles": 30,
+      "metadata_rows": 1800,
+      "timings_ns": {
+        "encode": {
+          "count": 1800,
+          "max": 85817200,
+          "p50": 45259200,
+          "p95": 56251600,
+          "p99": 63841600,
+          "total": 78972035300
+        },
+        "iteration_wall": {
+          "count": 1800,
+          "max": 91854500,
+          "p50": 48532900,
+          "p95": 60201200,
+          "p99": 67982200,
+          "total": 84984398700
+        },
+        "output_hash": {
+          "count": 1800,
+          "max": 312200,
+          "p50": 82800,
+          "p95": 109500,
+          "p99": 144100,
+          "total": 99251000
+        },
+        "source_prepare": {
+          "count": 1800,
+          "max": 6772300,
+          "p50": 3012800,
+          "p95": 3822100,
+          "p99": 5055400,
+          "total": 5689326000
+        }
+      },
+      "metadata_validation_ns": 1421454100,
+      "benchmark_wall_ns": 86413669100,
+      "external_resources": {
+        "scope": "external owned-process live samples every0.5s; post-exit RSS excluded; raw native resource-measured fields unchanged",
+        "samples": 173,
+        "sample_errors": 0,
+        "owner_wall_seconds": 86.63645320013165,
+        "final_process_times": {
+          "user_cpu_seconds": 80.140625,
+          "kernel_cpu_seconds": 6.25,
+          "total_cpu_seconds": 86.390625,
+          "os_process_lifetime_seconds": 86.4640376,
+          "scope": "GetProcessTimes on still-owned Popen handle after process exit; includes startup/JSON/stdout/shutdown"
+        },
+        "sampled_max_working_set_bytes": 31387648,
+        "sampled_max_private_bytes": 26071040,
+        "os_peak_working_set_bytes": 31555584,
+        "os_peak_pagefile_usage_bytes": 26492928,
+        "peak_pagefile_is_not_private_bytes": true,
+        "watchdog_seconds": 600,
+        "sample_bound": 1200
+      }
+    },
+    {
+      "name": "budgeted-B1",
+      "budgeted_keys": true,
+      "completed_at_utc": "2026-11-05T11:38:47.166440+00:00",
+      "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+      "accepted": 1020,
+      "rejected": 780,
+      "candidate_attempts": 5640,
+      "retired_sources": 1800,
+      "cycles": 30,
+      "metadata_rows": 1800,
+      "timings_ns": {
+        "encode": {
+          "count": 1800,
+          "max": 58461100,
+          "p50": 29297900,
+          "p95": 40381100,
+          "p99": 44119100,
+          "total": 55683613500
+        },
+        "iteration_wall": {
+          "count": 1800,
+          "max": 62803800,
+          "p50": 32773700,
+          "p95": 43796800,
+          "p99": 48002200,
+          "total": 61817454300
+        },
+        "output_hash": {
+          "count": 1800,
+          "max": 204600,
+          "p50": 82200,
+          "p95": 108500,
+          "p99": 151300,
+          "total": 98915400
+        },
+        "source_prepare": {
+          "count": 1800,
+          "max": 7037100,
+          "p50": 3117400,
+          "p95": 3809500,
+          "p99": 4540900,
+          "total": 5771487400
+        }
+      },
+      "metadata_validation_ns": 1396837400,
+      "benchmark_wall_ns": 63222270500,
+      "external_resources": {
+        "scope": "external owned-process live samples every0.5s; post-exit RSS excluded; raw native resource-measured fields unchanged",
+        "samples": 127,
+        "sample_errors": 0,
+        "owner_wall_seconds": 63.590226700063795,
+        "final_process_times": {
+          "user_cpu_seconds": 56.53125,
+          "kernel_cpu_seconds": 6.671875,
+          "total_cpu_seconds": 63.203125,
+          "os_process_lifetime_seconds": 63.2702552,
+          "scope": "GetProcessTimes on still-owned Popen handle after process exit; includes startup/JSON/stdout/shutdown"
+        },
+        "sampled_max_working_set_bytes": 29560832,
+        "sampled_max_private_bytes": 24190976,
+        "os_peak_working_set_bytes": 31920128,
+        "os_peak_pagefile_usage_bytes": 26812416,
+        "peak_pagefile_is_not_private_bytes": true,
+        "watchdog_seconds": 600,
+        "sample_bound": 1200
+      }
+    },
+    {
+      "name": "budgeted-B2",
+      "budgeted_keys": true,
+      "completed_at_utc": "2026-11-05T11:39:50.328184+00:00",
+      "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+      "accepted": 1020,
+      "rejected": 780,
+      "candidate_attempts": 5640,
+      "retired_sources": 1800,
+      "cycles": 30,
+      "metadata_rows": 1800,
+      "timings_ns": {
+        "encode": {
+          "count": 1800,
+          "max": 52429500,
+          "p50": 29138500,
+          "p95": 40171100,
+          "p99": 44464000,
+          "total": 55334902100
+        },
+        "iteration_wall": {
+          "count": 1800,
+          "max": 56166500,
+          "p50": 32540300,
+          "p95": 43981700,
+          "p99": 48262500,
+          "total": 61478856200
+        },
+        "output_hash": {
+          "count": 1800,
+          "max": 200400,
+          "p50": 81800,
+          "p95": 108900,
+          "p99": 148200,
+          "total": 98014600
+        },
+        "source_prepare": {
+          "count": 1800,
+          "max": 6631300,
+          "p50": 3136300,
+          "p95": 3795700,
+          "p99": 4535100,
+          "total": 5774174200
+        }
+      },
+      "metadata_validation_ns": 1386585800,
+      "benchmark_wall_ns": 62872944400,
+      "external_resources": {
+        "scope": "external owned-process live samples every0.5s; post-exit RSS excluded; raw native resource-measured fields unchanged",
+        "samples": 126,
+        "sample_errors": 0,
+        "owner_wall_seconds": 63.088088100077584,
+        "final_process_times": {
+          "user_cpu_seconds": 57.21875,
+          "kernel_cpu_seconds": 5.65625,
+          "total_cpu_seconds": 62.875,
+          "os_process_lifetime_seconds": 62.9172805,
+          "scope": "GetProcessTimes on still-owned Popen handle after process exit; includes startup/JSON/stdout/shutdown"
+        },
+        "sampled_max_working_set_bytes": 29519872,
+        "sampled_max_private_bytes": 24326144,
+        "os_peak_working_set_bytes": 31363072,
+        "os_peak_pagefile_usage_bytes": 26079232,
+        "peak_pagefile_is_not_private_bytes": true,
+        "watchdog_seconds": 600,
+        "sample_bound": 1200
+      }
+    },
+    {
+      "name": "legacy-A2",
+      "budgeted_keys": false,
+      "completed_at_utc": "2026-11-05T11:41:17.523121+00:00",
+      "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+      "accepted": 1020,
+      "rejected": 780,
+      "candidate_attempts": 5640,
+      "retired_sources": 1800,
+      "cycles": 30,
+      "metadata_rows": 1800,
+      "timings_ns": {
+        "encode": {
+          "count": 1800,
+          "max": 82740200,
+          "p50": 45538600,
+          "p95": 56716000,
+          "p99": 64097700,
+          "total": 79417797600
+        },
+        "iteration_wall": {
+          "count": 1800,
+          "max": 86526800,
+          "p50": 48930800,
+          "p95": 60551300,
+          "p99": 68026700,
+          "total": 85505304300
+        },
+        "output_hash": {
+          "count": 1800,
+          "max": 238700,
+          "p50": 83200,
+          "p95": 112400,
+          "p99": 166600,
+          "total": 100532300
+        },
+        "source_prepare": {
+          "count": 1800,
+          "max": 6277800,
+          "p50": 3106200,
+          "p95": 3818500,
+          "p99": 4806300,
+          "total": 5746124700
+        }
+      },
+      "metadata_validation_ns": 1414703600,
+      "benchmark_wall_ns": 86927934800,
+      "external_resources": {
+        "scope": "external owned-process live samples every0.5s; post-exit RSS excluded; raw native resource-measured fields unchanged",
+        "samples": 174,
+        "sample_errors": 0,
+        "owner_wall_seconds": 87.1182395000942,
+        "final_process_times": {
+          "user_cpu_seconds": 79.96875,
+          "kernel_cpu_seconds": 6.890625,
+          "total_cpu_seconds": 86.859375,
+          "os_process_lifetime_seconds": 86.9709517,
+          "scope": "GetProcessTimes on still-owned Popen handle after process exit; includes startup/JSON/stdout/shutdown"
+        },
+        "sampled_max_working_set_bytes": 30965760,
+        "sampled_max_private_bytes": 25665536,
+        "os_peak_working_set_bytes": 32264192,
+        "os_peak_pagefile_usage_bytes": 26857472,
+        "peak_pagefile_is_not_private_bytes": true,
+        "watchdog_seconds": 600,
+        "sample_bound": 1200
+      }
+    }
+  ],
+  "all7200_output_hashes_admission_maps_and_source_identities_match": true,
+  "hardware": false,
+  "network": false,
+  "notes": [
+    "30 repeated cycles of60 unique native decoded sources per process; not1800 unique scenes",
+    "Fresh codec epochs are not transport resets",
+    "Bounded1800 metadata rows intentionally retained; no raw source snapshots retained between iterations",
+    "Native process CPU/memory false fields remain unchanged; external resource scope is separate"
+  ],
+  "schema": "gamebub-cp23-same-process-sequence-summary-v1",
+  "validation": {
+    "native_tests": 173,
+    "native_suites": 24,
+    "new_sequence_tests": 5,
+    "sequence_executable_sha256": "15a08cc10367e9f26531b8f6cf1503f97217ca3f8bf56bc9497087f8dcbf22af",
+    "all_source_snapshots_retired": 7200,
+    "per_run_iterations": 1800,
+    "per_run_cycles": 30,
+    "source_files": 60,
+    "profiling_enabled": false
+  },
+  "coverage": {
+    "lines": 112,
+    "hit_lines": 112,
+    "branches": 656,
+    "hit_branches": 328,
+    "unhit_lines": []
+  },
+  "source_code_sha256": {
+    "composed_sequence.h": "1e403c68736a9367130e47f566e1da20786da01753eda3e8f718603895b45875",
+    "composed_encoder.h": "3159fb4cc88d14bf0db78c0181763d59facca628bff30186d2b7de355b163a5a",
+    "key_budget_encoder.h": "573aba5d7e7bec3ac2cf415bbd9943157d760de162390940596ee97f750bf98e",
+    "conformance.cpp": "c1fc9b7a449fabebd9d8b4513c67f47d535ad17e96558053bc10317d0a539d4b"
+  },
+  "source_geometry": {
+    "original": [
+      1024,
+      600
+    ],
+    "resized": [
+      691,
+      405
+    ],
+    "placement": [
+      14,
+      37
+    ],
+    "viewport": [
+      720,
+      405
+    ],
+    "canvas": [
+      720,
+      480
+    ]
+  },
+  "observed_effect": {
+    "inclusive_same_process_wall_reduction_percent": 27.256231589535908,
+    "admission_unchanged": true,
+    "complete_thirty_fps_playback_established": false
+  },
+  "memory_limits": "Bounded1800 diagnostic metadata rows intentionally retained; no raw Source snapshots between iterations. OS peak fields are largest lifetime peaks observed during live polling and may miss the final unsampled exit window; peak pagefile is not private bytes.",
+  "cpu_limits": "Cumulative user+kernel CPU queried from still-owned Popen handle afterexit; includes native startup/reportserialization/stdout/shutdown. Raw native measured-resource flags remainfalse; external scope separate."
+}

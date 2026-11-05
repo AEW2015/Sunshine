@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-05",
+  "scope": "localhost-only synthetic audio and saved video; no hardware, WASAPI, gamepad, RF, receiver decode, playback, or acoustics claim",
+  "controlled_stall": {
+    "artifact": "tools/gamebub/artifacts/overnight-long-soak-20261105/audio-stall-10s-native-30fps-8mbps-20261105",
+    "wrapper_sha256": "1acad86ecf2c4a6fb6d0cd7c6643f4848d65e8526e24a386a080cf4920ce8fb0",
+    "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "configuration": {
+      "duration_seconds": 10,
+      "fps": 30,
+      "video_mbps_cap": 8,
+      "clip_selection": "native",
+      "pacing_wait": "hybrid",
+      "pacing_spin_us": 400,
+      "synthetic_audio_callback_wait": "precise",
+      "gamepad": false,
+      "receive_stall_count": 1,
+      "requested_receive_stall_ms": 120
+    },
+    "active_qpc_ns": 1375030724176300,
+    "video_ready_qpc_ns": 1375030731875200,
+    "stall_begin_qpc_ns": 1375032733342400,
+    "stall_end_qpc_ns": 1375032854630200,
+    "actual_stall_ms": 121.2878,
+    "audio_queue_drops": 8,
+    "audio_eviction_trace_records": 8,
+    "trace_overwritten": 0,
+    "evicted_sequence_ids": [191, 192, 193, 194, 195, 196, 197, 198],
+    "peer_missing_sequence_ids": [191, 192, 193, 194, 195, 196, 197, 198],
+    "all_evictions_published_inside_stall": true,
+    "capture_errors": 0,
+    "av_input_timeouts": 0,
+    "stop_sent": true,
+    "peer_stop_observed": true,
+    "video_target_submitted_sent_accepted": [300, 300, 300, 300],
+    "video_replaced": 0,
+    "session_complete": true,
+    "verification_passed": true
+  },
+  "unfaulted_five_minute_trace_run": {
+    "artifact": "tools/gamebub/artifacts/overnight-long-soak-20261105/audio-video-native-30fps-trace-final-5m",
+    "complete": true,
+    "wall_seconds": 300.7884229000192,
+    "video": {
+      "target": 9000,
+      "submitted": 9000,
+      "sent": 8999,
+      "accepted": 8999,
+      "replaced": 1,
+      "source_timestamp_repeats": 0
+    },
+    "audio": {
+      "published": 28744,
+      "sent": 28742,
+      "queue_evictions": 0,
+      "stale_drops": 0,
+      "queued_unsent_at_close": 2,
+      "captured_pcm_frames": 14427840,
+      "capture_errors": 0,
+      "eviction_trace_overwritten": 0,
+      "peer_audio_packets": 28742,
+      "peer_sequence_gaps": 0
+    },
+    "av_input_timeouts": 0,
+    "stop_sent_and_observed": true,
+    "logs_within_64_mib_and_no_drops": true
+  },
+  "reported_test_runs": {
+    "focused_live_audio": 9,
+    "full_python_regressions": 548,
+    "optional_python_regressions": 5,
+    "native_regressions": 173,
+    "source": "Root-reported completed run counts; no tests were run for this report."
+  }
+}
