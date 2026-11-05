@@ -132,9 +132,9 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-  if (argc == 3 && std::string_view(argv[1]) == "--encoder-case") {
+  if (argc == 3 && (std::string_view(argv[1]) == "--encoder-case" || std::string_view(argv[1]) == "--encoder-case-profiled")) {
     try {
-      std::cout << encoder_case::run(argv[2]).dump() << '\n';
+      std::cout << encoder_case::run(argv[2], std::string_view(argv[1]) == "--encoder-case-profiled").dump() << '\n';
       return 0;
     } catch (const std::exception &error) {
       std::cerr << "Encoder fixture rejected: " << error.what() << '\n';
@@ -207,6 +207,6 @@ int main(int argc, char **argv) {
     std::cout << "{\"scope\":\"envelope_only\",\"bytes\":" << bytes.size() << "}\n";
     return 0;
   }
-  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --composed-encode-case SOURCE.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES | --encoder-sequence MANIFEST.json FRAMES | --encoder-sequence-cached MANIFEST.json FRAMES\n";
+  std::cerr << "Usage: gamebub-v20-conformance --inverse INPUT EXPECTED | --ar03 PACKET | --af03 PACKET | --body-case CASE.json | --encoder-case CASE.json | --encoder-case-profiled CASE.json | --transport-contract CONTRACT.json | --recovery-contract RESULTS.json | --recovery-replay RESULTS.json | --composed-contract RESULTS.json | --composed-encode-case SOURCE.json | --hud-delta-contract DIRECTORY | --packet-model ROUNDS | --encoder-benchmark CASE.json FRAMES | --encoder-benchmark-cached CASE.json FRAMES | --encoder-sequence MANIFEST.json FRAMES | --encoder-sequence-cached MANIFEST.json FRAMES\n";
   return 2;
 }

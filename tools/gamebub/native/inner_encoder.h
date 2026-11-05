@@ -12,6 +12,7 @@
 
 // local includes
 #include "candidate.h"
+#include "encoder_profile.h"
 
 namespace gamebub::v20::encoder {
   /** @brief Append a little-endian unsigned word without native-layout casts. */
@@ -284,9 +285,10 @@ namespace gamebub::v20::encoder {
    * @param request Exact fixed-profile input identity and quantization map.
    * @param analysis Complete immutable analysis for a later map, or null.
    * @param capture Private incomplete analysis created only by FrameBuilder, or null.
+   * @param profile Optional explicit observer, with no inner clock reads when null.
    * @return Actual encoded bytes and reconstructed publication tag.
    */
-  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture = nullptr);
+  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture = nullptr, Profile *profile = nullptr);
 
   /** @brief Immutable raw forward coefficients bound to exactly one source, predictor and frame. */
   class Analysis {
@@ -314,7 +316,7 @@ namespace gamebub::v20::encoder {
     /** @brief Permit only the frame callback to own private incomplete capture storage. */
     friend class FrameBuilder;
     /** @brief Permit the always-validating encoder to fill and atomically seal private capture. */
-    friend candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &, const Analysis *, Analysis *);
+    friend candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &, const Analysis *, Analysis *, Profile *);
 
   public:
     /** @brief Analysis storage cannot be copied or replaced through a retained alias. */
@@ -400,12 +402,17 @@ namespace gamebub::v20::encoder {
    * @param request Immutable candidate identity, source, reference and declared ROI map.
    * @param analysis Exact frame-bound raw coefficients, or null for the original uncached path.
    * @param capture Private incomplete analysis for fused first-map capture, or null.
+   * @param profile Explicit optional single-thread observer; null performs no clock reads.
    * @return Real encoded bytes and canonical reconstructed tag for key/promotion only.
    * @note This offline builder does not open sockets, publish banks or claim a target frame rate.
    */
-  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture) {
+  inline candidate::BuildResult encode_inner_impl(const candidate::BuildRequest &request, const Analysis *analysis, Analysis *capture, Profile *profile) {
     constexpr unsigned w = candidate::width, h = candidate::height;
     constexpr auto no_id = std::numeric_limits<std::uint32_t>::max();
+    if (profile) {
+      ++profile->attempts;
+    }
+    StageScope validation(profile, Stage::validation);
     validate_request(request);
     body::require(!capture || (!analysis && !capture->ready_), "encoder capture state");
     if (capture) {
@@ -414,8 +421,11 @@ namespace gamebub::v20::encoder {
     if (analysis) {
       analysis->require_identity(request);
     }
+    validation.finish();
     const auto scales = scale_map(request.map);
+    StageScope conversion(analysis ? nullptr : profile, Stage::source);
     const auto source = analysis ? body::Planes {} : rgb_to_planes(request.source->rgb8(), w, h);
+    conversion.finish();
     body::Planes reconstruction;
     std::array<std::vector<std::uint8_t>, 3> payloads;
     for (unsigned p = 0; p < 3; ++p) {
@@ -435,6 +445,7 @@ namespace gamebub::v20::encoder {
           if (analysis) {
             raw = analyzed[by * bw + bx];
           } else {
+            StageScope forward_stage(profile, Stage::forward);
             block_t residual;
             for (unsigned y = 0; y < 8; ++y) {
               for (unsigned x = 0; x < 8; ++x) {
@@ -443,6 +454,7 @@ namespace gamebub::v20::encoder {
               }
             }
             raw = forward(residual);
+            forward_stage.finish();
           }
           if (capture) {
             capture->coefficients_[p][by * bw + bx] = raw;
@@ -450,13 +462,16 @@ namespace gamebub::v20::encoder {
           auto &quantized = coefficients[by * bw + bx];
           block_t dequantized;
           const auto scale = scales[(p ? by : by / 2) * 45 + (p ? bx : bx / 2)];
+          StageScope quantization(profile, Stage::quantization);
           for (unsigned k = 0; k < 64; ++k) {
             const auto q = std::clamp(((p ? body::qc : body::qy)[k] * int(scale) + 8) / 16, 1, 255);
             quantized[k] = (raw[k] >= 0 ? 1 : -1) * ((std::abs(raw[k]) + q / 2) / q);
             body::require(quantized[k] >= -2048 && quantized[k] <= 2048, "quantized encoder coefficient domain");
             dequantized[k] = quantized[k] * q;
           }
+          quantization.finish();
           if (request.key || request.promoted) {
+            StageScope reconstruction_stage(profile, Stage::reconstruction);
             block_t decoded;
             body::require(inverse(dequantized, decoded), "encoder inverse domain");
             for (unsigned y = 0; y < 8 && by * 8 + y < ph; ++y) {
@@ -465,11 +480,15 @@ namespace gamebub::v20::encoder {
                 reconstruction[p][pos] = std::clamp(decoded[y * 8 + x] + (request.key ? 128 : request.reference->planes[p][pos]), 0, 255);
               }
             }
+            reconstruction_stage.finish();
           }
         }
       }
+      StageScope entropy(profile, Stage::entropy);
       payloads[p] = encode_coefficients(coefficients, bw);
+      entropy.finish();
     }
+    StageScope framing(profile, Stage::framing);
     candidate::BuildResult result;
     auto &out = result.inner;
     out = {'G', 'M', '0', '1', 1, static_cast<std::uint8_t>(request.key)};
@@ -499,8 +518,11 @@ namespace gamebub::v20::encoder {
       out.insert(out.end(), payload.begin(), payload.end());
     }
     seal(out);
+    framing.finish();
     if (request.key || request.promoted) {
+      StageScope tag(profile, Stage::tag);
       result.stored_tag = body::canonical_tag(reconstruction, w, h);
+      tag.finish();
     }
     if (capture) {
       capture->ready_ = true;
@@ -515,6 +537,16 @@ namespace gamebub::v20::encoder {
    */
   inline candidate::BuildResult encode_inner(const candidate::BuildRequest &request) {
     return encode_inner_impl(request, nullptr);
+  }
+
+  /**
+   * @brief Encode one actual attempt with explicit paid substage observations.
+   * @param request Exact source/reference and declared map, validated normally.
+   * @param profile Caller-owned observer; clock overhead is part of observed wall time.
+   * @return Bit-identical bytes/tag to encode_inner, without skipping any operation.
+   */
+  inline candidate::BuildResult encode_inner_profiled(const candidate::BuildRequest &request, Profile &profile) {
+    return encode_inner_impl(request, nullptr, nullptr, &profile);
   }
 
   /**
@@ -533,10 +565,16 @@ namespace gamebub::v20::encoder {
     unsigned attempts_ = 0;  ///< Successful encoded attempts; cannot exceed the declared four maps.
     bool analysis_built_ = false;  ///< Preserve paid successful capture accounting even after failure cleanup.
     bool failed_ = false;  ///< A failed callback releases retained analysis and cannot be retried.
+    Profile *profile_ = nullptr;  ///< Optional borrowed observer, owned by this callback's caller.
 
   public:
-    /** @brief A new callback starts with no retained source, bank or analysis. */
-    FrameBuilder() = default;
+    /**
+     * @brief A new callback starts with no retained source, bank or analysis.
+     * @param profile Optional borrowed observer, valid through all callback invocations.
+     */
+    explicit FrameBuilder(Profile *profile = nullptr) noexcept:
+        profile_(profile) {}
+
     /** @brief A retained callback cannot silently duplicate its frame storage. */
     FrameBuilder(const FrameBuilder &) = delete;
     /** @brief Retained identity cannot be moved away from a callback used by a policy. */
@@ -558,13 +596,13 @@ namespace gamebub::v20::encoder {
         body::require(request.map == candidate::maps[attempts_], "encoder analysis map order or reused prepare");
         if (!analysis_) {
           auto capture = std::unique_ptr<Analysis>(new Analysis(request, Analysis::CaptureTag {}));
-          auto result = encode_inner_impl(request, nullptr, capture.get());
+          auto result = encode_inner_impl(request, nullptr, capture.get(), profile_);
           analysis_ = std::move(capture);
           analysis_built_ = true;
           ++attempts_;
           return result;
         }
-        auto result = encode_analyzed(request, *analysis_);
+        auto result = encode_inner_impl(request, analysis_.get(), nullptr, profile_);
         ++attempts_;
         return result;
       } catch (...) {

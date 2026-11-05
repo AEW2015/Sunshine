@@ -1,0 +1,667 @@
+{
+  "scope": "offline_full_cp23_independent_keys_exact_canonical_tag_allocation_abba",
+  "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "source_provenance": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "old_executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+  "new_executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+  "runs": [
+    {
+      "name": "old-off-A1",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:20:15.924193+00:00",
+      "runner_wall_ns": 3684445000,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2672090300,
+          "mean": 44534838.333333336,
+          "p50": 46179300,
+          "p95": 56214100,
+          "max": 58948900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 335064400,
+          "mean": 5584406.666666667,
+          "p50": 5541300,
+          "p95": 6067100,
+          "max": 6381100
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3188100,
+          "mean": 53135.0,
+          "p50": 80900,
+          "p95": 121500,
+          "max": 127300
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3057267800,
+          "mean": 50954463.333333336,
+          "p50": 52759900,
+          "p95": 62872500,
+          "max": 65095300
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3654719200,
+          "mean": 60911986.666666664,
+          "p50": 62787700,
+          "p95": 72810700,
+          "max": 75193700
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-off-B1",
+      "profile_enabled": false,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:20:19.662624+00:00",
+      "runner_wall_ns": 3737529200,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2711815500,
+          "mean": 45196925.0,
+          "p50": 45708100,
+          "p95": 56498500,
+          "max": 59986600
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 348141700,
+          "mean": 5802361.666666667,
+          "p50": 5580700,
+          "p95": 6665700,
+          "max": 7845800
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3339400,
+          "mean": 55656.666666666664,
+          "p50": 86500,
+          "p95": 107400,
+          "max": 167300
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3111378100,
+          "mean": 51856301.666666664,
+          "p50": 52528400,
+          "p95": 63354700,
+          "max": 67402500
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3708271500,
+          "mean": 61804525.0,
+          "p50": 62380500,
+          "p95": 73094100,
+          "max": 78798900
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-off-B2",
+      "profile_enabled": false,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:20:23.310238+00:00",
+      "runner_wall_ns": 3646997800,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2738855700,
+          "mean": 45647595.0,
+          "p50": 46809300,
+          "p95": 54470500,
+          "max": 91742300
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 344387300,
+          "mean": 5739788.333333333,
+          "p50": 5576300,
+          "p95": 6608900,
+          "max": 7736300
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3459200,
+          "mean": 57653.333333333336,
+          "p50": 81500,
+          "p95": 138200,
+          "max": 214500
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3134947500,
+          "mean": 52249125.0,
+          "p50": 52981600,
+          "p95": 62631600,
+          "max": 99080800
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3616652400,
+          "mean": 60277540.0,
+          "p50": 60794300,
+          "p95": 71668900,
+          "max": 108497500
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "old-off-A2",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:20:27.026175+00:00",
+      "runner_wall_ns": 3714363500,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2795845900,
+          "mean": 46597431.666666664,
+          "p50": 48093000,
+          "p95": 58560500,
+          "max": 68258800
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 349684300,
+          "mean": 5828071.666666667,
+          "p50": 5669700,
+          "p95": 6938000,
+          "max": 7099800
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3305800,
+          "mean": 55096.666666666664,
+          "p50": 82200,
+          "p95": 112200,
+          "max": 209700
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3196914700,
+          "mean": 53281911.666666664,
+          "p50": 54685500,
+          "p95": 65794600,
+          "max": 76338600
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3684243100,
+          "mean": 61404051.666666664,
+          "p50": 62512600,
+          "p95": 74688500,
+          "max": 85742600
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "old-on-C1",
+      "profile_enabled": true,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:20:31.029679+00:00",
+      "runner_wall_ns": 4003268100,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2984190300,
+          "mean": 49736505.0,
+          "p50": 51122700,
+          "p95": 63028100,
+          "max": 67075200
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 340331300,
+          "mean": 5672188.333333333,
+          "p50": 5547800,
+          "p95": 6392200,
+          "max": 7492000
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3282100,
+          "mean": 54701.666666666664,
+          "p50": 85700,
+          "p95": 106600,
+          "max": 181500
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3376215800,
+          "mean": 56270263.333333336,
+          "p50": 57541700,
+          "p95": 68994700,
+          "max": 73399600
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3972525300,
+          "mean": 66208755.0,
+          "p50": 67243900,
+          "p95": 78625500,
+          "max": 82914500
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 498549600,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 406538300,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 286494300,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 17646800,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 401675400,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 466026500,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 178800,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 88295800,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    },
+    {
+      "name": "new-on-D1",
+      "profile_enabled": true,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:20:35.027250+00:00",
+      "runner_wall_ns": 3996005200,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2978632700,
+          "mean": 49643878.333333336,
+          "p50": 51772400,
+          "p95": 62357100,
+          "max": 66678800
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 339149800,
+          "mean": 5652496.666666667,
+          "p50": 5580600,
+          "p95": 6354700,
+          "max": 6611800
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3110800,
+          "mean": 51846.666666666664,
+          "p50": 80600,
+          "p95": 102700,
+          "max": 127200
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3369544300,
+          "mean": 56159071.666666664,
+          "p50": 57991900,
+          "p95": 68841300,
+          "max": 73322000
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3964658000,
+          "mean": 66077633.333333336,
+          "p50": 67889900,
+          "p95": 78459300,
+          "max": 83409700
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 487571200,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 413072600,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 287914600,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 18353200,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 402443100,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 469568600,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 176000,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 89697300,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    },
+    {
+      "name": "new-on-D2",
+      "profile_enabled": true,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:20:38.887925+00:00",
+      "runner_wall_ns": 3859624800,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2967118100,
+          "mean": 49451968.333333336,
+          "p50": 51121000,
+          "p95": 62767900,
+          "max": 65052900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 337676500,
+          "mean": 5627941.666666667,
+          "p50": 5555200,
+          "p95": 6258500,
+          "max": 6363100
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3163100,
+          "mean": 52718.333333333336,
+          "p50": 83500,
+          "p95": 101400,
+          "max": 124600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3355661000,
+          "mean": 55927683.333333336,
+          "p50": 57445600,
+          "p95": 69410300,
+          "max": 72210200
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3827437900,
+          "mean": 63790631.666666664,
+          "p50": 65433100,
+          "p95": 76923800,
+          "max": 80489900
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 482964400,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 410668300,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 288036800,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 17876200,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 400797200,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 468217600,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 172000,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 88419000,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    },
+    {
+      "name": "old-on-C2",
+      "profile_enabled": true,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:20:42.775609+00:00",
+      "runner_wall_ns": 3886527300,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2989461400,
+          "mean": 49824356.666666664,
+          "p50": 52012900,
+          "p95": 60866700,
+          "max": 74540500
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 341203100,
+          "mean": 5686718.333333333,
+          "p50": 5606300,
+          "p95": 6301100,
+          "max": 6606800
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3171000,
+          "mean": 52850.0,
+          "p50": 82600,
+          "p95": 108100,
+          "max": 148800
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3381722500,
+          "mean": 56362041.666666664,
+          "p50": 58322300,
+          "p95": 67735100,
+          "max": 81579400
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3855165400,
+          "mean": 64252756.666666664,
+          "p50": 66401300,
+          "p95": 76085300,
+          "max": 89559100
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 500643000,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 411214700,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 286359200,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 17969000,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 401445300,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 468253400,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 183500,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 89707100,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    }
+  ],
+  "all_packet_ack_and_attempt_outcomes_match_baseline": true,
+  "hardware_measured": false,
+  "network_measured": false,
+  "process_cpu_measured": false,
+  "notes": [
+    "Every source is fresh codec epoch=index+1/frame0/generation1, not a stateful stream",
+    "Stage observations include explicit clock/counter overhead; no subtraction",
+    "CLI process wall includes per-source startup/shutdown and cannot be compared as steady single-process encoder throughput",
+    "External system load uncontrolled outside reserved agent quiet slot"
+  ],
+  "schema": "gamebub-cp23-canonical-tag-allocation-abba-summary-v1",
+  "validation": {
+    "native_tests": 164,
+    "native_suites": 22,
+    "old_ar03_default_cases": 20,
+    "old_ar03_instrumented_cases": 20,
+    "cp23_oracle_instances_default_and_profiled": 16,
+    "additional_literal_and_geometry_tag_oracles": 5,
+    "invalid_shape_domain_check_order_and_immutability": true
+  },
+  "source_geometry": {
+    "original": [
+      1024,
+      600
+    ],
+    "resized": [
+      691,
+      405
+    ],
+    "placement": [
+      14,
+      37
+    ],
+    "viewport": [
+      720,
+      405
+    ],
+    "canvas": [
+      720,
+      480
+    ]
+  },
+  "source_code_sha256": {
+    "before_body_decoder": "aee24344fcf00ac42571810da07c573585c7db1abf04ca42fe3921d6183d8bd5",
+    "after_body_decoder": "107cdacac93c7164870d15df2ef4add046695835c8cd387c8a1fa42cf2a9efe6"
+  },
+  "observed_effect": {
+    "default_encode_mean_before_ns": 45566135.0,
+    "default_encode_mean_after_ns": 45422260.0,
+    "default_mean_reduction_percent": 0.31574984360643876,
+    "profiled_tag_reduction_percent": 2.8680156358243614,
+    "material_whole_encoder_speedup_established": false,
+    "interpretation": "Default mean difference is within run variation; tag substage gain does not establish30fps encoding or playback",
+    "retention_decision": "retained as small bounded-storage cleanup; no material whole-encoder speedup claim"
+  }
+}

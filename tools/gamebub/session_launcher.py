@@ -35,6 +35,7 @@ def parser():
     result.add_argument("--video", action="store_true")
     result.add_argument("--clip", type=Path, help="Use a saved clip instead of desktop capture")
     result.add_argument("--loop-clip", action="store_true")
+    result.add_argument("--clip-selection", choices=("legacy", "native"), default="legacy")
     result.add_argument("--audio", action="store_true")
     result.add_argument("--gamepad", action="store_true")
     result.add_argument(
@@ -81,6 +82,8 @@ def validate(args):
         raise ValueError("--clip requires --video")
     if args.loop_clip and args.clip is None:
         raise ValueError("--loop-clip requires --clip")
+    if args.clip_selection == "native" and args.clip is None:
+        raise ValueError("--clip-selection native requires --clip")
     if args.capture_interface and not (args.av_input or args.audio or args.gamepad):
         raise ValueError("Capture requires an AV owner so STOP can delimit coverage")
     if not 0 <= args.pacing_spin_us <= 1000 or (
@@ -113,9 +116,15 @@ def validate(args):
 
 
 def video_command(args):
-    """@brief Build the existing fixed-format sender command with no profile mutation."""
+    """@brief Build a fixed-format child command with explicit source bind and wait.
+
+    @param args Validated session options, including source, ports and pacing selection.
+    @return Argument list for the separately owned video sender.
+    """
     source = (
-        ["--clip", str(args.clip)] if args.clip else ["--desktop", "--desktop-backend", "ddagrab"]
+        ["--clip", str(args.clip), "--clip-selection", args.clip_selection]
+        if args.clip
+        else ["--desktop", "--desktop-backend", "ddagrab"]
     )
     if args.loop_clip:
         source.append("--loop-clip")
@@ -208,12 +217,18 @@ class VideoProcess:
 
 
 def verify_video_route(args):
-    """@brief Require the wildcard-bound video sender's routed IP to equal explicit AV bind.
+    """@brief Verify the explicit video/AV source bind before opening evidence files.
 
     UDP connect selects a route without transmitting a datagram. It is skipped
     for dry runs. This guards ordinary static routes, not mid-session route changes.
+
+    @param args Session options containing source bind, receiver and video port.
+    @return Source IPv4 address reported by the bound, connected probe socket.
+    @throws OSError If Windows cannot bind or connect the requested source.
+    @throws ValueError If the reported source differs from the explicit bind.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+        probe.bind((args.bind, 0))
         probe.connect((args.receiver, args.video_port))
         source = probe.getsockname()[0]
     if source != args.bind:
@@ -411,6 +426,7 @@ def main(argv=None):
             or result.get("av", {}).get("cleanup_errors")
             or result.get("av", {}).get("stop_error")
             or result.get("logging", {}).get("error")
+            or result.get("logging", {}).get("dropped", 0)
             or ("capture" in result and not result["capture"].get("complete", False))
         )
     )

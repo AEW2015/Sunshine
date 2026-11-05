@@ -1,0 +1,758 @@
+{
+  "scope": "offline_full_cp23_independent_keys_optional_observer_abba",
+  "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "source_provenance": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "old_executable_sha256": "0fb151b88d9ffc1b2decc415e55ae1cddf8e44bb6203f5e98f10387f9ed2e48b",
+  "new_executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+  "runs": [
+    {
+      "name": "old-off-A1",
+      "profile_enabled": false,
+      "executable_sha256": "0fb151b88d9ffc1b2decc415e55ae1cddf8e44bb6203f5e98f10387f9ed2e48b",
+      "completed_at_utc": "2026-11-05T10:03:06.524322+00:00",
+      "runner_wall_ns": 3949588200,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2867599400,
+          "mean": 47793323.333333336,
+          "p50": 48736000,
+          "p95": 62948700,
+          "max": 99230200
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 359500200,
+          "mean": 5991670.0,
+          "p50": 5765200,
+          "p95": 7006400,
+          "max": 10727300
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3478100,
+          "mean": 57968.333333333336,
+          "p50": 83700,
+          "p95": 120000,
+          "max": 179000
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3281028700,
+          "mean": 54683811.666666664,
+          "p50": 54966700,
+          "p95": 69575100,
+          "max": 107954300
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3920877500,
+          "mean": 65347958.333333336,
+          "p50": 64934500,
+          "p95": 79651000,
+          "max": 118280500
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-off-B1",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:10.356803+00:00",
+      "runner_wall_ns": 3831712900,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2802728900,
+          "mean": 46712148.333333336,
+          "p50": 46704700,
+          "p95": 61202000,
+          "max": 69388400
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 345112600,
+          "mean": 5751876.666666667,
+          "p50": 5620000,
+          "p95": 6534600,
+          "max": 6708800
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3176800,
+          "mean": 52946.666666666664,
+          "p50": 81600,
+          "p95": 106300,
+          "max": 118500
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3198536100,
+          "mean": 53308935.0,
+          "p50": 53151600,
+          "p95": 67519000,
+          "max": 77145200
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3797968800,
+          "mean": 63299480.0,
+          "p50": 63030500,
+          "p95": 77144300,
+          "max": 88133400
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-off-B2",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:14.124484+00:00",
+      "runner_wall_ns": 3766879700,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2839534500,
+          "mean": 47325575.0,
+          "p50": 47503700,
+          "p95": 60751600,
+          "max": 82907900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 353130300,
+          "mean": 5885505.0,
+          "p50": 5604300,
+          "p95": 7374500,
+          "max": 9254300
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3578500,
+          "mean": 59641.666666666664,
+          "p50": 83700,
+          "p95": 112600,
+          "max": 374200
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3245137300,
+          "mean": 54085621.666666664,
+          "p50": 53980400,
+          "p95": 68820900,
+          "max": 92656500
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3737258300,
+          "mean": 62287638.333333336,
+          "p50": 62168800,
+          "p95": 81464900,
+          "max": 103440000
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "old-off-A2",
+      "profile_enabled": false,
+      "executable_sha256": "0fb151b88d9ffc1b2decc415e55ae1cddf8e44bb6203f5e98f10387f9ed2e48b",
+      "completed_at_utc": "2026-11-05T10:03:18.281400+00:00",
+      "runner_wall_ns": 4155430700,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 3120213600,
+          "mean": 52003560.0,
+          "p50": 48891300,
+          "p95": 72748300,
+          "max": 95467000
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 403251100,
+          "mean": 6720851.666666667,
+          "p50": 6370900,
+          "p95": 9676000,
+          "max": 12258400
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3996400,
+          "mean": 66606.66666666667,
+          "p50": 91000,
+          "p95": 151100,
+          "max": 237800
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3581824400,
+          "mean": 59697073.333333336,
+          "p50": 55816000,
+          "p95": 80776300,
+          "max": 109156800
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 4125865100,
+          "mean": 68764418.33333333,
+          "p50": 64342500,
+          "p95": 93255700,
+          "max": 121269600
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-off-C1",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:21.994614+00:00",
+      "runner_wall_ns": 3713116500,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2808261100,
+          "mean": 46804351.666666664,
+          "p50": 46969000,
+          "p95": 63612900,
+          "max": 66865900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 347335900,
+          "mean": 5788931.666666667,
+          "p50": 5594100,
+          "p95": 6641800,
+          "max": 8176100
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3360900,
+          "mean": 56015.0,
+          "p50": 83400,
+          "p95": 110600,
+          "max": 160600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3207097300,
+          "mean": 53451621.666666664,
+          "p50": 53937500,
+          "p95": 69938500,
+          "max": 74171000
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3684363800,
+          "mean": 61406063.333333336,
+          "p50": 61906600,
+          "p95": 77470400,
+          "max": 82630900
+        }
+      },
+      "stages": {}
+    },
+    {
+      "name": "new-on-D1",
+      "profile_enabled": true,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:26.135284+00:00",
+      "runner_wall_ns": 4140134600,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 3096051300,
+          "mean": 51600855.0,
+          "p50": 51893800,
+          "p95": 66977900,
+          "max": 70352600
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 352961900,
+          "mean": 5882698.333333333,
+          "p50": 5665900,
+          "p95": 6855000,
+          "max": 9898500
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3177000,
+          "mean": 52950.0,
+          "p50": 82500,
+          "p95": 106500,
+          "max": 126600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3502253800,
+          "mean": 58370896.666666664,
+          "p50": 58051900,
+          "p95": 74148800,
+          "max": 78831300
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 4106620500,
+          "mean": 68443675.0,
+          "p50": 67612800,
+          "p95": 84575900,
+          "max": 90107600
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 519453300,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 428271200,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 296533000,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 18718600,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 419984300,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 486747600,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 184700,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 92052700,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    },
+    {
+      "name": "new-on-D2",
+      "profile_enabled": true,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:30.101813+00:00",
+      "runner_wall_ns": 3965069800,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 3060102200,
+          "mean": 51001703.333333336,
+          "p50": 52570700,
+          "p95": 62452400,
+          "max": 64164700
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 345850300,
+          "mean": 5764171.666666667,
+          "p50": 5653300,
+          "p95": 6643600,
+          "max": 7054100
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3270000,
+          "mean": 54500.0,
+          "p50": 86200,
+          "p95": 109700,
+          "max": 120600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3458158800,
+          "mean": 57635980.0,
+          "p50": 59143700,
+          "p95": 69133500,
+          "max": 70627200
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3931888700,
+          "mean": 65531478.333333336,
+          "p50": 67033500,
+          "p95": 76945000,
+          "max": 78190500
+        }
+      },
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 512108300,
+          "calls": 188,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 418126800,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 291654500,
+          "calls": 486000,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 17984300,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 410656200,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 478519800,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 186700,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 90517000,
+          "calls": 60,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 7065576
+    },
+    {
+      "name": "new-off-C2",
+      "profile_enabled": false,
+      "executable_sha256": "0660b6b512ac5e40034d95a1ca15fdc7e4374a92f2aca449cc43d6615b606f48",
+      "completed_at_utc": "2026-11-05T10:03:33.893136+00:00",
+      "runner_wall_ns": 3790000900,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2872816300,
+          "mean": 47880271.666666664,
+          "p50": 49139200,
+          "p95": 58376100,
+          "max": 86555900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 353952200,
+          "mean": 5899203.333333333,
+          "p50": 5593100,
+          "p95": 6660800,
+          "max": 10268700
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3344200,
+          "mean": 55736.666666666664,
+          "p50": 83900,
+          "p95": 107400,
+          "max": 207200
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3278474300,
+          "mean": 54641238.333333336,
+          "p50": 56092900,
+          "p95": 65042100,
+          "max": 98389600
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3760568800,
+          "mean": 62676146.666666664,
+          "p50": 63815300,
+          "p95": 74395400,
+          "max": 110283700
+        }
+      },
+      "stages": {}
+    }
+  ],
+  "all_packet_ack_and_attempt_outcomes_match_baseline": true,
+  "hardware_measured": false,
+  "network_measured": false,
+  "process_cpu_measured": false,
+  "notes": [
+    "Every source is fresh codec epoch=index+1/frame0/generation1, not a stateful stream",
+    "Stage observations include explicit clock/counter overhead; no subtraction",
+    "CLI process wall includes per-source startup/shutdown and cannot be compared as steady single-process encoder throughput",
+    "External system load uncontrolled outside reserved agent quiet slot"
+  ],
+  "stage_admission_groups": {
+    "new-on-D1": {
+      "True": {
+        "canonical_tag": {
+          "ns": 226026500,
+          "calls": 84
+        },
+        "quantization": {
+          "ns": 209802000,
+          "calls": 680400
+        },
+        "entropy": {
+          "ns": 178516200,
+          "calls": 252
+        },
+        "inverse_reconstruction": {
+          "ns": 179475800,
+          "calls": 680400
+        },
+        "forward_residual": {
+          "ns": 161670500,
+          "calls": 275400
+        },
+        "source_conversion": {
+          "ns": 51597100,
+          "calls": 34
+        },
+        "inner_framing": {
+          "ns": 7459000,
+          "calls": 84
+        },
+        "request_validation": {
+          "ns": 95000,
+          "calls": 84
+        }
+      },
+      "False": {
+        "canonical_tag": {
+          "ns": 293426800,
+          "calls": 104
+        },
+        "quantization": {
+          "ns": 276945600,
+          "calls": 842400
+        },
+        "entropy": {
+          "ns": 249755000,
+          "calls": 312
+        },
+        "inverse_reconstruction": {
+          "ns": 240508500,
+          "calls": 842400
+        },
+        "forward_residual": {
+          "ns": 134862500,
+          "calls": 210600
+        },
+        "source_conversion": {
+          "ns": 40455600,
+          "calls": 26
+        },
+        "inner_framing": {
+          "ns": 11259600,
+          "calls": 104
+        },
+        "request_validation": {
+          "ns": 89700,
+          "calls": 104
+        }
+      }
+    },
+    "new-on-D2": {
+      "True": {
+        "canonical_tag": {
+          "ns": 235397600,
+          "calls": 84
+        },
+        "quantization": {
+          "ns": 213895100,
+          "calls": 680400
+        },
+        "entropy": {
+          "ns": 181495800,
+          "calls": 252
+        },
+        "inverse_reconstruction": {
+          "ns": 183289200,
+          "calls": 680400
+        },
+        "forward_residual": {
+          "ns": 165349300,
+          "calls": 275400
+        },
+        "source_conversion": {
+          "ns": 52404300,
+          "calls": 34
+        },
+        "inner_framing": {
+          "ns": 7417900,
+          "calls": 84
+        },
+        "request_validation": {
+          "ns": 99400,
+          "calls": 84
+        }
+      },
+      "False": {
+        "canonical_tag": {
+          "ns": 276710700,
+          "calls": 104
+        },
+        "quantization": {
+          "ns": 264624700,
+          "calls": 842400
+        },
+        "entropy": {
+          "ns": 236631000,
+          "calls": 312
+        },
+        "inverse_reconstruction": {
+          "ns": 227367000,
+          "calls": 842400
+        },
+        "forward_residual": {
+          "ns": 126305200,
+          "calls": 210600
+        },
+        "source_conversion": {
+          "ns": 38112700,
+          "calls": 26
+        },
+        "inner_framing": {
+          "ns": 10566400,
+          "calls": 104
+        },
+        "request_validation": {
+          "ns": 87300,
+          "calls": 104
+        }
+      }
+    }
+  },
+  "validation": {
+    "native_tests": 162,
+    "native_suites": 21,
+    "old_ar03_default_cases": 20,
+    "old_ar03_instrumented_cases": 20,
+    "cp23_oracle_instances_profiled_and_default": 16,
+    "all480_abba_pair_ack_and_attempts_exact": true
+  },
+  "coverage": {
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/inner_encoder.h": {
+      "lines": 299,
+      "hit_lines": 291,
+      "branches": 524,
+      "hit_branches": 392,
+      "unhit_lines": [
+        68,
+        124,
+        311,
+        312,
+        609,
+        610,
+        611,
+        612
+      ]
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/encoder_profile.h": {
+      "lines": 37,
+      "hit_lines": 37,
+      "branches": 36,
+      "hit_branches": 24,
+      "unhit_lines": []
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder.h": {
+      "lines": 95,
+      "hit_lines": 94,
+      "branches": 192,
+      "hit_branches": 109,
+      "unhit_lines": [
+        108
+      ]
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder_case.h": {
+      "lines": 29,
+      "hit_lines": 29,
+      "branches": 352,
+      "hit_branches": 177,
+      "unhit_lines": []
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/encoder_profile_json.h": {
+      "lines": 9,
+      "hit_lines": 9,
+      "branches": 118,
+      "hit_branches": 54,
+      "unhit_lines": []
+    }
+  },
+  "changed_inner_coverage": {
+    "combined_executable_lines": 335,
+    "combined_hit_lines": 334,
+    "combined_unhit_lines": [
+      68
+    ],
+    "changed_executable_lines": 25,
+    "changed_unhit_lines": []
+  },
+  "source_code_sha256": {
+    "body_decoder.h": "aee24344fcf00ac42571810da07c573585c7db1abf04ca42fe3921d6183d8bd5",
+    "inner_encoder.h": "8149c2c582613d5d85e4dee0d5bab4ebb08b5507fbd39f24cdfb147eff27fc1a",
+    "encoder_profile.h": "47058b22be175888775a6c1cb36ad33b95b69fa67b041a221ae3489c10186f1a",
+    "encoder_profile_json.h": "f38a298de98442fdd212ed11ab90c32a525bb2fef9066d8dff6512e4653dd7d1",
+    "composed_encoder.h": "771c3b8d1802cb388bb7d9972bf6c5ded082160d27c554303661fbe6170121a8",
+    "composed_encoder_case.h": "f14664bded2a8b63ae6c636833264fc6cf60f0906e3179ac14f30f4e86481ade",
+    "encoder_case.h": "e26c67c67e8ad65f9c36790ca0b44981c69c957b46122307da867d51cb661e54",
+    "conformance.cpp": "289b3a026f23cf9f6cc9e4ea8a67a91e1f2173e4f4f940b0c2360b3270f46f72"
+  },
+  "instrumented_overhead_percent": 8.362429633505798,
+  "schema": "gamebub-cp23-optional-substage-profile-summary-v1",
+  "artifact_correction": "Initial profile-old-golden-results.json was overwritten by optimized correctness rerun. Original native XML/source/binary and ABBA remain intact. A fresh regenerated old-source check is separately timestamped in pre-tag-regenerated-golden-results.json; original run timestamps were not recovered."
+}

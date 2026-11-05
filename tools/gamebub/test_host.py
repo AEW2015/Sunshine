@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from fractions import Fraction
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import av
@@ -230,6 +231,142 @@ class LinkTests(unittest.TestCase):
         """@brief Empty runs are explicit and quantiles follow nearest-rank selection."""
         self.assertEqual(host.distribution([]), {"count": 0, "p50": None, "p95": None, "max": None})
         self.assertEqual(host.distribution([3, 1, 2]), {"count": 3, "p50": 2, "p95": 3, "max": 3})
+
+
+class NativeClipTests(unittest.TestCase):
+    """@brief Check native-frame identity and rational source-clock validation."""
+
+    @staticmethod
+    def make_container(frames=(), *, rate=30, aspect=1):
+        """@brief Build a context-managed fake PyAV container with supplied frames."""
+        container = unittest.mock.MagicMock()
+        container.__enter__.return_value = container
+        stream = container.streams.video[0]
+        stream.average_rate = rate
+        stream.sample_aspect_ratio = aspect
+        container.decode.return_value = iter(frames)
+        return container
+
+    @staticmethod
+    def make_frame(pts, time_base=Fraction(1, 1000), *, time=None, duration=1):
+        """@brief Build a decoded-frame double with explicit source-clock fields."""
+        if time is None and pts is not None and time_base is not None:
+            time = float(pts * time_base)
+        return SimpleNamespace(pts=pts, time_base=time_base, time=time, duration=duration)
+
+    def test_native_frames_preserve_objects_and_accept_millisecond_clock_rounding(self):
+        """@brief Accept 33/34ms rounded ticks and yield every original frame exactly once."""
+        frames = [self.make_frame(round(7 + index * 1000 / 30)) for index in range(60)]
+        container = self.make_container(frames)
+        with patch("host.av.open", return_value=container) as open_clip:
+            decoded = list(host.native_clip_frames(Path("fake"), 30))
+        open_clip.assert_called_once_with("fake")
+        self.assertEqual(len(decoded), len(frames))
+        self.assertTrue(all(actual is expected for actual, expected in zip(decoded, frames)))
+        self.assertEqual(
+            [frame.pts for frame in decoded], [round(7 + i * 1000 / 30) for i in range(60)]
+        )
+        container.__exit__.assert_called_once_with(None, None, None)
+
+    def test_native_iteration_keeps_original_frames_while_legacy_resampling_aliases(self):
+        """@brief Native mode emits two frame objects once; legacy 60Hz sampling repeats them."""
+        frames = [
+            self.make_frame(0, Fraction(1, 30), time=0.0),
+            self.make_frame(1, Fraction(1, 30), time=1 / 30),
+        ]
+        native_container = self.make_container(frames)
+        legacy_container = self.make_container(frames)
+        with patch("host.av.open", side_effect=(native_container, legacy_container)):
+            native = list(host.native_clip_frames(Path("fake"), 30))
+            legacy = list(host.clip_frames(Path("fake"), 60))
+        self.assertEqual(len(native), 2)
+        self.assertIs(native[0], frames[0])
+        self.assertIs(native[1], frames[1])
+        self.assertGreater(legacy.count(frames[0]), 1)
+        self.assertGreater(legacy.count(frames[1]), 1)
+
+    def test_invalid_fps_fails_before_opening_container(self):
+        """@brief Reject boolean, non-integer, and out-of-range rates before I/O."""
+        with patch("host.av.open") as open_clip:
+            for fps in (True, 30.0, 0, 31, -1):
+                with self.subTest(fps=fps), self.assertRaises(ValueError):
+                    list(host.native_clip_frames(Path("fake"), fps))
+        open_clip.assert_not_called()
+
+    def test_empty_clip_closes_container_without_fabricating_frames(self):
+        """@brief Empty native sources yield nothing and still exit their container."""
+        container = self.make_container()
+        with patch("host.av.open", return_value=container):
+            self.assertEqual(list(host.native_clip_frames(Path("fake"), 30)), [])
+        container.__exit__.assert_called_once_with(None, None, None)
+
+    def test_early_close_exits_container(self):
+        """@brief Closing a partially consumed native iterator releases its container."""
+        container = self.make_container([self.make_frame(0), self.make_frame(33)])
+        with patch("host.av.open", return_value=container):
+            frames = host.native_clip_frames(Path("fake"), 30)
+            self.assertEqual(next(frames).pts, 0)
+            frames.close()
+        container.__exit__.assert_called_once()
+        self.assertIs(container.__exit__.call_args.args[0], GeneratorExit)
+
+    def test_native_clip_requires_square_pixels_and_matching_nominal_rate(self):
+        """@brief Reject nonsquare pixels and missing or mismatched nominal frame rates."""
+        for rate, aspect in ((None, 1), (Fraction(30000, 1001), 1), (30, 2)):
+            with self.subTest(rate=rate, aspect=aspect):
+                container = self.make_container([self.make_frame(0)], rate=rate, aspect=aspect)
+                with patch("host.av.open", return_value=container), self.assertRaises(ValueError):
+                    list(host.native_clip_frames(Path("fake"), 30))
+                container.__exit__.assert_called_once()
+
+    def test_native_clip_rejects_missing_or_nonpositive_timestamps(self):
+        """@brief Require every decoded timestamp to have a PTS and positive time base."""
+        invalid = (
+            self.make_frame(None),
+            self.make_frame(0, None),
+            self.make_frame(0, Fraction(0, 1)),
+            self.make_frame(0, Fraction(-1, 1000)),
+        )
+        for frame in invalid:
+            with self.subTest(frame=(frame.pts, frame.time_base)):
+                container = self.make_container([frame])
+                with patch("host.av.open", return_value=container), self.assertRaises(ValueError):
+                    list(host.native_clip_frames(Path("fake"), 30))
+
+    def test_native_clip_rejects_nonincreasing_timestamps(self):
+        """@brief Reject duplicate or backward rational presentation timestamps."""
+        for second_pts in (0, -1):
+            frames = [self.make_frame(1), self.make_frame(second_pts)]
+            container = self.make_container(frames)
+            with (
+                self.subTest(second_pts=second_pts),
+                patch("host.av.open", return_value=container),
+                self.assertRaises(ValueError),
+            ):
+                list(host.native_clip_frames(Path("fake"), 30))
+
+    def test_native_clip_rejects_cadence_outside_tick_precision(self):
+        """@brief Reject cadence errors beyond one millisecond source tick."""
+        frames = [self.make_frame(0), self.make_frame(32)]
+        container = self.make_container(frames)
+        with (
+            patch("host.av.open", return_value=container),
+            self.assertRaisesRegex(ValueError, "cadence"),
+        ):
+            list(host.native_clip_frames(Path("fake"), 30))
+
+    def test_native_clip_rejects_half_period_error_even_when_one_tick_allows_it(self):
+        """@brief Apply the strict half-period limit alongside the source-tick tolerance."""
+        frames = [
+            self.make_frame(0, Fraction(1, 30)),
+            self.make_frame(2, Fraction(1, 30)),
+        ]
+        container = self.make_container(frames)
+        with (
+            patch("host.av.open", return_value=container),
+            self.assertRaisesRegex(ValueError, "cadence"),
+        ):
+            list(host.native_clip_frames(Path("fake"), 30))
 
 
 class PipelineTests(unittest.TestCase):

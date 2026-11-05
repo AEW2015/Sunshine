@@ -7,6 +7,7 @@
 // local includes
 #include "body_case.h"
 #include "composed_encoder.h"
+#include "encoder_profile_json.h"
 
 namespace gamebub::v24::refresh_encoder_case {
   /**
@@ -29,16 +30,23 @@ namespace gamebub::v24::refresh_encoder_case {
     const auto pixels = body_case::blob(path.parent_path(), descriptor, 720 * 480 * 3);
     const auto source = std::make_shared<const candidate::Source>(std::span<const std::uint8_t>(pixels));
     const auto source_prepare_ns = refresh_encoder::elapsed(source_start);
-    const auto result = refresh_encoder::encode(source, epoch, frame, cap);
+    const auto result = refresh_encoder::encode(source, epoch, frame, cap, input.value("profile_substages", false), input.value("budgeted_keys", false));
     Json attempts = Json::array();
     for (const auto &attempt : result.attempts) {
-      attempts.push_back({{"roi_scale", attempt.map.roi}, {"background_scale", attempt.map.background}, {"complete_bytes", attempt.complete_bytes}, {"accepted", attempt.accepted}, {"build_ns", attempt.build_ns}, {"framing_ns", attempt.framing_ns}, {"discard_ns", attempt.discard_ns}});
+      attempts.push_back({{"roi_scale", attempt.map.roi}, {"background_scale", attempt.map.background}, {"complete_bytes", attempt.complete_bytes}, {"accepted", attempt.accepted}, {"build_ns", attempt.build_ns}, {"framing_ns", attempt.framing_ns}, {"discard_ns", attempt.discard_ns}, {"analysis_ns", attempt.analysis_ns}, {"retire_ns", attempt.retire_ns}, {"reconstruction_skipped", attempt.reconstruction_skipped}});
     }
     const auto hash_start = std::chrono::steady_clock::now();
     const auto packet_hash = result.accepted() ? Json(body_case::digest(result.packet)) : Json(nullptr);
     const auto ack_hash = result.accepted() ? Json(body_case::digest(result.ack)) : Json(nullptr);
     const auto output_hash_ns = refresh_encoder::elapsed(hash_start);
     Json report {{"scope", "offline_native_cp23_independent_key_four_legacy_hud_encoder"}, {"source_commit", "4025d35593e8b71b9d9f5e4fb68d1e7a9ed29189"}, {"epoch", epoch}, {"frame", frame}, {"cap", cap}, {"accepted", result.accepted()}, {"packet_bytes", result.packet.size()}, {"packet_sha256", packet_hash}, {"ack_sha256", ack_hash}, {"hud_bytes", result.hud_bytes}, {"attempts", attempts}, {"source_prepare_ns", source_prepare_ns}, {"output_hash_ns", output_hash_ns}, {"hud_prepare_ns", result.hud_prepare_ns}, {"validation_ns", result.validation_ns}, {"cleanup_ns", result.cleanup_ns}, {"encode_total_ns", result.total_ns}, {"p_frames", false}, {"stateful_hud", false}, {"reference_publication", false}, {"hardware_playback", false}};
+    report["inner_profile_enabled"] = result.inner_profile != nullptr;
+    report["inner_profile"] = result.inner_profile ? encoder::profile_json(*result.inner_profile) : Json(nullptr);
+    report["budgeted_keys_enabled"] = result.budgeted_keys;
+    report["inner_strategy"] = result.budgeted_keys ? "budgeted_keys_prepare_admit_finalize" : "legacy_frame_builder";
+    report["inner_stage_boundaries"] = result.budgeted_keys ?
+                                         "analysis_ns includes source conversion/forward/binding/allocation; quantization excludes dequantization; selected inverse_reconstruction includes recomputed dequantization; retire_ns includes temporary/analysis release; analysis_ns/retire_ns are inside build_ns" :
+                                         "source_conversion and forward_residual are individually observed; quantization includes dequantization; inverse_reconstruction excludes dequantization; implicit temporary/analysis release is inside enclosing build/cleanup wall time";
     report["case_total_ns"] = refresh_encoder::elapsed(start);
     return report;
   }

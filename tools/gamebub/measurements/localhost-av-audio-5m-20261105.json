@@ -1,0 +1,100 @@
+{
+  "run": "artifacts/overnight-long-soak-20261105/audio-stress-precise-5m-0256",
+  "summary_sha256": "9d97f40ddd7ccda6929aa2260da1ce18ea6578d1eafcb01d57d780e16591ff6e",
+  "scope": "Localhost saved-clip video and synthetic quiet signed16 stereo PCM through production resampler/IMA encoder; gamepad disabled; no physical audio, WASAPI, DAC, capture, hardware, or RF validation.",
+  "duration_seconds": 300.8054857000243,
+  "synthetic_audio": {
+    "callback_wait_mode": "precise high-resolution wait with zero spin tail",
+    "sample_rate_hz": 48000,
+    "channels": 2,
+    "frames_per_callback": 480,
+    "accepted_source_frames": 14428800,
+    "accepted_source_seconds_at_48khz": 300.6,
+    "encoded_published_blocks": 28746,
+    "sent_blocks": 28744,
+    "queued_unsent_at_close": 2,
+    "stale_blocks": 0,
+    "queue_evictions": 0,
+    "pcm_drops": 0,
+    "capture_errors": 0,
+    "callback_max_gap_ms": 13.6528,
+    "late_callback_intervals": 0,
+    "missed_schedule_periods": 0,
+    "wait_native_calls": 30060,
+    "wait_fallback_calls": 0,
+    "wait_runtime_failures": 0,
+    "wait_spin_calls": 0,
+    "peer_received_blocks": 28744,
+    "peer_first_sequence": 0,
+    "peer_last_sequence": 28743,
+    "peer_sequence_gaps": 0,
+    "peer_duplicates": 0,
+    "peer_out_of_order": 0,
+    "peer_stop_observed": true,
+    "tail_partial_source_frames": 146
+  },
+  "video": {
+    "nominal_fps": 20,
+    "cap_mbps": 4,
+    "quality": 25,
+    "submitted": 6000,
+    "encoded": 6000,
+    "sent": 5928,
+    "feedback_accepted": 5928,
+    "pending_feedback": 0,
+    "replaced": 72,
+    "skipped_slots": 0,
+    "invalid_datagrams": 0,
+    "reply_errors": 0,
+    "source_timestamp_repeats": 0
+  },
+  "av_input": {
+    "input_packets": 9778,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "timeouts": 0,
+    "stop_sent": true,
+    "stop_observed": true,
+    "cleanup_errors": []
+  },
+  "cpu": {
+    "harness_process_seconds": 66.625,
+    "harness_process_scope": "Synthetic encoder plus local reference/video and AV peer work; not a pure encoder measurement.",
+    "video_sender_process_seconds": 138.59375,
+    "video_sender_thread_seconds": 12.453125
+  },
+  "comparison_to_event_wait_simulation": {
+    "precise_artifact": "This run",
+    "prior_artifact": "artifacts/overnight-long-soak-20261105/audio-stress-5m-0233",
+    "prior_event_wait_wall_seconds": 300.7957637999207,
+    "prior_event_wait_sent_blocks": 18725,
+    "prior_event_wait_captured_pcm_frames": 9399360,
+    "prior_event_wait_captured_source_seconds_at_48khz": 195.82,
+    "interpretation": "The prior synthetic event-wait run produced fewer source frames over its wall duration than this precise-wait synthetic run. This comparison identifies under-production in that simulation; it does not establish clock causality or characterize production WASAPI, playback, DAC buffering, or drift."
+  },
+  "provenance": {
+    "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+    "reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+    "snapshot_harness_sha256": "56f3b36fb846c2953d5a099aa19fb6c3c51ad1acf2461d439470d6e2dcf50e22",
+    "snapshot_synthetic_backend_sha256": "1be12fc576332cdf2be3febb9dc92b889a77eacd81d72ec3f79bb3ae01b8e5eb",
+    "manifest_sha256": "6ff511c0edfc5ee74a5548dccc74d46adf5ffda53658af64e26fa0306ce29e5b",
+    "synthetic_audio_manifest_sha256": "d6bd7b6a3dbbca201eff472a5ee7f0ff79ce290b3f18c0fae7d9c639756f9375",
+    "host_source_hashes": {
+      "session_launcher.py": "dfedc75c8dc2da7436a718d2f9654f5b86dc197673b1de58c0d122cbfe6139b2",
+      "live_session.py": "c1d8e539618996481243741322ac9893c1b353509346665d62be601b0574e6e9",
+      "live_audio.py": "092478b12fd6003f4c4130d2c8ff836009d8291c03bd708b02bbc0b97d85a43e",
+      "audio_codec.py": "b3b795c3b9d23e397343fd09aff64b3a083ed9fc1842afd30592c56dcc7f611c",
+      "av_protocol.py": "f9bb83120869673f61f6fa493db05faf6b891229dd859a088923b012b5c1a029",
+      "av_session.py": "098f2433f83bc23763dfefbf2188b2a832b5bc54a364ee80e57f63fd1dba235c",
+      "stream_sender.py": "7420aedcd83fb34e57d7c9924cc108709ba4d5d17142bd52166e7b5c7350bc50",
+      "pipeline.py": "6f0cd283772d2e0c0b7ab021f4a5f8dfcef549a2a1f3c782b44a6f4e0644984c",
+      "pacing_wait.py": "6c84d7def3a9f30efa1bbfbb0f94b01abd57faa1710e70c25df30456ebdcf9ad"
+    }
+  },
+  "claims_excluded": [
+    "No production WASAPI capture or physical audio endpoint was used.",
+    "No receiver MSI acceptance, DAC buffering, audio playback, clock drift, or acoustic output is inferred.",
+    "The prior event-wait result shows synthetic source under-production but does not identify its cause."
+  ]
+}

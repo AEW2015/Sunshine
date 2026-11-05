@@ -1,0 +1,102 @@
+{
+  "run": "artifacts/overnight-long-soak-20261105/audio-video-native-30fps-5m-0335",
+  "summary_sha256": "1f62725f04f8ee3ab6f62089cd6d1b0c5ba29354256ff6e8ae05b01a246cfe44",
+  "complete": true,
+  "scope": "Localhost native-CFR 30fps video, 8Mbps cap, Q25, hybrid400, synthetic quiet signed16 stereo PCM through production resampler/IMA, and input-only AV; no HIL, hardware, or RF.",
+  "duration_seconds": 300.8162926998921,
+  "video": {
+    "clip_selection": "native",
+    "nominal_fps": 30,
+    "canvas_px": [720, 480],
+    "cap_mbps": 8,
+    "quality": 25,
+    "pacing": "hybrid",
+    "spin_tail_us": 400,
+    "submitted": 9000,
+    "encoded": 9000,
+    "sent": 8999,
+    "reference_peer_complete": 8999,
+    "ingress_feedback_accepted": 8999,
+    "pending_feedback": 0,
+    "encoded_replaced": 1,
+    "source_timestamp_repeats": 0,
+    "skipped_slots": 0,
+    "invalid_datagrams": 0,
+    "reply_errors": 0,
+    "encoded_bytes": 175783552,
+    "application_wire_bytes": 182799501,
+    "application_wire_mbps": 4.869747172509398
+  },
+  "audio": {
+    "callback_wait": "precise, zero spin tail",
+    "input_rate_hz": 48000,
+    "accepted_source_frames": 14428800,
+    "accepted_source_seconds_at_48khz": 300.6,
+    "encoded_published_blocks": 28746,
+    "sent_blocks": 28743,
+    "queued_unsent_at_close": 3,
+    "stale_blocks": 0,
+    "queue_evictions": 0,
+    "pcm_drops": 0,
+    "capture_errors": 0,
+    "partial_resampler_tail_frames": 146,
+    "peer_audio_packets": 28743,
+    "peer_first_sequence": 0,
+    "peer_last_sequence": 28742,
+    "peer_sequence_gaps": 0,
+    "peer_duplicates": 0,
+    "peer_out_of_order": 0,
+    "callback_count": 30061,
+    "callback_max_gap_ms": 15.6273,
+    "late_callback_intervals": 2,
+    "missed_schedule_periods": 0,
+    "wait_native_calls": 30060,
+    "wait_fallback_calls": 0,
+    "wait_runtime_failures": 0,
+    "wait_spin_calls": 0
+  },
+  "input_only_av": {
+    "packets": 9776,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "timeouts": 0,
+    "stop_sent": true,
+    "stop_observed": true,
+    "cleanup_errors": []
+  },
+  "cpu": {
+    "harness_process_seconds": 67.875,
+    "harness_scope": "Synthetic audio encoder plus all local reference and AV peer activity in the harness process.",
+    "video_sender_process_seconds": 171.609375,
+    "video_sender_thread_seconds": 18.53125,
+    "interpretation": "These measurements have different scopes and do not isolate pure encoder cost."
+  },
+  "prior_legacy_control": {
+    "run": "artifacts/overnight-long-soak-20261105/audio-video-30fps-5m-0309",
+    "sent_and_feedback_accepted": 8997,
+    "submitted": 9000,
+    "source_timestamp_repeats": 3000,
+    "comparison_scope": "Separate legacy-resampler control run; counts are not pooled with this native-CFR result."
+  },
+  "provenance": {
+    "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "reference_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+    "reference_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5",
+    "harness_snapshot_sha256": "66bcf168ae13adcd01d80d7fb0edd2b32139601327318ea01037149d2f5d9a05",
+    "synthetic_backend_snapshot_sha256": "1be12fc576332cdf2be3febb9dc92b889a77eacd81d72ec3f79bb3ae01b8e5eb",
+    "source_hashes": {
+      "session_launcher.py": "4165872a17d4f28f03f218bb9652b1110095309f23c9bc64df5d39a29221852e",
+      "stream_sender.py": "d559913d60f8bff328e5f1f069f305cac7d1b7a4da2ded3b3cd44ecf15d6d348",
+      "host.py": "75dc5b0aa0b58d71ef8d7141274d371c2b16f732e754ba58ae413d4b24ba5882",
+      "live_session.py": "c1d8e539618996481243741322ac9893c1b353509346665d62be601b0574e6e9",
+      "live_audio.py": "092478b12fd6003f4c4130d2c8ff836009d8291c03bd708b02bbc0b97d85a43e",
+      "audio_codec.py": "b3b795c3b9d23e397343fd09aff64b3a083ed9fc1842afd30592c56dcc7f611c",
+      "pacing_wait.py": "6c84d7def3a9f30efa1bbfbb0f94b01abd57faa1710e70c25df30456ebdcf9ad"
+    }
+  },
+  "claims_excluded": [
+    "Peer-complete and feedback-accepted counts are localhost wire/reference evidence, not HIL receiver decode or display confirmation.",
+    "Synthetic audio is not production WASAPI capture or physical playback; no DAC buffering or drift is inferred.",
+    "The 8Mbps value is a cap; measured application wire rate was about 4.87Mbps."
+  ]
+}

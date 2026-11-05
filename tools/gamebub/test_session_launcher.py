@@ -76,6 +76,7 @@ class LauncherTests(unittest.TestCase):
                 ["--pacing-wait", "hybrid", "--pacing-spin-us", "1001"],
                 ["--pacing-wait", "sleep", "--pacing-spin-us", "400"],
                 ["--capture-interface", "adapter"],
+                ["--clip-selection", "native"],
             ):
                 with self.subTest(extra=extra), self.assertRaises(ValueError):
                     launcher.run(self.args(root, extra))
@@ -248,6 +249,11 @@ class LauncherTests(unittest.TestCase):
         ):
             self.assertEqual(launcher.main(argv), 1)
         with (
+            patch.object(launcher, "run", return_value={"logging": {"dropped": 1}}),
+            patch("builtins.print"),
+        ):
+            self.assertEqual(launcher.main(argv), 1)
+        with (
             patch.object(launcher, "run", side_effect=ValueError("invalid")),
             patch("sys.stderr"),
             self.assertRaises(SystemExit),
@@ -266,6 +272,16 @@ class LauncherTests(unittest.TestCase):
                 self.assertRaises(ValueError),
             ):
                 launcher.run(args)
+            probe.bind.assert_called_once_with(("127.0.0.1", 0))
+            self.assertFalse(args.output.exists())
+            probe.bind.side_effect = OSError("source address unavailable")
+            probe.connect.reset_mock()
+            with (
+                patch.object(launcher.socket, "socket", return_value=probe),
+                self.assertRaisesRegex(OSError, "source address unavailable"),
+            ):
+                launcher.run(args)
+            probe.connect.assert_not_called()
             self.assertFalse(args.output.exists())
             args.output.mkdir()
             output = MagicMock()
@@ -337,12 +353,26 @@ class LauncherTests(unittest.TestCase):
             clip = Path(directory) / "source.webm"
             clip.write_bytes(b"pinned-source-test")
             args = self.args(
-                Path(directory), ["--clip", str(clip), "--loop-clip", "--av-input", "--dry-run"]
+                Path(directory),
+                [
+                    "--clip",
+                    str(clip),
+                    "--loop-clip",
+                    "--av-input",
+                    "--dry-run",
+                    "--clip-selection",
+                    "native",
+                    "--fps",
+                    "30",
+                ],
             )
             preview = launcher.run(args)
             manifest = json.loads((args.output / "manifest.json").read_text())
             self.assertEqual(manifest["clip_sha256"], hashlib.sha256(clip.read_bytes()).hexdigest())
             self.assertEqual(manifest["clip_start_offset_seconds"], 0)
+            self.assertEqual(manifest["clip_selection"], "native")
+            command = preview["video_command"]
+            self.assertEqual(command[command.index("--clip-selection") + 1], "native")
             self.assertIn("--loop-clip", preview["video_command"])
             self.assertNotIn("--desktop", preview["video_command"])
             args.video = False

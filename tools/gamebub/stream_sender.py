@@ -18,7 +18,14 @@ from PIL import Image, ImageGrab
 
 from controller import ControllerTracker
 from event_log import EventLog
-from host import WIDTH, canvas, clip_frames, looping_clip_frames, shift_canvas_right
+from host import (
+    WIDTH,
+    canvas,
+    clip_frames,
+    looping_clip_frames,
+    native_clip_frames,
+    shift_canvas_right,
+)
 from msv1 import (
     FEEDBACK,
     MAX_FRAME,
@@ -294,7 +301,7 @@ class Session:
         @param max_jpeg_bytes Maximum complete JPEG bytes for this receiver session.
         @param jpeg_retry_quality_drop One optional quality reduction after size rejection.
         @param pacing_wait Explicit optional precise blocking wait; default keeps ordinary sleep.
-        @param pacing_spin_us Explicit hybrid tail, from0 to1000 microseconds; ignored by default modes.
+        @param pacing_spin_us Hybrid tail from 0 to 1000 microseconds; other modes accept only the default.
         """
         if (
             type(fps) is not int
@@ -892,6 +899,13 @@ def run(args, source=None):
     if type(shift_right_px) is not int or not 0 <= shift_right_px < WIDTH:
         raise ValueError("Right shift must be an integer from 0 to 719 pixels")
     bind_address = str(ipaddress.IPv4Address(getattr(args, "bind", "0.0.0.0")))
+    selection = getattr(args, "clip_selection", "legacy")
+    if selection not in ("legacy", "native") or (
+        selection == "native" and not getattr(args, "clip", None)
+    ):
+        raise ValueError(
+            "Native clip selection requires a clip; selection must be legacy or native"
+        )
     dxgi = (
         source is None
         and not args.clip
@@ -903,12 +917,16 @@ def run(args, source=None):
         with session.lock:
             session._event(kind, **fields)
 
-    clip_source = looping_clip_frames if getattr(args, "loop_clip", False) else clip_frames
+    clip_reader = native_clip_frames if selection == "native" else clip_frames
     frames = (
         source
         if source is not None
         else (
-            clip_source(args.clip, args.fps)
+            (
+                looping_clip_frames(args.clip, args.fps, clip_reader=clip_reader)
+                if getattr(args, "loop_clip", False)
+                else clip_reader(args.clip, args.fps)
+            )
             if args.clip
             else recovering_desktop_frames(args.fps, capture_event)
             if dxgi
@@ -971,6 +989,7 @@ def run(args, source=None):
                 shift_right_px=shift_right_px,
                 pacing_wait=getattr(args, "pacing_wait", "sleep"),
                 pacing_spin_us=getattr(args, "pacing_spin_us", 600),
+                clip_selection=selection if source is None and args.clip else None,
             )
         started = time.perf_counter_ns()
         slot = 0
@@ -1057,6 +1076,12 @@ def main(argv=None):
     group.add_argument("--clip", type=Path)
     group.add_argument("--desktop", action="store_true")
     parser.add_argument(
+        "--clip-selection",
+        choices=("legacy", "native"),
+        default="legacy",
+        help="Legacy resampling is unchanged; native requires matching CFR source FPS",
+    )
+    parser.add_argument(
         "--loop-clip", action="store_true", help="Repeat a saved clip from its beginning"
     )
     parser.add_argument(
@@ -1123,6 +1148,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.loop_clip and not args.clip:
         parser.error("--loop-clip requires --clip")
+    if args.clip_selection == "native" and not args.clip:
+        parser.error("--clip-selection native requires --clip")
     if not 0 <= args.pacing_spin_us <= 1000 or (
         args.pacing_wait != "hybrid" and args.pacing_spin_us != 600
     ):
@@ -1151,6 +1178,8 @@ def main(argv=None):
         0
         if result["counts"].get("feedback_accepted", 0)
         and not result.get("pacing_wait", {}).get("cleanup_error")
+        and not result.get("logging", {}).get("error")
+        and not result.get("logging", {}).get("dropped", 0)
         else 2
     )
 

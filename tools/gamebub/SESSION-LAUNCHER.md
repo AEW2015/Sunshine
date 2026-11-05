@@ -75,6 +75,20 @@ source IPv4 address. The standalone sender keeps its wildcard default unless
 `--bind` is selected. Video logs record the actual local and peer endpoints;
 the capture filter must match those addresses. This avoids silently choosing
 another source interface for video on a host with multiple adapters.
+Route preflight binds that source before connecting its probe, so a valid
+explicit bind need not match Windows' wildcard default. Lost log records or
+log I/O errors produce a nonzero CLI result; they describe incomplete evidence
+and do not turn successful video sends into receiver drops.
+
+`--clip-selection legacy` retains the existing hold-based clip resampler. At
+equal nominal rates, rounded source PTS can make it repeat and skip native
+frames; slot FPS alone must not be presented as unique source-frame FPS.
+`--clip-selection native` instead decodes each original frame once and requires
+the source's nominal rate to equal `--fps`. It checks strictly increasing
+rational PTS and cadence within one source tick and less than half a frame.
+Mismatched-rate or variable-cadence inputs fail visibly. Looping reopens and
+closes the decoder; it does not retain a frame history. The PowerShell option
+is `-ClipSelection native`. Desktop capture and the default remain unchanged.
 
 ### Owned capture through STOP
 

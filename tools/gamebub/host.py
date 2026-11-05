@@ -17,6 +17,7 @@ import zlib
 from collections import Counter
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
+from fractions import Fraction
 from functools import cache
 from pathlib import Path
 
@@ -324,6 +325,39 @@ def clip_frames(path: Path, fps: int) -> Iterator[av.VideoFrame]:
             while tick / fps < previous - origin + last_duration:
                 yield current
                 tick += 1
+
+
+def native_clip_frames(path: Path, fps: int) -> Iterator[av.VideoFrame]:
+    """@brief Decode each native CFR frame once without timeline resampling.
+
+    @param path Square-pixel clip with strictly increasing rational PTS.
+    @param fps Integer sender rate matching the declared nominal source rate.
+    @return Original frames, one per sender slot; no padding or invented frames.
+    @throws ValueError For rate mismatch or cadence outside source-clock precision.
+    @note Cadence error may be at most one source tick and less than half a frame.
+    """
+    if type(fps) is not int or not 1 <= fps <= 30:
+        raise ValueError("Native clip rate must be an integer from 1 to 30")
+    period = Fraction(1, fps)
+    with av.open(str(path)) as container:
+        stream = container.streams.video[0]
+        if stream.sample_aspect_ratio not in (None, 1):
+            raise ValueError("Normalize nonsquare pixels before native clip streaming")
+        if stream.average_rate != fps:
+            raise ValueError("Native clip nominal rate must match the sender FPS")
+        previous = previous_tick = None
+        for frame in container.decode(stream):
+            if frame.pts is None or frame.time_base is None or frame.time_base <= 0:
+                raise ValueError("Native clip requires a positive PTS time base and timestamps")
+            timestamp = frame.pts * frame.time_base
+            if previous is not None:
+                if timestamp <= previous:
+                    raise ValueError("Native clip requires strictly increasing timestamps")
+                error = abs(timestamp - previous - period)
+                if error > max(frame.time_base, previous_tick) or error >= period / 2:
+                    raise ValueError("Native clip cadence differs from the sender FPS")
+            previous, previous_tick = timestamp, frame.time_base
+            yield frame
 
 
 def looping_clip_frames(path, fps, *, clip_reader=clip_frames):

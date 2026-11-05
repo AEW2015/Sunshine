@@ -1,4 +1,4 @@
-# Overnight pacing candidate: morning test matrix
+﻿# Overnight pacing candidate: morning test matrix
 
 This matrix prepares the next localhost qualification pass for the optional
 lower-CPU pacing candidate described in
@@ -68,37 +68,87 @@ Commands above are recommendations only; this note does not claim they passed.
 
 ## Morning hardware sequence
 
-The first morning test is the existing JPEG path, not the custom codec. Keep
-the receiver app, build50, overlap, queue and placement fixed. Record their
-actual identities rather than assuming the overnight configuration survived.
-Confirm the source IPv4 address and camera coverage through STOP again.
+The morning sequence starts with the existing build50 JPEG/MSV1 and AV v1
+endpoint. It requires no firmware flash or custom endpoint. Confirm that the
+receiver is freshly available; record its actual app/build/FPGA identity,
+address, queue settings, baseline counters, explicit host bind address, and
+camera coverage through STOP. If those readiness facts cannot be confirmed,
+do not start media. Use the same saved Xonotic clip at offset zero for both
+passes (SHA-256
+`36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83`). Keep
+capture on the same interface and retain it through STOP and natural safety
+autostop/finalization.
 
-1. Run a 30-second control at 720×480, 20 fps, Q25, 4 Mbps with the saved
-   Xonotic clip from offset zero, input-only AV and the unchanged `sleep` wait.
-   Reserve IDs 2,014,200–2,014,799 only after confirming they remain unused.
-2. Repeat the same slots and settings with `--pacing-wait hybrid` and its
-   default 600-microsecond tail. Reserve IDs 2,014,800–2,015,399 separately.
-   This changes only the host wait. Keep audio and gamepad injection off.
-3. Reconcile complete sends, exact ACK identities and receiver outcomes before
-   a longer run. Both captures must contain the actual STOP packet; retain
-   capture interface, point, drop counts, packet-gap distributions, host CPU,
-   receiver queue/core counters and the camera's coverage limitations.
-4. If the comparison passes, run five minutes at the selected 20 fps settings.
-   Stop rate escalation if the queue saturates, identities cannot be reconciled
-   or capture coverage fails. Preserve failure records before restarting.
-5. Treat 25/30 fps as separate measured gates. Local 30 fps results at an 8 Mbps
-   cap do not establish receiver capacity or authorize that hardware rate.
-   The 400-microsecond tail is a separate localhost-tuned candidate; do not
-   substitute it into the first 20 fps matched comparison without declaring it.
+1. Run a 30-second 20 fps, 4 Mbps, Q25 legacy-sampler control with input-only
+   AV. Keep physical PC audio capture and virtual gamepad injection off. Use
+   the unchanged `sleep` wait and 600 microsecond default spin setting. Reserve IDs
+   2,014,200 to 2,014,799 only after confirming they are fresh and unused.
+2. Repeat those settings with the same clip, offset, capture interface, legacy
+   sampler, input-only AV and 600 microsecond tail; change only the host wait to
+   `hybrid`. Reserve IDs 2,014,800 to 2,015,399 after a separate fresh-ID check.
+3. Before extending the run, reconcile send, feedback and receiver counters;
+   verify the actual STOP datagram in each finalized capture. Retain capture
+   interface/point/drop counts, packet gaps, host CPU, receiver queue/core
+   counters, and camera coverage limitations.
+4. After the short pair passes, run a five-minute comparison at the same 20 fps
+   and 4 Mbps settings. Keep the legacy sampler for this first hardware control
+   comparison. Stop escalation on queue saturation, identity mismatch, capture
+   coverage failure, or cleanup errors.
+5. Treat a later 30 fps capacity probe as a distinct source-policy step. The
+   native sampler may be selected only for a matching nominal 30 fps CFR source
+   whose rational PTS cadence passes validation. Record that policy change; it
+   is not like-for-like with the preceding 20 fps legacy-sampler control.
 
-Use the production launcher with explicit clip, wait and capture options from
-[`SESSION-LAUNCHER.md`](../SESSION-LAUNCHER.md). Allow its natural capture tail
-after media STOP. The latest results are tracked separately in
+Change one diagnostic variable at a time: frame rate, video bitrate cap, or
+wait/tail setting. The 400 microsecond tail has been exercised in localhost 30 fps,
+8 Mbps video plus synthetic full-rate audio runs; this is not hardware proof
+and does not qualify it for the initial 20 fps comparison. Do not change frame
+rate, bitrate and pacing tail together.
+
+The following PowerShell examples show the current wrapper flags; they are
+examples only and were not executed. First list the local dumpcap interfaces,
+then set `$CaptureInterface` to the exact selected interface name from that
+output. Do not reuse another machine's interface number. Set the receiver and
+bind variables to the values confirmed during readiness. The two output
+directories are distinct and must not already exist.
+
+```powershell
+$Clip = 'C:/ai/sunshine-gamebub/tools/gamebub/artifacts/media/Xonotic-0-8-2-gameplay.webm'
+$Receiver = '<receiver IPv4 from readiness check>'
+$BindAddress = '<host source IPv4 from readiness check>'
+& 'C:\Program Files\Wireshark\dumpcap.exe' -D
+$CaptureInterface = '<exact interface name selected from dumpcap -D>'
+$SessionLauncher = 'C:/ai/sunshine-gamebub/tools/gamebub/start_gamebub_session.ps1'
+$OutputRoot = 'C:/ai/sunshine-gamebub/tools/gamebub/artifacts/morning-20261105'
+
+# 20 fps, 4 Mbps, Q25 legacy control; default sleep wait.
+& $SessionLauncher -Receiver $Receiver -BindAddress $BindAddress `
+    -Video -Clip $Clip -LoopClip -ClipSelection legacy -AvInput `
+    -Seconds 30 -FPS 20 -Quality 25 -Mbps 4 -PacingWait sleep -PacingSpinUs 600 `
+    -CaptureInterface $CaptureInterface -StartFrameId 2014200 `
+    -Output (Join-Path $OutputRoot '20fps-4mbps-legacy-sleep')
+
+# Matched candidate; only the host wait changes.
+& $SessionLauncher -Receiver $Receiver -BindAddress $BindAddress `
+    -Video -Clip $Clip -LoopClip -ClipSelection legacy -AvInput `
+    -Seconds 30 -FPS 20 -Quality 25 -Mbps 4 -PacingWait hybrid -PacingSpinUs 600 `
+    -CaptureInterface $CaptureInterface -StartFrameId 2014800 `
+    -Output (Join-Path $OutputRoot '20fps-4mbps-legacy-hybrid600')
+```
+
+Allow capture's bounded natural tail after STOP; finalization may take roughly
+two minutes. The launcher records `media_end_utc` separately from final
+`end_utc` and verifies the actual STOP packet in the finalized capture. The
+latest localhost results are tracked in
 [`overnight-host-pacing-20261105.md`](overnight-host-pacing-20261105.md).
 Custom CP23 testing stays gated on a matching complete decoder and loader;
 JPEG success does not clear that gate.
 
-## Read-only audit findings
+## Initial read-only audit
+
+These observations describe the starting implementation. The overnight work
+added concurrent AV/video tests, wait-boundary coverage and owned capture
+through STOP; see the [current checkpoint](../OVERNIGHT-WINDOWS-STATUS-20261105.md).
 
 - [`test_live_session_loopback.py`](../test_live_session_loopback.py#L152) uses
   real localhost AV datagrams and checks audio on/off, input packets, and

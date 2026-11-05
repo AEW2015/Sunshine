@@ -118,21 +118,24 @@ namespace gamebub::v20::body {
    * @param w Coded width.
    * @param h Coded height.
    * @return First16 SHA256 bytes, excluding all RGB565 display overlays.
+   * @note Geometry bounds the exact private allocation; validated samples occupy
+   * the low byte of each zero-initialized canonical signed16 little-endian word.
    */
   inline Tag canonical_tag(const Planes &planes, unsigned w, unsigned h) {
     geometry(w, h);
-    std::vector<std::uint8_t> bytes;
-    bytes.reserve(4 + 3 * w * h);
-    bytes.push_back(static_cast<std::uint8_t>(w));
-    bytes.push_back(static_cast<std::uint8_t>(w >> 8));
-    bytes.push_back(static_cast<std::uint8_t>(h));
-    bytes.push_back(static_cast<std::uint8_t>(h >> 8));
+    // Exact shape bounds make every signed16 high byte zero after sample validation.
+    std::vector<std::uint8_t> bytes(4 + 3 * w * h, 0);
+    bytes[0] = static_cast<std::uint8_t>(w);
+    bytes[1] = static_cast<std::uint8_t>(w >> 8);
+    bytes[2] = static_cast<std::uint8_t>(h);
+    bytes[3] = static_cast<std::uint8_t>(h >> 8);
+    std::size_t position = 4;
     for (unsigned p = 0; p < 3; ++p) {
       require(planes[p].size() == std::size_t(w) * h / (p ? 4 : 1), "bank plane length");
       for (auto value : planes[p]) {
         require(value >= 0 && value <= 255, "bank sample domain");
-        bytes.push_back(static_cast<std::uint8_t>(value));
-        bytes.push_back(0);
+        bytes[position] = static_cast<std::uint8_t>(value);
+        position += 2;
       }
     }
     std::array<unsigned char, SHA256_DIGEST_LENGTH> digest;

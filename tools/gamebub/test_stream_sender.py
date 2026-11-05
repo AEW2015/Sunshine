@@ -1331,6 +1331,7 @@ class StreamSenderTests(unittest.TestCase):
                     "shift_right_px": 0,
                     "pacing_wait": "sleep",
                     "pacing_spin_us": 600,
+                    "clip_selection": None,
                 }
             ],
         )
@@ -1488,6 +1489,59 @@ class StreamSenderTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     run(options, iter(()))
                 options.log.open.assert_not_called()
+                sock.assert_not_called()
+
+    def test_native_clip_selection_is_explicit_and_looping_closes_reader(self):
+        """@brief Native mode selects the requested reader and releases it at EOF/slot limit."""
+        for loop in (False, True):
+            with self.subTest(loop=loop), tempfile.TemporaryDirectory() as directory:
+                closed = []
+
+                def reader(path, fps, closed=closed):
+                    """@brief Model two original decoded frames with an observable decoder lease."""
+                    try:
+                        yield Image.new("RGB", (16, 9), "red")
+                        yield Image.new("RGB", (16, 9), "blue")
+                    finally:
+                        closed.append(True)
+
+                args = SimpleNamespace(
+                    target="127.0.0.1",
+                    port=5533,
+                    log=Path(directory) / "video.jsonl",
+                    clip=Path("source.webm"),
+                    clip_selection="native",
+                    loop_clip=loop,
+                    frames=3,
+                    fps=30,
+                    mbps=8,
+                    max_age_ms=200,
+                    quality=25,
+                    min_quality=25,
+                )
+                session = MagicMock()
+                session.lock, session.counts = threading.Lock(), Counter()
+                session.close.return_value = {}
+                with (
+                    patch("stream_sender.Session", return_value=session),
+                    patch("stream_sender.native_clip_frames", side_effect=reader) as native,
+                    patch("stream_sender.clip_frames") as legacy,
+                    patch("stream_sender.time.sleep"),
+                ):
+                    run(args)
+                legacy.assert_not_called()
+                self.assertEqual(native.call_count, 2 if loop else 1)
+                self.assertEqual(len(closed), native.call_count)
+                self.assertEqual(session.pipeline.submit.call_count, 3 if loop else 2)
+
+    def test_invalid_clip_selection_has_no_file_or_socket_side_effect(self):
+        """@brief Native source selection cannot silently turn desktop capture on."""
+        for mode, clip in (("other", Path("clip")), ("native", None)):
+            args = SimpleNamespace(clip_selection=mode, clip=clip, log=Mock())
+            with self.subTest(mode=mode), patch("stream_sender.socket.socket") as sock:
+                with self.assertRaises(ValueError):
+                    run(args)
+                args.log.open.assert_not_called()
                 sock.assert_not_called()
 
     def test_invalid_spin_tail_rejected_before_resources(self):
@@ -1759,6 +1813,7 @@ class StreamSenderTests(unittest.TestCase):
             ("--pacing-spin-us", "400"),
             ("--bind", "::1"),
             ("--loop-clip",),
+            ("--clip-selection", "native"),
         ):
             with self.subTest(extra=extra), self.assertRaises(SystemExit):
                 main(["127.0.0.1", "--desktop", "--log", "unused", *extra])
@@ -1784,6 +1839,16 @@ class StreamSenderTests(unittest.TestCase):
                 main(["127.0.0.1", "--desktop", "--log", "unused", "--packet-timing"]), 0
             )
             self.assertTrue(sender.call_args.args[0].packet_timing)
+        for logging in ({"dropped": 1}, {"error": "disk full"}):
+            with (
+                self.subTest(logging=logging),
+                patch(
+                    "stream_sender.run",
+                    return_value={"counts": {"feedback_accepted": 1}, "logging": logging},
+                ),
+                patch("builtins.print"),
+            ):
+                self.assertEqual(main(["127.0.0.1", "--desktop", "--log", "unused"]), 2)
         with (
             patch("stream_sender.run", side_effect=OSError("closed")),
             self.assertRaises(SystemExit),

@@ -1,0 +1,80 @@
+{
+  "run": "artifacts/native-30fps-soak-20261105/600s-20261105T094534Z",
+  "summary_sha256": "5b6b39c778b375d05ae9dd36b095519eac0254bbd620eec90fabfa1381c3881b",
+  "scope": "localhost native-frame video at nominal 30 fps, 8 Mbps cap, Q25, hybrid pacing with 400 us spin tail, plus input-only AV; no audio, injection, hardware, or RF validation",
+  "duration_seconds": 600.3061195,
+  "video": {
+    "submitted": 18000,
+    "encoded": 18000,
+    "sent": 17997,
+    "feedback_accepted": 17997,
+    "pending_feedback_at_end": 0,
+    "replaced": 3,
+    "skipped_slots": 0,
+    "invalid_datagrams": 0,
+    "reply_errors": 0,
+    "nominal_fps": 30,
+    "sent_fps_including_drain": 29.979704379808506,
+    "quality": 25,
+    "canvas_px": [720, 480],
+    "source_px": [1024, 600],
+    "scaled_content_px": [691, 405],
+    "scaled_content_origin_xy": [14, 37],
+    "encoded_bytes": 351114954,
+    "application_wire_bytes": 365096357,
+    "application_wire_mbps": 4.8654690684025255,
+    "cap_mbps": 8
+  },
+  "source": {
+    "file": "Xonotic-0-8-2-gameplay.webm",
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "native_source_samples": 18000,
+    "loop_indices_and_sample_counts": {"0": 5490, "1": 5490, "2": 5490, "3": 1530},
+    "consecutive_source_timestamp_repeats": 0,
+    "selection": "Unique native-decoded frames within each pass, replayed at EOF without resampling. Four passes include a partial final pass; repeated passes revisit the same clip scenes."
+  },
+  "av_input": {
+    "input_packets": 19535,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "timeouts": 0,
+    "stop_sent": true,
+    "stop_observed": true,
+    "cleanup_errors": []
+  },
+  "cpu": {
+    "same_process_total_cpu_seconds": 377.984375,
+    "same_process_scope": "Video sender plus local reference and AV peer threads; not directly comparable to a separate sender-child process measurement.",
+    "sender_thread_cpu_seconds": 34.1875,
+    "sender_thread_one_core_fraction_over_video_duration": 0.05694
+  },
+  "memory_samples": {
+    "sample_count": 21,
+    "interval_seconds_nominal": 30,
+    "sampled_values_are_not_memory_bounds": true,
+    "warm_subset_elapsed_seconds_gte": 60,
+    "warm_subset_count": 19,
+    "percentile_method": "linear interpolation between sorted observations",
+    "working_set_bytes_all_min_p50_p95_max": [38780928, 58933248, 60923904, 61767680],
+    "private_bytes_all_min_p50_p95_max": [33333248, 51748864, 54575104, 55046144],
+    "working_set_bytes_warm_min_p50_p95_max": [52420608, 59133952, 61008282, 61767680],
+    "private_bytes_warm_min_p50_p95_max": [45871104, 51769344, 54622208, 55046144],
+    "peer_retention_note": "The localhost AV peer retained up to 256 control packets; these finite-duration samples do not establish steady-state heap bounds."
+  },
+  "concurrency_note": "Native profiling compilation and a 5-second audio smoke overlapped portions of the run. Treat this as an operational localhost soak, not a clean comparative CPU or latency benchmark.",
+  "source_hashes": {
+    "stream_sender.py": "19fb3d093b50fc3bbf5957cad27730156b6689e5528d2a1bfcc7c095cf976a28",
+    "pacing_wait.py": "6c84d7def3a9f30efa1bbfbb0f94b01abd57faa1710e70c25df30456ebdcf9ad",
+    "pipeline.py": "6f0cd283772d2e0c0b7ab021f4a5f8dfcef549a2a1f3c782b44a6f4e0644984c",
+    "prepare_encoder_sequence.py": "b2d4e92dcc3a54020a173064bd4efe51aedde8204dfce32c3fae7bd3a8dc1b05",
+    "reference_loopback.py": "596ebebb1565246316d79ab54553880082c35d672ebbd8b4074832618bbb7733",
+    "live_session.py": "c1d8e539618996481243741322ac9893c1b353509346665d62be601b0574e6e9",
+    "reference_repo_revision": "75f8497b6ffefadd8c0403728b93ccfbbfa02f52",
+    "reference_repo_sha256": "01a083f4794c7ced7e73eece60eac9d32cdacf589c6bc72b6c91c72e945cc9e5"
+  },
+  "claims_excluded": [
+    "No hardware playback, RF, physical receiver decode, display presentation, or audio-acoustics verification.",
+    "The 8 Mbps setting is a cap; measured application wire rate was about 4.865 Mbps.",
+    "No claim that 18,000 frames represent 18,000 distinct scenes; the clip looped four passes, with the last partial."
+  ]
+}

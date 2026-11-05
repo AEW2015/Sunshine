@@ -1,0 +1,1448 @@
+{
+  "scope": "offline_independent_full_cp23_explicit_budgeted_key_abba",
+  "source_manifest_sha256": "f27c9b4da3fd2d4999d17ac08768021a4e09711c4dfb73b60c67c1fcba16d1d9",
+  "source_provenance": {
+    "kind": "saved_clip",
+    "file_name": "Xonotic-0-8-2-gameplay.webm",
+    "bytes": 48552136,
+    "sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "requested_offset_us": 0,
+    "selection_mode": "native-decoded",
+    "native_rate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "sample_fps": null,
+    "first_sample_index": null,
+    "first_decoded_id": 0,
+    "pts_origin_us": 7000,
+    "resampling_policy": "no resampling: unique decoded native frames; skip before requested relative PTS offset",
+    "canvas_policy": "existing canvas: aspect-preserving fit into centered720x405 within720x480",
+    "loop": false,
+    "repeated_source_timestamps": false
+  },
+  "old_executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+  "new_executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+  "runs": [
+    {
+      "name": "old-off-A1",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:47:43.864766+00:00",
+      "runner_wall_ns": 4059859100,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2885750900,
+          "mean": 48095848.333333336,
+          "p50": 48375900,
+          "p95": 60315600,
+          "max": 66717000
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 364338500,
+          "mean": 6072308.333333333,
+          "p50": 5812500,
+          "p95": 7031000,
+          "max": 8875700
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3473400,
+          "mean": 57890.0,
+          "p50": 81300,
+          "p95": 120800,
+          "max": 190600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3402500200,
+          "mean": 56708336.666666664,
+          "p50": 56507200,
+          "p95": 72071600,
+          "max": 80346500
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 4031781200,
+          "mean": 67196353.33333333,
+          "p50": 66582400,
+          "p95": 82568500,
+          "max": 90764300
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1580758600,
+            "mean": 46492900.0,
+            "p50": 42453100,
+            "p95": 64463900,
+            "max": 66717000
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 211983800,
+            "mean": 6234817.647058823,
+            "p50": 5995600,
+            "p95": 7696000,
+            "max": 8875700
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3469100,
+            "mean": 102032.35294117648,
+            "p50": 95500,
+            "p95": 144600,
+            "max": 190600
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1890969900,
+            "mean": 55616761.76470588,
+            "p50": 53272100,
+            "p95": 74882400,
+            "max": 80346500
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 2253234400,
+            "mean": 66271600.0,
+            "p50": 64062100,
+            "p95": 85694700,
+            "max": 90764300
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1304992300,
+            "mean": 50192011.538461536,
+            "p50": 49162500,
+            "p95": 56348200,
+            "max": 58714600
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 152354700,
+            "mean": 5859796.153846154,
+            "p50": 5726900,
+            "p95": 6615000,
+            "max": 7889200
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4300,
+            "mean": 165.3846153846154,
+            "p50": 200,
+            "p95": 300,
+            "max": 300
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1511530300,
+            "mean": 58135780.76923077,
+            "p50": 57799500,
+            "p95": 65615900,
+            "max": 65907800
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1778546800,
+            "mean": 68405646.15384616,
+            "p50": 67927700,
+            "p95": 76569700,
+            "max": 77169300
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "new-off-B1",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:47:47.510576+00:00",
+      "runner_wall_ns": 3645089800,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2636411100,
+          "mean": 43940185.0,
+          "p50": 46016200,
+          "p95": 54875600,
+          "max": 57123200
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 333999600,
+          "mean": 5566660.0,
+          "p50": 5497400,
+          "p95": 6189400,
+          "max": 6384900
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3043300,
+          "mean": 50721.666666666664,
+          "p50": 80500,
+          "p95": 99000,
+          "max": 112100
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3020523900,
+          "mean": 50342065.0,
+          "p50": 52382700,
+          "p95": 61440300,
+          "max": 63856900
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3614528900,
+          "mean": 60242148.333333336,
+          "p50": 61996200,
+          "p95": 71648100,
+          "max": 74045100
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1386317000,
+            "mean": 40774029.4117647,
+            "p50": 36593100,
+            "p95": 55938400,
+            "max": 57123200
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 188360500,
+            "mean": 5540014.705882353,
+            "p50": 5494800,
+            "p95": 6189400,
+            "max": 6337800
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3039500,
+            "mean": 89397.05882352941,
+            "p50": 89400,
+            "p95": 105500,
+            "max": 112100
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1604126800,
+            "mean": 47180200.0,
+            "p50": 43062900,
+            "p95": 62506900,
+            "max": 63856900
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1939803500,
+            "mean": 57053044.11764706,
+            "p50": 53196200,
+            "p95": 72729800,
+            "max": 73763300
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1250094100,
+            "mean": 48080542.307692304,
+            "p50": 46997500,
+            "p95": 53729200,
+            "max": 56487400
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 145639100,
+            "mean": 5601503.846153846,
+            "p50": 5510000,
+            "p95": 6331800,
+            "max": 6384900
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 3800,
+            "mean": 146.15384615384616,
+            "p50": 100,
+            "p95": 300,
+            "max": 300
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1416397100,
+            "mean": 54476811.538461536,
+            "p50": 53873500,
+            "p95": 60928900,
+            "max": 63547700
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1674725400,
+            "mean": 64412515.384615384,
+            "p50": 64177500,
+            "p95": 71302600,
+            "max": 74045100
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "new-off-B2",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:47:51.103628+00:00",
+      "runner_wall_ns": 3590900700,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2694068100,
+          "mean": 44901135.0,
+          "p50": 46072900,
+          "p95": 55736300,
+          "max": 67117900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 339431900,
+          "mean": 5657198.333333333,
+          "p50": 5527600,
+          "p95": 6475000,
+          "max": 6923200
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3227400,
+          "mean": 53790.0,
+          "p50": 82800,
+          "p95": 109300,
+          "max": 147500
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3084365200,
+          "mean": 51406086.666666664,
+          "p50": 52449900,
+          "p95": 62097000,
+          "max": 74772100
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3562061700,
+          "mean": 59367695.0,
+          "p50": 60398600,
+          "p95": 70335200,
+          "max": 83246600
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1410913100,
+            "mean": 41497444.11764706,
+            "p50": 39780000,
+            "p95": 55736300,
+            "max": 55961800
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 190025400,
+            "mean": 5588982.352941177,
+            "p50": 5504500,
+            "p95": 6475000,
+            "max": 6493300
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3223300,
+            "mean": 94802.94117647059,
+            "p50": 89900,
+            "p95": 129800,
+            "max": 147500
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1630956700,
+            "mean": 47969314.705882356,
+            "p50": 47236400,
+            "p95": 62097000,
+            "max": 62143000
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1899870000,
+            "mean": 55878529.4117647,
+            "p50": 55151700,
+            "p95": 69974100,
+            "max": 70335200
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1283155000,
+            "mean": 49352115.384615384,
+            "p50": 48125900,
+            "p95": 61413000,
+            "max": 67117900
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 149406500,
+            "mean": 5746403.846153846,
+            "p50": 5602600,
+            "p95": 6832300,
+            "max": 6923200
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4100,
+            "mean": 157.69230769230768,
+            "p50": 100,
+            "p95": 300,
+            "max": 400
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1453408500,
+            "mean": 55900326.92307692,
+            "p50": 54767000,
+            "p95": 67932300,
+            "max": 74772100
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1662191700,
+            "mean": 63930450.0,
+            "p50": 62432700,
+            "p95": 76926200,
+            "max": 83246600
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "old-off-A2",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "45598ddb7842671fa0cb27ab36afd2471487027db749c2f68adb24b69e94ff81",
+      "completed_at_utc": "2026-11-05T10:47:54.673721+00:00",
+      "runner_wall_ns": 3568635900,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2678448000,
+          "mean": 44640800.0,
+          "p50": 46178300,
+          "p95": 57279400,
+          "max": 62066800
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 336686000,
+          "mean": 5611433.333333333,
+          "p50": 5516200,
+          "p95": 6165400,
+          "max": 6773900
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3210300,
+          "mean": 53505.0,
+          "p50": 80700,
+          "p95": 109500,
+          "max": 187300
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3064961000,
+          "mean": 51082683.333333336,
+          "p50": 52369700,
+          "p95": 63796900,
+          "max": 68419400
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3542116600,
+          "mean": 59035276.666666664,
+          "p50": 60256800,
+          "p95": 71776200,
+          "max": 76280200
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1434371700,
+            "mean": 42187402.941176474,
+            "p50": 40602600,
+            "p95": 58095200,
+            "max": 62066800
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 191605200,
+            "mean": 5635447.05882353,
+            "p50": 5463800,
+            "p95": 6592000,
+            "max": 6773900
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3206000,
+            "mean": 94294.11764705883,
+            "p50": 89100,
+            "p95": 133600,
+            "max": 187300
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1655721800,
+            "mean": 48697700.0,
+            "p50": 47728000,
+            "p95": 64380100,
+            "max": 68419400
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1929349400,
+            "mean": 56745570.5882353,
+            "p50": 56094500,
+            "p95": 73357800,
+            "max": 76280200
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1244076300,
+            "mean": 47849088.461538464,
+            "p50": 47326700,
+            "p95": 51944000,
+            "max": 57279400
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 145080800,
+            "mean": 5580030.769230769,
+            "p50": 5558800,
+            "p95": 5905100,
+            "max": 5953900
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4300,
+            "mean": 165.3846153846154,
+            "p50": 200,
+            "p95": 300,
+            "max": 300
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1409239200,
+            "mean": 54201507.692307696,
+            "p50": 53450000,
+            "p95": 58275500,
+            "max": 63796900
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1612767200,
+            "mean": 62029507.692307696,
+            "p50": 61496800,
+            "p95": 66359500,
+            "max": 71776200
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "new-off-C1",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:47:58.352532+00:00",
+      "runner_wall_ns": 3677292700,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2764471700,
+          "mean": 46074528.333333336,
+          "p50": 47723700,
+          "p95": 57525200,
+          "max": 71157900
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 349749100,
+          "mean": 5829151.666666667,
+          "p50": 5681900,
+          "p95": 6694300,
+          "max": 8875600
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3283200,
+          "mean": 54720.0,
+          "p50": 82500,
+          "p95": 111900,
+          "max": 147700
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3165911000,
+          "mean": 52765183.333333336,
+          "p50": 54086800,
+          "p95": 65169800,
+          "max": 78305900
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3647200600,
+          "mean": 60786676.666666664,
+          "p50": 62034300,
+          "p95": 73795700,
+          "max": 86666800
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1486142000,
+            "mean": 43710058.823529415,
+            "p50": 39533900,
+            "p95": 64791500,
+            "max": 71157900
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 201089300,
+            "mean": 5914391.176470588,
+            "p50": 5685400,
+            "p95": 6901000,
+            "max": 8875600
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3278600,
+            "mean": 96429.41176470589,
+            "p50": 92700,
+            "p95": 127000,
+            "max": 147700
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1718063900,
+            "mean": 50531291.176470585,
+            "p50": 45661100,
+            "p95": 74798400,
+            "max": 78305900
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1991659100,
+            "mean": 58578208.823529415,
+            "p50": 53481500,
+            "p95": 84561200,
+            "max": 86666800
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1278329700,
+            "mean": 49166526.92307692,
+            "p50": 48237400,
+            "p95": 56087600,
+            "max": 57525200
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 148659800,
+            "mean": 5717684.615384615,
+            "p50": 5648200,
+            "p95": 6282600,
+            "max": 6694300
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4600,
+            "mean": 176.92307692307693,
+            "p50": 200,
+            "p95": 400,
+            "max": 500
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1447847100,
+            "mean": 55686426.92307692,
+            "p50": 54733400,
+            "p95": 62835800,
+            "max": 65169800
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1655541500,
+            "mean": 63674673.07692308,
+            "p50": 62621500,
+            "p95": 70249900,
+            "max": 73795700
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "new-budget-D1",
+      "profile_enabled": false,
+      "budgeted_keys": true,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:48:01.647818+00:00",
+      "runner_wall_ns": 3293216800,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 1916014200,
+          "mean": 31933570.0,
+          "p50": 29860100,
+          "p95": 42314800,
+          "max": 46315500
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 362450400,
+          "mean": 6040840.0,
+          "p50": 5914800,
+          "p95": 6931600,
+          "max": 7819900
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3409800,
+          "mean": 56830.0,
+          "p50": 81900,
+          "p95": 125700,
+          "max": 180200
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 2670117500,
+          "mean": 44501958.333333336,
+          "p50": 41850900,
+          "p95": 57326000,
+          "max": 61737200
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3265360300,
+          "mean": 54422671.666666664,
+          "p50": 51469700,
+          "p95": 67555400,
+          "max": 74757900
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1189854400,
+            "mean": 34995717.64705882,
+            "p50": 35713600,
+            "p95": 44982000,
+            "max": 46315500
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 206089200,
+            "mean": 6061447.05882353,
+            "p50": 5820500,
+            "p95": 7187700,
+            "max": 7819900
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3405200,
+            "mean": 100152.94117647059,
+            "p50": 93100,
+            "p95": 155300,
+            "max": 180200
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1622604400,
+            "mean": 47723658.823529415,
+            "p50": 47810800,
+            "p95": 61635500,
+            "max": 61737200
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1965500200,
+            "mean": 57808829.4117647,
+            "p50": 57439800,
+            "p95": 72595900,
+            "max": 74757900
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 726159800,
+            "mean": 27929223.076923076,
+            "p50": 27267400,
+            "p95": 33016300,
+            "max": 33264100
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 156361200,
+            "mean": 6013892.307692308,
+            "p50": 5929800,
+            "p95": 6931600,
+            "max": 7019400
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4600,
+            "mean": 176.92307692307693,
+            "p50": 200,
+            "p95": 300,
+            "max": 700
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1047513100,
+            "mean": 40288965.384615384,
+            "p50": 39844400,
+            "p95": 46349300,
+            "max": 47601500
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1299860100,
+            "mean": 49994619.23076923,
+            "p50": 49616500,
+            "p95": 57308900,
+            "max": 59006500
+          }
+        }
+      },
+      "analysis_ns": 385501100,
+      "retire_ns": 41185400,
+      "skipped_reconstructions": 154,
+      "stages": {}
+    },
+    {
+      "name": "new-budget-D2",
+      "profile_enabled": false,
+      "budgeted_keys": true,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:48:04.481375+00:00",
+      "runner_wall_ns": 2831911500,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 1918003500,
+          "mean": 31966725.0,
+          "p50": 30321500,
+          "p95": 43862100,
+          "max": 48510000
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 344834200,
+          "mean": 5747236.666666667,
+          "p50": 5592100,
+          "p95": 6507900,
+          "max": 8208700
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3297600,
+          "mean": 54960.0,
+          "p50": 81600,
+          "p95": 117200,
+          "max": 189900
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 2313697100,
+          "mean": 38561618.333333336,
+          "p50": 36930600,
+          "p95": 51006400,
+          "max": 55827800
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 2796612000,
+          "mean": 46610200.0,
+          "p50": 45002300,
+          "p95": 59743200,
+          "max": 64004900
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1187361500,
+            "mean": 34922397.058823526,
+            "p50": 34009900,
+            "p95": 46211400,
+            "max": 48510000
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 192928700,
+            "mean": 5674373.529411765,
+            "p50": 5584600,
+            "p95": 6399500,
+            "max": 6769200
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3293100,
+            "mean": 96855.88235294117,
+            "p50": 89900,
+            "p95": 150600,
+            "max": 189900
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1410305100,
+            "mean": 41479561.76470588,
+            "p50": 40440800,
+            "p95": 53608500,
+            "max": 55827800
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1683569200,
+            "mean": 49516741.176470585,
+            "p50": 48074600,
+            "p95": 62520300,
+            "max": 64004900
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 730642000,
+            "mean": 28101615.384615384,
+            "p50": 27413100,
+            "p95": 33510300,
+            "max": 33757400
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 151905500,
+            "mean": 5842519.230769231,
+            "p50": 5638400,
+            "p95": 7442900,
+            "max": 8208700
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4500,
+            "mean": 173.07692307692307,
+            "p50": 100,
+            "p95": 400,
+            "max": 500
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 903392000,
+            "mean": 34745846.15384615,
+            "p50": 33702800,
+            "p95": 40596600,
+            "max": 42161900
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1113042800,
+            "mean": 42809338.461538464,
+            "p50": 41774900,
+            "p95": 49743000,
+            "max": 51021800
+          }
+        }
+      },
+      "analysis_ns": 382641600,
+      "retire_ns": 40935700,
+      "skipped_reconstructions": 154,
+      "stages": {}
+    },
+    {
+      "name": "new-off-C2",
+      "profile_enabled": false,
+      "budgeted_keys": false,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:48:08.089930+00:00",
+      "runner_wall_ns": 3607843600,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2697766000,
+          "mean": 44962766.666666664,
+          "p50": 46297000,
+          "p95": 55337000,
+          "max": 66145800
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 346363500,
+          "mean": 5772725.0,
+          "p50": 5609800,
+          "p95": 6831500,
+          "max": 8983100
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3340600,
+          "mean": 55676.666666666664,
+          "p50": 82200,
+          "p95": 122600,
+          "max": 189400
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 3095545400,
+          "mean": 51592423.333333336,
+          "p50": 52804100,
+          "p95": 63812200,
+          "max": 75397900
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3578538800,
+          "mean": 59642313.333333336,
+          "p50": 60457700,
+          "p95": 71656700,
+          "max": 86425400
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1467962700,
+            "mean": 43175373.52941176,
+            "p50": 41898700,
+            "p95": 62203600,
+            "max": 66145800
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 201266300,
+            "mean": 5919597.05882353,
+            "p50": 5573000,
+            "p95": 7792700,
+            "max": 8983100
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3336800,
+            "mean": 98141.17647058824,
+            "p50": 92700,
+            "p95": 146000,
+            "max": 189400
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1700289300,
+            "mean": 50008508.823529415,
+            "p50": 49543800,
+            "p95": 70975600,
+            "max": 75397900
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1980371300,
+            "mean": 58246214.705882356,
+            "p50": 58276400,
+            "p95": 80129900,
+            "max": 86425400
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 1229803300,
+            "mean": 47300126.92307692,
+            "p50": 46930800,
+            "p95": 49894700,
+            "max": 51349500
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 145097200,
+            "mean": 5580661.538461538,
+            "p50": 5617200,
+            "p95": 5793700,
+            "max": 6322800
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 3800,
+            "mean": 146.15384615384616,
+            "p50": 100,
+            "p95": 300,
+            "max": 400
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1395256100,
+            "mean": 53663696.15384615,
+            "p50": 53315000,
+            "p95": 57117700,
+            "max": 57490600
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1598167500,
+            "mean": 61467980.76923077,
+            "p50": 61379600,
+            "p95": 65207700,
+            "max": 65245600
+          }
+        }
+      },
+      "analysis_ns": 0,
+      "retire_ns": 0,
+      "skipped_reconstructions": 0,
+      "stages": {}
+    },
+    {
+      "name": "new-budget-profile-E1",
+      "profile_enabled": true,
+      "budgeted_keys": true,
+      "executable_sha256": "28a0d154eea3b79c5ced353e7e2d698b70bf94707db0d0f149ba663901e213b3",
+      "completed_at_utc": "2026-11-05T10:48:11.551381+00:00",
+      "runner_wall_ns": 3459886300,
+      "accepted": 34,
+      "rejected": 26,
+      "timings_ns": {
+        "encode_total_ns": {
+          "count": 60,
+          "total": 2069070500,
+          "mean": 34484508.333333336,
+          "p50": 32046700,
+          "p95": 44731000,
+          "max": 51045000
+        },
+        "source_prepare_ns": {
+          "count": 60,
+          "total": 359911600,
+          "mean": 5998526.666666667,
+          "p50": 5770000,
+          "p95": 6987500,
+          "max": 8975200
+        },
+        "output_hash_ns": {
+          "count": 60,
+          "total": 3162100,
+          "mean": 52701.666666666664,
+          "p50": 81200,
+          "p95": 106200,
+          "max": 154600
+        },
+        "case_total_ns": {
+          "count": 60,
+          "total": 2823129000,
+          "mean": 47052150.0,
+          "p50": 44295100,
+          "p95": 59415300,
+          "max": 65758900
+        },
+        "cli_process_wall_ns": {
+          "count": 60,
+          "total": 3430604300,
+          "mean": 57176738.333333336,
+          "p50": 54192200,
+          "p95": 72514100,
+          "max": 78214800
+        }
+      },
+      "by_outcome": {
+        "accepted": {
+          "encode_total_ns": {
+            "count": 34,
+            "total": 1234792400,
+            "mean": 36317423.52941176,
+            "p50": 35207800,
+            "p95": 48700100,
+            "max": 49849100
+          },
+          "source_prepare_ns": {
+            "count": 34,
+            "total": 199417400,
+            "mean": 5865217.647058823,
+            "p50": 5722400,
+            "p95": 6981900,
+            "max": 6987500
+          },
+          "output_hash_ns": {
+            "count": 34,
+            "total": 3157200,
+            "mean": 92858.82352941176,
+            "p50": 90400,
+            "p95": 115200,
+            "max": 154600
+          },
+          "case_total_ns": {
+            "count": 34,
+            "total": 1654027200,
+            "mean": 48647858.823529415,
+            "p50": 47631800,
+            "p95": 63096500,
+            "max": 63109100
+          },
+          "cli_process_wall_ns": {
+            "count": 34,
+            "total": 1992730500,
+            "mean": 58609720.5882353,
+            "p50": 57830200,
+            "p95": 72897800,
+            "max": 73112400
+          }
+        },
+        "rejected": {
+          "encode_total_ns": {
+            "count": 26,
+            "total": 834278100,
+            "mean": 32087619.230769232,
+            "p50": 30297600,
+            "p95": 42528400,
+            "max": 51045000
+          },
+          "source_prepare_ns": {
+            "count": 26,
+            "total": 160494200,
+            "mean": 6172853.846153846,
+            "p50": 5812100,
+            "p95": 7973200,
+            "max": 8975200
+          },
+          "output_hash_ns": {
+            "count": 26,
+            "total": 4900,
+            "mean": 188.46153846153845,
+            "p50": 200,
+            "p95": 500,
+            "max": 700
+          },
+          "case_total_ns": {
+            "count": 26,
+            "total": 1169101800,
+            "mean": 44965453.84615385,
+            "p50": 42858300,
+            "p95": 59415300,
+            "max": 65758900
+          },
+          "cli_process_wall_ns": {
+            "count": 26,
+            "total": 1437873800,
+            "mean": 55302838.461538464,
+            "p50": 52691300,
+            "p95": 72098600,
+            "max": 78214800
+          }
+        }
+      },
+      "analysis_ns": 383247500,
+      "retire_ns": 42971900,
+      "skipped_reconstructions": 154,
+      "stages": {
+        "canonical_tag": {
+          "nanoseconds": 87061000,
+          "calls": 34,
+          "aborted": 0
+        },
+        "entropy": {
+          "nanoseconds": 426471200,
+          "calls": 564,
+          "aborted": 0
+        },
+        "forward_residual": {
+          "nanoseconds": 0,
+          "calls": 0,
+          "aborted": 0
+        },
+        "inner_framing": {
+          "nanoseconds": 18043400,
+          "calls": 188,
+          "aborted": 0
+        },
+        "inverse_reconstruction": {
+          "nanoseconds": 74789800,
+          "calls": 275400,
+          "aborted": 0
+        },
+        "quantization": {
+          "nanoseconds": 438835600,
+          "calls": 1522800,
+          "aborted": 0
+        },
+        "request_validation": {
+          "nanoseconds": 193700,
+          "calls": 188,
+          "aborted": 0
+        },
+        "source_conversion": {
+          "nanoseconds": 0,
+          "calls": 0,
+          "aborted": 0
+        }
+      },
+      "clock_reads": 3598348
+    }
+  ],
+  "all540_pair_ack_and_candidate_outcomes_exact": true,
+  "hardware_measured": false,
+  "network_measured": false,
+  "process_cpu_measured": false,
+  "notes": [
+    "Fresh codec epoch per source; no stateful stream or transport epoch claim",
+    "Legacy builder unchanged by default; budgeted_keys explicit true only",
+    "Default decoder/JA23 verification stays enabled",
+    "Analysis includes source conversion/forward/binding/allocation as separate coarse wall time",
+    "Budgeted quantization excludes dequantization; selected inverse stage includes recomputed dequantization",
+    "Retirement is inside enclosing build wall time; no clock overhead subtracted",
+    "Separate CLI process per source; external load uncontrolled outside reserved agent slot"
+  ],
+  "schema": "gamebub-cp23-budgeted-independent-key-summary-v1",
+  "validation": {
+    "native_tests": 168,
+    "native_suites": 23,
+    "old_ar03_default_cases": 20,
+    "old_ar03_profiled_cases": 20,
+    "cp23_oracle_instances_under_legacy_budgeted_and_profile_variants": 16,
+    "budget_boundary_owner_retirement_and_rejection_tests": 4
+  },
+  "coverage": {
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/key_budget_encoder.h": {
+      "lines": 130,
+      "hit_lines": 130,
+      "branches": 268,
+      "hit_branches": 175,
+      "unhit_lines": []
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/encoder_profile.h": {
+      "lines": 37,
+      "hit_lines": 37,
+      "branches": 50,
+      "hit_branches": 31,
+      "unhit_lines": []
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder.h": {
+      "lines": 114,
+      "hit_lines": 113,
+      "branches": 214,
+      "hit_branches": 132,
+      "unhit_lines": [
+        112
+      ]
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/composed_encoder_case.h": {
+      "lines": 33,
+      "hit_lines": 33,
+      "branches": 392,
+      "hit_branches": 202,
+      "unhit_lines": []
+    },
+    "C:/ai/sunshine-gamebub/tools/gamebub/native/encoder_profile_json.h": {
+      "lines": 9,
+      "hit_lines": 9,
+      "branches": 118,
+      "hit_branches": 54,
+      "unhit_lines": []
+    }
+  },
+  "measured_source_code_sha256": {
+    "key_budget_encoder.h": "573aba5d7e7bec3ac2cf415bbd9943157d760de162390940596ee97f750bf98e",
+    "composed_encoder.h": "3159fb4cc88d14bf0db78c0181763d59facca628bff30186d2b7de355b163a5a",
+    "composed_encoder_case.h": "48396f502fb77e78d875741fb8b3ed8f1033a4541350384f9f6143ba22c28369",
+    "body_decoder.h": "107cdacac93c7164870d15df2ef4add046695835c8cd387c8a1fa42cf2a9efe6",
+    "inner_encoder.h": "8149c2c582613d5d85e4dee0d5bab4ebb08b5507fbd39f24cdfb147eff27fc1a",
+    "encoder_profile.h": "47058b22be175888775a6c1cb36ad33b95b69fa67b041a221ae3489c10186f1a"
+  },
+  "final_diagnostic_metadata_executable_sha256": "a6239708c2b4823b5a281e8dedd981b02e74ffa829d1ab0dc8b639b25e399d97",
+  "source_geometry": {
+    "original": [
+      1024,
+      600
+    ],
+    "resized": [
+      691,
+      405
+    ],
+    "placement": [
+      14,
+      37
+    ],
+    "viewport": [
+      720,
+      405
+    ],
+    "canvas": [
+      720,
+      480
+    ]
+  },
+  "observed_effect": {
+    "matched_legacy_mean_ns": 45518647.5,
+    "matched_budgeted_mean_ns": 31950147.5,
+    "whole_encode_including_validation_mean_reduction_percent": 29.80866248277697,
+    "admission_unchanged": true,
+    "thirty_fps_complete_playback_established": false,
+    "qualification": "All-source mean includes26 cap-rejected frames; accepted-only means exceed33.333ms and p95 remains higher. No hardware/network/stateful-stream claim."
+  }
+}

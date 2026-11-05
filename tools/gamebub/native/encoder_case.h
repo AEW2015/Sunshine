@@ -10,6 +10,7 @@
 
 // local includes
 #include "body_case.h"
+#include "encoder_profile_json.h"
 #include "inner_encoder.h"
 #include "patch_encoder.h"
 
@@ -60,9 +61,10 @@ namespace gamebub::v20::encoder_case {
   /**
    * @brief Re-encode an isolated source with exact pre-banks, including real mandatory retries.
    * @param path Derived encoder-case JSON with frozen source/profile/attempt metadata.
+   * @param profile_substages Explicit clock instrumentation, including its own overhead.
    * @return Scoped byte/oracle report; this does not measure capture, transport or playback.
    */
-  inline body_case::Json run(const std::filesystem::path &path) {
+  inline body_case::Json run(const std::filesystem::path &path, bool profile_substages = false) {
     using body_case::blob;
     using body_case::number;
     using Json = body_case::Json;
@@ -101,7 +103,8 @@ namespace gamebub::v20::encoder_case {
     body::require(number(destination_oracle.at("bank"), 255) == dest && body_case::tag(destination_oracle.at("tag")) == body::tag_at(expected_packet, 36), "encoder destination oracle mismatch");
     body::require(number(map_oracle.at("roi_scale"), 32) == map.roi && number(map_oracle.at("background_scale"), 32) == map.background && oracle.at("packet_sha256") == body_case::digest(expected_packet), "encoder map/hash oracle mismatch");
     const candidate::BuildRequest request {source, ref == 255 ? nullptr : banks[ref], body::u32(expected_packet, 6), body::u32(expected_packet, 10), ref, dest, key, promoted, map};
-    const auto encoded = encoder::encode_inner(request);
+    encoder::Profile direct_profile, policy_profile;
+    const auto encoded = profile_substages ? encoder::encode_inner_profiled(request, direct_profile) : encoder::encode_inner(request);
     const auto inner_size = body::u32(expected_packet, 52);
     exact(encoded.inner, std::span(expected_packet).subspan(61, inner_size), "GM01 inner");
     body::require(encoded.inner.size() == number(oracle.at("inner_bytes"), 2 * 1024 * 1024) && encoded.stored_tag == body::tag_at(expected_packet, 36), "encoder inner oracle/tag mismatch");
@@ -138,7 +141,7 @@ namespace gamebub::v20::encoder_case {
           policy.seed_reference(slot, *banks[slot]);
         }
       }
-      encoder::FrameBuilder builder;
+      encoder::FrameBuilder builder(profile_substages ? &policy_profile : nullptr);
       const auto prepared = policy.prepare(source, request.frame_id, encoder::encode_patches, std::ref(builder), key, promoted);
       body::require(prepared.accepted(), "native mandatory candidate rejected");
       exact(policy.packet(prepared), expected_packet, "mandatory AR03 candidate");
@@ -161,6 +164,11 @@ namespace gamebub::v20::encoder_case {
         body::require(policy.readers(slot) == 0, "native encoder leaked reader");
       }
     }
-    return {{"scope", "native_encoder_fixture"}, {"label", metadata.at("label")}, {"id", request.frame_id}, {"inner_bytes", encoded.inner.size()}, {"selected_patch_count", selected.size()}, {"packet_bytes", direct_packet.size()}, {"inner_byte_exact", true}, {"patches_byte_exact", true}, {"ar03_byte_exact", true}, {"mandatory_policy_verified", mandatory}, {"mandatory_policy_analysis_reuse", mandatory}, {"policy_attempts", attempts}, {"frozen_decode", frozen_decode}, {"profiling_not_playback", true}};
+    Json report {{"scope", "native_encoder_fixture"}, {"label", metadata.at("label")}, {"id", request.frame_id}, {"inner_bytes", encoded.inner.size()}, {"selected_patch_count", selected.size()}, {"packet_bytes", direct_packet.size()}, {"inner_byte_exact", true}, {"patches_byte_exact", true}, {"ar03_byte_exact", true}, {"mandatory_policy_verified", mandatory}, {"mandatory_policy_analysis_reuse", mandatory}, {"policy_attempts", attempts}, {"frozen_decode", frozen_decode}, {"profiling_not_playback", true}};
+    if (profile_substages) {
+      report["direct_inner_profile"] = encoder::profile_json(direct_profile);
+      report["policy_inner_profile"] = encoder::profile_json(policy_profile);
+    }
+    return report;
   }
 }  // namespace gamebub::v20::encoder_case
