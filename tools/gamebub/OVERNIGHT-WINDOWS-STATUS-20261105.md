@@ -1,8 +1,9 @@
-# Overnight Windows checkpoint — 2026-11-05
+# Overnight Windows results — 2026-11-05
 
 The requested development window began around **00:08 America/Denver** and
-runs through approximately **06:08**. This is an in-progress checkpoint, not
-the final morning handoff. Hardware traffic remains stopped; the installed
+runs through approximately **06:08**. The software checks below are complete;
+use the [morning handoff](MOONBUB-MORNING-HANDOFF-20261105.md) for physical gates.
+Hardware traffic remains stopped; the installed
 Sunshine service and receiver configuration were not changed.
 
 ## Implemented and validated
@@ -34,10 +35,11 @@ Sunshine service and receiver configuration were not changed.
 - Native: **173 GameBub tests across 24 suites passed**, including pending-ACK,
   sequence and ownership tests. The original full **20 encoder golden cases**
   still match, including ten mandatory cases and thirteen policy attempts.
-- Last full Python run: **548 tests, five optional skips**, with native CLI,
+- Last full Python run: **548 tests passed, zero skips**, with native CLI,
   body/encoder, wire/reset and HD22 fixture integrations enabled. Its CLI fixture
   executable was the immutable sequence-validated snapshot to avoid a concurrent
-  link. Latest native budgeted-key and sequence checks passed separately.
+  link. The final pass also enabled the five optional pinned-receiver checks,
+  including the Rust parser. Latest native budgeted-key and sequence checks passed separately.
 - Explicit `--clip-selection native` requires matching nominal source/sender
   rates and checked rational CFR cadence. It avoids the legacy sampler's
   repeated source frames at rounded PTS boundaries. Legacy selection remains
@@ -69,6 +71,7 @@ method, raw artifact locations, scope and CPU-accounting limitations.
 | Native source, 30 fps / 8 Mbps / Q25, 400 us + input-only AV, ten minutes | 17,997 / 18,000 | 3 | 0 |
 | Native source, same video settings + full-rate synthetic audio, five minutes | 8,999 / 9,000 | 1 | 0 |
 | Same native video/audio settings, 30 minutes | 53,998 / 54,000 | 2 | 0 |
+| Final trace-enabled native video/audio repeat, 30 minutes | 53,996 / 54,000 | 3, plus one skipped slot | 0 |
 
 The five-minute run measured 19.73 sent fps including drain, zero input
 timeouts/pending ACKs/backend failures, and clean STOP. Measured sender-thread
@@ -132,13 +135,18 @@ metadata. These are component measurements, not stateful streaming or hardware.
 No CP25 selection, custom network endpoint, decoder image or physical 30 fps
 qualification has been introduced.
 
-## Remaining overnight work
+## Final repeat and morning gates
 
-1. Finish the final repeat of native 30 fps/full-rate synthetic AV with eviction
-   tracing and memory sampling. Packet timing is explicitly off to preserve
-   finite logs; short runs retain it. No hardware sender is active in this work.
-2. Finish the morning handoff and preserve the exact remaining hardware gates.
-3. Publish final validation and the candidate without changing the installation.
+The [final trace-enabled repeat](measurements/localhost-av-trace-native-30fps-30m-20261105.md)
+reconciled all 53,996 sent video frames and 172,185 sent synthetic-audio blocks.
+The sole peer audio gap matches trace eviction 161678; two blocks remained
+queued. No cause for the full queue is claimed. Video rate was 29.99252 fps
+over its own lifetime and 29.98469 over complete harness lifetime. Packet timing
+was off to preserve finite logs. Logs stayed below their limits; sampled memory
+and CPU scopes, one skipped slot and cleanup are reported explicitly.
+The [validation index](measurements/windows-validation-20261105.md) contains
+reproduction commands and final zero-skip regression results. No hardware
+sender is active in this work.
 
 The morning JPEG comparison should use one fixed receiver build and the same
 new launcher for both control/candidate, changing only the selected wait.

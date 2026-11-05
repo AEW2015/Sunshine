@@ -29,7 +29,11 @@
     "application_wire_bytes": 1095723389,
     "application_wire_mbps": 4.86902049897754,
     "packet_timing_enabled": false,
-    "full_packet_timing_logs_available": false
+    "full_packet_timing_logs_available": false,
+    "sender_duration_seconds": 1800.3183831,
+    "fps_scope": "Video sender lifetime including its drain",
+    "fps_sent_over_complete_harness": 29.98577316834329,
+    "wire_rate_scope": "Application bytes over video sender duration"
   },
   "audio": {
     "input_profile": "synthetic signed16 stereo PCM, 48kHz; precise callback wait, zero spin",
@@ -47,7 +51,11 @@
     "peer_sequence_first": 0,
     "peer_sequence_last": 172186,
     "peer_sequence_gaps": 3,
-    "missing_sequence_ids": [5142, 12903, 145573],
+    "missing_sequence_ids": [
+      5142,
+      12903,
+      145573
+    ],
     "peer_duplicates": 0,
     "peer_out_of_order": 0,
     "gap_accounting": "Three sequence holes reconcile with three counted publisher queue evictions. Queue-fill trigger is unknown; no cause is attributed.",
@@ -91,12 +99,40 @@
     "sample_errors": 0,
     "percentile_method": "linear interpolation",
     "sampled_values_are_not_memory_bounds": true,
-    "harness_working_set_bytes_warm_min_p50_p95_max": [43032576, 43524096, 43532288, 43532288],
-    "harness_private_bytes_warm_min_p50_p95_max": [37552128, 37961728, 37961728, 37961728],
-    "sender_working_set_bytes_warm_min_p50_p95_max": [49577984, 56739840, 58345677, 58826752],
-    "sender_private_bytes_warm_min_p50_p95_max": [43180032, 49827840, 51707085, 53055488],
-    "harness_cpu_percent_one_core_warm_p50_p95_max": [22.104, 23.54, 26.341],
-    "sender_cpu_percent_one_core_warm_p50_p95_max": [58.379, 65.609, 67.683]
+    "harness_working_set_bytes_warm_min_p50_p95_max": [
+      43032576,
+      43524096,
+      43532288,
+      43532288
+    ],
+    "harness_private_bytes_warm_min_p50_p95_max": [
+      37552128,
+      37961728,
+      37961728,
+      37961728
+    ],
+    "sender_working_set_bytes_warm_min_p50_p95_max": [
+      49577984,
+      56739840,
+      58345677,
+      58826752
+    ],
+    "sender_private_bytes_warm_min_p50_p95_max": [
+      43180032,
+      49827840,
+      51707085,
+      53055488
+    ],
+    "harness_cpu_percent_one_core_warm_p50_p95_max": [
+      22.104,
+      23.54,
+      26.341
+    ],
+    "sender_cpu_percent_one_core_warm_p50_p95_max": [
+      58.379,
+      65.609,
+      67.683
+    ]
   },
   "cpu_totals": {
     "harness_process_seconds": 399.515625,
@@ -120,5 +156,6 @@
     "No DAC buffering, physical audio playback, clock drift, or acoustic output was verified.",
     "Packet timing was explicitly disabled to keep the 30-minute per-file log footprint bounded.",
     "Three audio sequence gaps are accounted by queue evictions, but the reason the queue filled is unknown."
-  ]
+  ],
+  "duration_scope": "Complete harness lifetime, including AV teardown"
 }

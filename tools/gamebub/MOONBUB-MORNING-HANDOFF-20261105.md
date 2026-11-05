@@ -2,22 +2,34 @@
 
 Windows development branch: `AEW2015/Sunshine`,
 `gamebub/windows-jpeg-retry-20261103`. Pull the final morning commit; the
-04:09 checkpoint is `730c7f13`. Installed Sunshine and the handheld were not
+validated code checkpoint is `61fef798` (earlier `730c7f13`). Installed Sunshine and the handheld were not
 replaced, restarted or flashed by this development work.
 
 ## What Windows has measured
 
 The [30-minute localhost AV study](measurements/localhost-av-native-30fps-30m-20261105.md)
 sent and accepted **53,998 / 54,000** video slots at 720×480, native 30 fps,
-Q25, an 8 Mbps cap and a 400 µs hybrid tail: **29.994 sent fps** including
-drain. Two encoded frames were replaced; no partials, skipped slots, repeated
+Q25, an 8 Mbps cap and a 400 µs hybrid tail: **29.994 sent fps** over the video
+sender lifetime including its drain (29.986 over complete harness lifetime).
+Two encoded frames were replaced; no partials, skipped slots, repeated
 source timestamps, pending ACKs or invalid datagrams were recorded.
+The saved Xonotic clip loops; this is not 54,000 unique game scenes.
 
 All **172,184** sent synthetic-audio blocks decoded at the local peer. Three
 publisher-queue evictions account for three sequence gaps; two blocks remained
-queued at STOP. Why the queue filled is not established. Input remained live.
+queued at STOP. Why the queue filled is not established. AV input packets
+remained live with zero lease timeouts; gamepad injection was off.
 These are localhost software results: RF, QSPI, FPGA presentation, physical
 audio, DAC buffering/drift and end-to-end latency remain unverified.
+
+The final [trace-enabled 30-minute repeat](measurements/localhost-av-trace-native-30fps-30m-20261105.md)
+accepted 53,996 video frames: three replacements and one skipped slot out of
+54,000, with no partials or pending ACKs. That is 29.993 fps over the video
+sender lifetime, or 29.985 over the complete harness lifetime. Its 172,188
+published audio blocks reconcile as 172,185 sent, one queue eviction and two
+queued at close. The bounded trace identifies sequence 161678 as that eviction,
+matching the peer's sole gap; why the queue filled remains unknown. STOP and
+all owned-process cleanup completed. No physical playback qualification follows.
 
 The JPEG/MSV1 and AV v1 wire contracts are unchanged. The candidate adds
 explicit wait/tail selection, source binding, capture through actual STOP,
@@ -66,8 +78,8 @@ independent validation averages about 35 ms. This is not 30 fps custom playback.
 The bounded [same-process replay](measurements/cp23-same-process-sequence-20261105.md)
 checked 7,200 rows and all source retirements, preserving exact hashes and
 admission while reducing inclusive wall time about 27.3%. Repeated scenes and
-43.3% cap rejection remain explicit. Host tests are 548 Python (five optional
-skips) and 173 native. The bounded audio-eviction trace passed unit and controlled
+43.3% cap rejection remain explicit. Host tests are 548 Python (zero skips,
+including pinned-receiver integrations) and 173 native. The bounded audio-eviction trace passed unit and controlled
 stall validation without changing the AV wire format.
 
 The latest fetched MoonBub feature tip remains
@@ -81,3 +93,9 @@ payload loader, source/image hashes, parser-to-presentation coverage and safe
 ownership/recovery evidence. Earlier envelope/base/HUD component checks or a
 ROM-fed KEY image do not establish that complete path. Keep custom payloads
 off the legacy JPEG endpoint and do not identify them as H.264.
+
+The [next Windows gates](measurements/cp23-next-windows-gates-20261105.md)
+name the pinned stateful reference symbols and test oracles: HD22 encoding and
+acknowledged HC22 cache, atomic joint P/promotion, whole-JA23 publication,
+stateful receiver checking, then agreed transport/recovery coupling. Local
+FPGA fixture readiness and subsequent custom network readiness remain separate.

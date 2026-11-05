@@ -1,10 +1,10 @@
 # Localhost native-CFR 30 fps video and synthetic AV, 30 minutes
 
-Run: `artifacts/overnight-long-soak-20261105/audio-video-native-30fps-30m-0358`. The companion [JSON](localhost-av-native-30fps-30m-20261105.json) contains the summary SHA-256, hashes, and compacted memory statistics. The run used native clip selection at nominal 30 fps, Q25, an 8 Mbps video cap, hybrid pacing with a 400-microsecond tail, synthetic audio, and input-only AV against localhost peers. It was operationally complete according to the run summary.
+Run: `artifacts/overnight-long-soak-20261105/audio-video-native-30fps-30m-0358`. The companion [JSON](localhost-av-native-30fps-30m-20261105.json) contains the summary SHA-256, hashes, and compacted memory statistics. The run used native clip selection at nominal 30 fps, Q25, an 8 Mbps video cap, hybrid pacing with a 400-microsecond tail, synthetic audio and independently sequenced AV input against localhost peers. Gamepad injection was off. It was operationally complete according to the run summary.
 
 ## Video and log coverage
 
-The sender submitted and encoded 54,000 frames, sent 53,998, and received matching localhost reference completions and ingress feedback for all sent frames. Two encoded frames were replaced. There were zero partial frames, source timestamp repeats, skipped slots, pending feedback, invalid datagrams, or reply errors. Send rate including drain was 29.99358 fps. Application wire traffic was 1,095,723,389 bytes, about 4.869 Mbps under the 8 Mbps cap.
+The sender submitted and encoded 54,000 frames, sent 53,998, and received matching localhost reference completions and ingress feedback for all sent frames. Two encoded frames were replaced. There were zero partial frames, source timestamp repeats, skipped slots, pending feedback, invalid datagrams, or reply errors. Send rate over the video sender's 1,800.31838-second lifetime including its drain was 29.99358 fps. Over the complete harness lifetime, 1,800.78732 seconds including AV teardown, it was 29.98577 fps. Application wire traffic was 1,095,723,389 bytes, about 4.869 Mbps over the video sender's duration under the 8 Mbps cap. The saved clip loops; source timestamps do not establish 54,000 unique scenes.
 
 Per-packet timing was explicitly off. The video and AV logs reported 41,507,604 and 31,122,232 bytes, respectively, below the 67,108,864-byte per-file limit, with zero dropped events. Full per-packet timing and full-packet gap distributions are therefore unavailable for this run.
 

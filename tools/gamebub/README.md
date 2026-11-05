@@ -1,6 +1,12 @@
 # Game Bub host laboratory
 
-The latest [packet-permit, fused-capture and checksum update](measurements/v20-packet-permits-fused-crc-20261104.md)
+The November 5 [morning handoff](MOONBUB-MORNING-HANDOFF-20261105.md) provides
+the next matched JPEG hardware comparison and a prompt for the receiver agent.
+The [validation index](measurements/windows-validation-20261105.md) separates
+the localhost 30 fps AV studies, regression results and custom-codec progress
+from unverified hardware playback. No morning stream starts automatically.
+
+The earlier [packet-permit, fused-capture and checksum update](measurements/v20-packet-permits-fused-crc-20261104.md)
 adds bounded host bookkeeping and functional checks. For physical testing, use
 the [receiver readiness audit](measurements/receiver-readiness-20261104.md) and
 [first-window request](MOONBUB-HARDWARE-READINESS-REQUEST-20261104.md). A functional

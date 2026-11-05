@@ -1,0 +1,138 @@
+{
+  "scope": "Separate Windows software candidate; no physical receiver, stock pairing or installed-service qualification.",
+  "code_checkpoint": "61fef798",
+  "python": {
+    "tests_run": 548,
+    "seconds": 49.357,
+    "skipped": 0,
+    "success": true,
+    "native_fixture_integrations_enabled": true,
+    "pinned_receiver_integrations_enabled": true,
+    "log": {
+      "path": "artifacts/overnight-complete-tests-20261105/all-reference-tests.txt",
+      "sha256": "da7e3f27e7087e50ae40283d5f0044d3b39364ba4fff36509f7e2d9cbb3867ea"
+    },
+    "runner": {
+      "path": "artifacts/overnight-complete-tests-20261105/run-sequence-validated.py",
+      "sha256": "8bce09736b3935874aab193eac6710be697f2b479b6885eab124ebdd2bc4e59c"
+    }
+  },
+  "native": {
+    "tests": 173,
+    "suites": 24,
+    "failures": 0,
+    "errors": 0,
+    "disabled": 0,
+    "seconds": 7.203,
+    "filter": "Gamebub*",
+    "xml": {
+      "path": "artifacts/composed-encoder-20261105/sequence-native-results.xml",
+      "sha256": "63091da8461284bfe171bc832eeb377da2a0670517f264a010354826274c6593"
+    },
+    "fixture_executable": {
+      "path": "artifacts/composed-encoder-20261105/sequence-validated-conformance.exe",
+      "sha256": "15a08cc10367e9f26531b8f6cf1503f97217ca3f8bf56bc9497087f8dcbf22af"
+    }
+  },
+  "coverage": {
+    "report": {
+      "path": "artifacts/overnight-complete-tests-20261105/all-reference-coverage.json",
+      "sha256": "ae63f461269a075d4b2ed9530b9cc1957278c8bfc47adca752442bee03f97e56"
+    },
+    "production_modules": {
+      "audio_codec.py": {
+        "covered_lines": 134,
+        "num_statements": 134,
+        "covered_branches": 54,
+        "num_branches": 54,
+        "excluded_lines": 0
+      },
+      "av_session.py": {
+        "covered_lines": 104,
+        "num_statements": 104,
+        "covered_branches": 40,
+        "num_branches": 40,
+        "excluded_lines": 0
+      },
+      "capture_evidence.py": {
+        "covered_lines": 20,
+        "num_statements": 20,
+        "covered_branches": 8,
+        "num_branches": 8,
+        "excluded_lines": 0
+      },
+      "capture_owner.py": {
+        "covered_lines": 190,
+        "num_statements": 190,
+        "covered_branches": 48,
+        "num_branches": 48,
+        "excluded_lines": 0
+      },
+      "host.py": {
+        "covered_lines": 340,
+        "num_statements": 341,
+        "covered_branches": 145,
+        "num_branches": 146,
+        "excluded_lines": 0
+      },
+      "live_audio.py": {
+        "covered_lines": 111,
+        "num_statements": 111,
+        "covered_branches": 22,
+        "num_branches": 22,
+        "excluded_lines": 0
+      },
+      "live_session.py": {
+        "covered_lines": 140,
+        "num_statements": 140,
+        "covered_branches": 48,
+        "num_branches": 48,
+        "excluded_lines": 0
+      },
+      "pacing_wait.py": {
+        "covered_lines": 158,
+        "num_statements": 158,
+        "covered_branches": 50,
+        "num_branches": 50,
+        "excluded_lines": 0
+      },
+      "pipeline.py": {
+        "covered_lines": 123,
+        "num_statements": 123,
+        "covered_branches": 24,
+        "num_branches": 24,
+        "excluded_lines": 0
+      },
+      "reference_loopback.py": {
+        "covered_lines": 111,
+        "num_statements": 112,
+        "covered_branches": 17,
+        "num_branches": 18,
+        "excluded_lines": 0
+      },
+      "session_launcher.py": {
+        "covered_lines": 223,
+        "num_statements": 223,
+        "covered_branches": 80,
+        "num_branches": 80,
+        "excluded_lines": 0
+      },
+      "stream_sender.py": {
+        "covered_lines": 596,
+        "num_statements": 597,
+        "covered_branches": 189,
+        "num_branches": 190,
+        "excluded_lines": 0
+      },
+      "timer_period.py": {
+        "covered_lines": 108,
+        "num_statements": 108,
+        "covered_branches": 22,
+        "num_branches": 22,
+        "excluded_lines": 0
+      }
+    },
+    "scope": "Repository GameBub Python paths; virtual pinned-receiver compiled filename has no physical source at that path. No statement/branch exclusions added.",
+    "limits": "Bare CLI entrypoints remain unhit in host/reference_loopback/stream_sender. Native allocation/exception branches are not fully covered; see Markdown index."
+  }
+}
