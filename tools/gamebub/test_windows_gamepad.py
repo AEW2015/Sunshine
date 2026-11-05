@@ -179,6 +179,23 @@ class OrderedInputTests(unittest.TestCase):
 
     session = bytes(range(16))
 
+    def test_time_based_sink_gets_holds_only_from_new_valid_snapshots(self):
+        """@brief Repeated accepted states refresh a ramp; duplicates and foreign sessions cannot."""
+        sink = MagicMock()
+        sink.repeat_buttons = True
+        state = pad.OrderedInput(self.session, sink, 500)
+        self.assertTrue(state.accept(self.session, 1, 0x200, 10))
+        self.assertTrue(state.accept(self.session, 2, 0x200, 20))
+        calls = sink.set_buttons.call_count
+        self.assertFalse(state.accept(self.session, 2, 0x200, 30))
+        self.assertFalse(state.accept(bytes(16), 3, 0x200, 40))
+        self.assertEqual(sink.set_buttons.call_count, calls)
+        self.assertEqual(
+            sink.set_buttons.call_args_list[-1].args, sink.set_buttons.call_args_list[-2].args
+        )
+        self.assertTrue(state.expire(520))
+        self.assertEqual(sink.set_buttons.call_args.args, (0,))
+
     def test_wrap_reorder_duplicate_and_timeout(self):
         """@brief Same-sequence traffic cannot replay a press or postpone neutral release."""
         sink = MagicMock()

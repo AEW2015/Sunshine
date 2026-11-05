@@ -7,8 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import live_session
 from av_protocol import INPUT, NONCE, Packet, decode
+from gamepad_backend import GamepadDispatcher
 from msv1 import gamebub_buttons
 from realtime import gamepad_buttons
+from windows_gamepad import OrderedInput
 
 
 class Clock:
@@ -86,6 +88,33 @@ class PeerSocket:
 
 class SessionTests(unittest.TestCase):
     """@brief Preserve cookie handshake, independent ordering, profiles and STOP."""
+
+    def test_wow_repeated_valid_holds_accelerate_through_profile_sink(self):
+        """@brief The combined-session adapter refreshes a held camera and releases on silence."""
+        backend = MagicMock()
+        backend.close.return_value = ()
+        now = [0]
+        dispatcher = GamepadDispatcher(backend, profile="wow", clock=lambda: now[0])
+        sink = live_session.ProfileSink(dispatcher)
+        self.assertTrue(sink.repeat_buttons)
+        token = bytes(range(16))
+        ordered = OrderedInput(token, sink, 500_000_000)
+        speeds = []
+        for tick in range(21):
+            now[0] = tick * 100_000_000
+            self.assertTrue(ordered.accept(token, tick, 0x800, now[0]))
+            speeds.append(backend.set_state.call_args.args[4])
+        self.assertEqual(speeds[0], 10000)
+        self.assertEqual(speeds[-1], 32767)
+        self.assertEqual(speeds, sorted(speeds))
+        calls = backend.set_state.call_count
+        self.assertFalse(ordered.accept(token, 20, 0x800, now[0] + 1))
+        self.assertEqual(backend.set_state.call_count, calls)
+        now[0] += 500_000_000
+        self.assertTrue(ordered.expire(now[0]))
+        self.assertEqual(backend.set_state.call_args.args, (0, 0, 0, 0, 0, 0, 0))
+        self.assertIsNone(dispatcher.camera.started_ns)
+        dispatcher.close()
 
     def args(self, **changes):
         """@brief Return a short localhost-only session configuration."""

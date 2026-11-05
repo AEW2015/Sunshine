@@ -1,5 +1,9 @@
 # Simple WoW controller profile
 
+Updated on 2026-11-04: the `wow` camera now starts gently and accelerates over
+two seconds. See [the ramp behavior and current validation](wow-ramped-camera-20261104.md).
+The original full-deflection profile and its historical observations follow.
+
 Added and activated `wow` on2026-11-03 America/Denver. D-pad drives left-stick
 movement. Face buttons drive right-stick camera with the operator's preceding
 layout: X up,Y left,A right,B down. Cardinal deflection32767, normalized

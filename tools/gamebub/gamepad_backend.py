@@ -4,7 +4,9 @@ No driver installation or input injection occurs on import. The reference AV
 client owns MSI1 sequence/session validation and its500ms release lease.
 """
 
+import math
 import os
+import time
 from pathlib import Path
 
 from msv1 import gamebub_buttons
@@ -13,6 +15,8 @@ from windows_gamepad import XboxController, load_client
 
 PROFILES = ("standard", "elden-ring", "mass-effect", "wow")
 DIAGONAL_AXIS = 23169  # Floor(32767/sqrt(2)): diagonal magnitude never exceeds cardinal magnitude.
+WOW_CAMERA_START = 10000  # Gentle initial radial deflection; game bindings set the final feel.
+WOW_CAMERA_RAMP_NS = 2_000_000_000
 
 
 def elden_ring_state(pressed):
@@ -67,6 +71,60 @@ def wow_state(pressed):
     return flags, left_x, left_y, 0, right_x, right_y, 0
 
 
+class RampedCamera:
+    """@brief Convert held camera directions into a gradual, time-based right-stick deflection."""
+
+    def __init__(self, start=WOW_CAMERA_START, ramp_ns=WOW_CAMERA_RAMP_NS, gap_ns=250_000_000):
+        """@brief Configure bounded stick speed and a fresh slow start after input gaps.
+
+        @param start Initial radial stick magnitude1..32767.
+        @param ramp_ns Hold duration to reach full deflection using a quadratic ease-in.
+        @param gap_ns Input silence that resets acceleration on the next valid snapshot.
+        """
+        if type(start) is not int or not 1 <= start <= 32767:
+            raise ValueError("Invalid camera starting magnitude")
+        if any(type(value) is not int or value <= 0 for value in (ramp_ns, gap_ns)):
+            raise ValueError("Camera ramp and gap durations must be positive nanoseconds")
+        self.start, self.ramp_ns, self.gap_ns = start, ramp_ns, gap_ns
+        self.reset()
+
+    def reset(self):
+        """@brief Clear hold history on neutral release, lease expiry or shutdown."""
+        self.direction = (0, 0)
+        self.started_ns = self.last_ns = None
+
+    def sample(self, x, y, now_ns):
+        """@brief Sample a complete direction snapshot without packet-count-dependent acceleration.
+
+        @param x Horizontal direction -1/0/1; positive means right.
+        @param y Vertical direction -1/0/1; positive means up.
+        @param now_ns Nonnegative host monotonic timestamp.
+        @return Signed16 X/Y stick coordinates, with normalized diagonal magnitude.
+        """
+        if any(type(value) is not int or value not in (-1, 0, 1) for value in (x, y)):
+            raise ValueError("Invalid camera direction")
+        if (
+            type(now_ns) is not int
+            or now_ns < 0
+            or (self.last_ns is not None and now_ns < self.last_ns)
+        ):
+            raise ValueError("Invalid camera monotonic timestamp")
+        direction = (x, y)
+        gap = self.last_ns is not None and now_ns - self.last_ns >= self.gap_ns
+        self.last_ns = now_ns
+        if direction == (0, 0):
+            self.direction, self.started_ns = direction, None
+            return 0, 0
+        if direction != self.direction or gap:
+            self.direction, self.started_ns = direction, now_ns
+        elapsed = min(now_ns - self.started_ns, self.ramp_ns)
+        magnitude = self.start + (32767 - self.start) * elapsed * elapsed // (
+            self.ramp_ns * self.ramp_ns
+        )
+        axis = math.isqrt(magnitude * magnitude // 2) if x and y else magnitude
+        return x * axis, y * axis
+
+
 class VigemXbox360Backend:
     """@brief Factory compatible with the published AV v1 opt-in gamepad client."""
 
@@ -87,8 +145,13 @@ class VigemXbox360Backend:
 class GamepadDispatcher:
     """@brief Map validated twelve-button snapshots to an owned virtual Xbox controller."""
 
-    def __init__(self, backend, profile=None):
-        """@brief Start neutral; close the device if initial publication fails."""
+    def __init__(self, backend, profile=None, clock=None):
+        """@brief Start neutral; close the device if initial publication fails.
+
+        @param backend Owned virtual controller output.
+        @param profile Explicit mapping or the existing environment-selected profile.
+        @param clock Optional monotonic nanosecond clock for reproducible ramp checks.
+        """
         self.profile = (
             profile
             if profile is not None
@@ -98,6 +161,8 @@ class GamepadDispatcher:
             backend.close()
             raise ValueError("Unknown controller profile")
         self.backend, self.closed = backend, False
+        self.clock = time.monotonic_ns if clock is None else clock
+        self.camera = RampedCamera() if self.profile == "wow" else None
         self.neutral()
 
     def _set(
@@ -121,11 +186,15 @@ class GamepadDispatcher:
 
     def apply(self, mask):
         """@brief Apply a complete Game Bub mask using the explicitly selected profile."""
+        if self.closed:
+            raise RuntimeError("Gamepad dispatcher is closed")
         pressed = gamebub_buttons(mask)
         if self.profile == "mass-effect":
             self._set(*mass_effect_state(pressed))
         elif self.profile == "wow":
-            self._set(*wow_state(pressed))
+            flags, lx, ly, lt, rx, ry, rt = wow_state(pressed)
+            rx, ry = self.camera.sample((rx > 0) - (rx < 0), (ry > 0) - (ry < 0), self.clock())
+            self._set(flags, lx, ly, lt, rx, ry, rt)
         elif self.profile == "elden-ring":
             self._set(*elden_ring_state(pressed))
         else:
@@ -133,12 +202,16 @@ class GamepadDispatcher:
 
     def neutral(self):
         """@brief Release all buttons on input lease expiry or session shutdown."""
+        if self.camera is not None:
+            self.camera.reset()
         self._set(0)
 
     def close(self):
         """@brief Neutralize and unplug once, reporting any driver cleanup failure."""
         if not self.closed:
             self.closed = True
+            if self.camera is not None:
+                self.camera.reset()
             errors = self.backend.close()
             if errors:
                 raise OSError("Gamepad cleanup failed: " + "; ".join(errors))

@@ -65,13 +65,16 @@ class GamepadBackendTests(unittest.TestCase):
         """@brief Verify all4096 WoW masks, neutral triggers and failure cleanup."""
         backend = MagicMock()
         backend.close.return_value = ()
-        dispatcher = output.GamepadDispatcher(backend, profile="wow")
+        dispatcher = output.GamepadDispatcher(backend, profile="wow", clock=lambda: 0)
         for mask in range(4096):
             axes = []
-            for right, left, up, down in ((0x10, 0x20, 0x80, 0x40), (0x800, 0x100, 0x200, 0x400)):
+            for index, (right, left, up, down) in enumerate(
+                ((0x10, 0x20, 0x80, 0x40), (0x800, 0x100, 0x200, 0x400))
+            ):
                 x = int(bool(mask & right)) - int(bool(mask & left))
                 y = int(bool(mask & up)) - int(bool(mask & down))
-                scale = 23169 if x and y else 32767
+                maximum = 32767 if index == 0 else output.WOW_CAMERA_START
+                scale = int((maximum * maximum // 2) ** 0.5) if x and y else maximum
                 axes.extend((x * scale, y * scale))
                 self.assertLessEqual((x * scale) ** 2 + (y * scale) ** 2, 32767**2)
             flags = sum(
@@ -88,6 +91,121 @@ class GamepadBackendTests(unittest.TestCase):
         with self.assertRaises(OSError):
             dispatcher.apply(0xFFF)
         backend.close.assert_called_once()
+
+    def test_wow_hold_accelerates_without_changing_movement_or_buttons(self):
+        """@brief Hold a camera key over real elapsed time while movement/menu masks change."""
+        backend = MagicMock()
+        backend.close.return_value = ()
+        now = [0]
+        dispatcher = output.GamepadDispatcher(backend, profile="wow", clock=lambda: now[0])
+        speeds = []
+        for tick in range(21):
+            now[0] = tick * 100_000_000
+            movement, button = (0x80, 0x08) if tick % 2 else (0x10, 0x02)
+            dispatcher.apply(0x800 | movement | button)
+            flags, lx, ly, lt, rx, ry, rt = backend.set_state.call_args.args
+            expected = (0x100, 0, 32767) if tick % 2 else (0x10, 32767, 0)
+            self.assertEqual((flags, lx, ly), expected)
+            self.assertEqual((lt, ry, rt), (0, 0, 0))
+            speeds.append(rx)
+        self.assertEqual(speeds[0], 10000)
+        self.assertEqual(speeds[-1], 32767)
+        self.assertEqual(speeds, sorted(speeds))
+        self.assertLess(speeds[10], (speeds[0] + speeds[-1]) // 2)
+        dispatcher.neutral()
+        self.assertEqual(backend.set_state.call_args.args, (0, 0, 0, 0, 0, 0, 0))
+        now[0] += 20_000_000
+        dispatcher.apply(0x800)
+        self.assertEqual(backend.set_state.call_args.args[4], 10000)
+        dispatcher.close()
+        self.assertIsNone(dispatcher.camera.started_ns)
+        with self.assertRaises(RuntimeError):
+            dispatcher.apply(0x800)
+
+    def test_wow_reverse_and_opposition_restart_slow_camera(self):
+        """@brief Direction changes/release cancel old acceleration instead of snapping full tilt."""
+        backend = MagicMock()
+        backend.close.return_value = ()
+        now = [0]
+        dispatcher = output.GamepadDispatcher(backend, profile="wow", clock=lambda: now[0])
+        for tick in range(21):
+            now[0] = tick * 100_000_000
+            dispatcher.apply(0x800)
+        now[0] += 20_000_000
+        dispatcher.apply(0x100)
+        self.assertEqual(backend.set_state.call_args.args[4:6], (-10000, 0))
+        now[0] += 20_000_000
+        dispatcher.apply(0x900)
+        self.assertEqual(backend.set_state.call_args.args[4:6], (0, 0))
+        now[0] += 20_000_000
+        dispatcher.apply(0x200)
+        self.assertEqual(backend.set_state.call_args.args[4:6], (0, 10000))
+        backend.set_state.side_effect = OSError("driver fault")
+        with self.assertRaises(OSError):
+            dispatcher.apply(0x800)
+        self.assertIsNone(dispatcher.camera.started_ns)
+        backend.close.assert_called_once()
+
+    def test_packet_frequency_does_not_change_elapsed_time_acceleration(self):
+        """@brief Different valid snapshot cadences produce the same one-second speed."""
+        results = []
+        for period in (10_000_000, 20_000_000, 50_000_000, 100_000_000):
+            camera = output.RampedCamera()
+            for now in range(0, 1_000_000_001, period):
+                current = camera.sample(1, 0, now)
+            results.append(current)
+        self.assertTrue(all(value == results[0] for value in results))
+        self.assertGreater(results[0][0], 10000)
+        self.assertLess(results[0][0], 32767)
+
+    def test_diagonal_speed_is_normalized_and_bounded(self):
+        """@brief Diagonals remain radially bounded at slow, intermediate and full speed."""
+        diagonal = output.RampedCamera(gap_ns=10_000_000_000)
+        cardinal = output.RampedCamera(gap_ns=10_000_000_000)
+        for now in (0, 500_000_000, 1_000_000_000, 2_000_000_000, 5_000_000_000):
+            x, y = diagonal.sample(-1, 1, now)
+            magnitude = cardinal.sample(1, 0, now)[0]
+            self.assertEqual(-x, y)
+            self.assertLessEqual(x * x + y * y, magnitude * magnitude)
+            self.assertLessEqual(abs(x), 23169)
+        self.assertEqual((x, y), (-23169, 23169))
+
+    def test_gaps_reset_without_catch_up_and_reset_forgets_hold(self):
+        """@brief A 250ms gap restarts gently and explicit neutral resets all history."""
+        camera = output.RampedCamera()
+        self.assertEqual(camera.sample(1, 0, 0), (10000, 0))
+        self.assertGreater(camera.sample(1, 0, 200_000_000)[0], 10000)
+        self.assertEqual(camera.sample(1, 0, 450_000_000), (10000, 0))
+        self.assertEqual(camera.sample(0, 0, 460_000_000), (0, 0))
+        self.assertEqual(camera.sample(1, 0, 470_000_000), (10000, 0))
+        camera.reset()
+        self.assertEqual(camera.sample(0, 0, 0), (0, 0))
+        self.assertEqual(camera.sample(1, 1, 1), (7071, 7071))
+
+    def test_invalid_parameters_directions_and_clock_leave_history_unchanged(self):
+        """@brief Reject bad dimensions/timestamps before corrupting a held direction."""
+        for start in (0, 32768, True, 1.0):
+            with self.assertRaises(ValueError):
+                output.RampedCamera(start=start)
+        for value in (0, -1, True, 1.0):
+            for key in ("ramp_ns", "gap_ns"):
+                with self.assertRaises(ValueError):
+                    output.RampedCamera(**{key: value})
+        camera = output.RampedCamera(start=32767)
+        self.assertEqual(camera.sample(1, 0, 1), (32767, 0))
+        state = (camera.direction, camera.started_ns, camera.last_ns)
+        for x, y, now in (
+            (2, 0, 2),
+            (True, 0, 2),
+            (0, 0.0, 2),
+            (1, 0, -1),
+            (1, 0, 0),
+            (1, 0, True),
+            (1, 0, 1.0),
+        ):
+            with self.assertRaises(ValueError):
+                camera.sample(x, y, now)
+            self.assertEqual((camera.direction, camera.started_ns, camera.last_ns), state)
 
     def test_driver_failure_and_cleanup_errors(self):
         """@brief Failed initial/report/neutral publication removes the owned device."""

@@ -189,6 +189,8 @@ class OrderedInput:
         """@brief Apply a newer complete button snapshot from the established session.
 
         @return True for a fresh snapshot, false for wrong-session/stale/closed input.
+        @note A sink with repeat_buttons exactly True receives unchanged fresh snapshots
+        for time-based profiles. Duplicate sequences never refresh output or liveness.
         """
         self._time(now_ns)
         if type(sequence) is not int or not 0 <= sequence <= 0xFFFFFFFF:
@@ -201,7 +203,8 @@ class OrderedInput:
             if not 0 < delta < 0x80000000:
                 return False
         try:
-            if flags != self.buttons:
+            # Time-based profile sinks explicitly request every fresh snapshot, including holds.
+            if flags != self.buttons or getattr(self.sink, "repeat_buttons", False) is True:
                 self.sink.set_buttons(flags)
         except OSError:
             self.close()

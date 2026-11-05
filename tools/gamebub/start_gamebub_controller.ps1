@@ -27,7 +27,8 @@ if (-not $ObserveOnly) {
         Write-Host 'Mass Effect: D-pad moves; X up/Y left/A right/B down aim; L aims(LT), R fires(RT), Select weapon wheel(LB).'
     }
     if ($Profile -eq 'wow') {
-        Write-Host 'WoW: D-pad moves; X up/Y left/A right/B down camera. L/R send LB/RB; Start/Select send Start/Back.'
+        Write-Host 'WoW: D-pad moves; X up/Y left/A right/B down camera, gently accelerating over 2 seconds.'
+        Write-Host 'Releasing or changing camera direction resets the slow start. L/R send LB/RB; Start/Select send Start/Back.'
         Write-Host 'WoW must have native gamepad input enabled. No game bindings are changed by this launcher.'
     }
 }

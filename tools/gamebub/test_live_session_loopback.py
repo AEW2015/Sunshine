@@ -183,7 +183,7 @@ class LoopbackTests(unittest.TestCase):
                 self.assertGreaterEqual(result["input_packets"], 10)
                 self.assertTrue(
                     any(
-                        call.args == (0, 0, 32767, 0, 0, 32767, 0)
+                        call.args == (0, 0, 32767, 0, 0, 10000, 0)
                         for call in backend.set_state.call_args_list
                     )
                 )
@@ -193,7 +193,9 @@ class LoopbackTests(unittest.TestCase):
                 self.assertEqual(len(audio), result["audio_sent"])
                 if enabled:
                     self.assertGreater(len(audio), 20)
-                    self.assertTrue(all(b.sequence > a.sequence for a, b in itertools.pairwise(audio)))
+                    self.assertTrue(
+                        all(b.sequence > a.sequence for a, b in itertools.pairwise(audio))
+                    )
                     self.assertTrue(result["audio_worker"]["shutdown_complete"])
                 else:
                     self.assertEqual(audio, [])

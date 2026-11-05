@@ -17,8 +17,9 @@ class ProfileSink:
     """@brief Adapt the tested session's digital flags back to a profile's raw mask."""
 
     def __init__(self, dispatcher=None):
-        """@brief Observation mode uses no virtual device when dispatcher is absent."""
+        """@brief Request fresh held snapshots for WoW acceleration; observation uses no device."""
         self.dispatcher = dispatcher
+        self.repeat_buttons = getattr(dispatcher, "profile", None) == "wow"
 
     def set_buttons(self, flags):
         """@brief Preserve all twelve buttons through digital flags and profile dispatch."""
