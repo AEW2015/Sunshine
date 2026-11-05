@@ -1,0 +1,620 @@
+{
+  "scope": "Host send-call and partial Wi-Fi Npcap metadata; neither proves RF delivery",
+  "capture_point": "Partial Npcap/NDIS Wi-Fi outbound capture, Ethernet encapsulation, not RF delivery",
+  "capture_received": 8971,
+  "capture_dropped": 0,
+  "frames": [
+    {
+      "frame_id": 2013780,
+      "capture_us_unix": 1793862069142206,
+      "capture_utc": "2026-11-05T07:01:09.142206+00:00",
+      "all_host_packets": [
+        [
+          0,
+          1024,
+          1357151.518838
+        ],
+        [
+          1024,
+          1024,
+          1357151.5219599
+        ],
+        [
+          2048,
+          1024,
+          1357151.5249221
+        ],
+        [
+          3072,
+          1024,
+          1357151.5278417
+        ],
+        [
+          4096,
+          1024,
+          1357151.5308316
+        ],
+        [
+          5120,
+          1024,
+          1357151.5338398
+        ],
+        [
+          6144,
+          1024,
+          1357151.5368076
+        ],
+        [
+          7168,
+          1024,
+          1357151.5410019
+        ],
+        [
+          8192,
+          1024,
+          1357151.5439469
+        ],
+        [
+          9216,
+          1024,
+          1357151.5469749
+        ],
+        [
+          10240,
+          1024,
+          1357151.5495842
+        ],
+        [
+          11264,
+          1024,
+          1357151.5526589
+        ],
+        [
+          12288,
+          1024,
+          1357151.5555084
+        ],
+        [
+          13312,
+          1024,
+          1357151.5584782
+        ],
+        [
+          14336,
+          1024,
+          1357151.5613339
+        ],
+        [
+          15360,
+          1024,
+          1357151.5644648
+        ],
+        [
+          16384,
+          1024,
+          1357151.5674484
+        ],
+        [
+          17408,
+          1024,
+          1357151.5702088
+        ],
+        [
+          18432,
+          1024,
+          1357151.5732594
+        ],
+        [
+          19456,
+          928,
+          1357151.5762241
+        ]
+      ]
+    },
+    {
+      "frame_id": 2013900,
+      "capture_us_unix": 1793862075141377,
+      "capture_utc": "2026-11-05T07:01:15.141377+00:00",
+      "all_host_packets": [
+        [
+          0,
+          1024,
+          1357157.5312324
+        ],
+        [
+          1024,
+          1024,
+          1357157.5340447
+        ],
+        [
+          2048,
+          1024,
+          1357157.5370489
+        ],
+        [
+          3072,
+          1024,
+          1357157.5399575
+        ],
+        [
+          4096,
+          1024,
+          1357157.5427777
+        ],
+        [
+          5120,
+          1024,
+          1357157.5451004
+        ],
+        [
+          6144,
+          1024,
+          1357157.5481268
+        ],
+        [
+          7168,
+          1024,
+          1357157.5509516
+        ],
+        [
+          8192,
+          1024,
+          1357157.5539435
+        ],
+        [
+          9216,
+          1024,
+          1357157.5569374
+        ],
+        [
+          10240,
+          1024,
+          1357157.5595099
+        ],
+        [
+          11264,
+          1024,
+          1357157.5625948
+        ],
+        [
+          12288,
+          1024,
+          1357157.5654869
+        ],
+        [
+          13312,
+          1024,
+          1357157.568519
+        ],
+        [
+          14336,
+          1024,
+          1357157.5714074
+        ],
+        [
+          15360,
+          1024,
+          1357157.5744553
+        ],
+        [
+          16384,
+          1024,
+          1357157.5774509
+        ],
+        [
+          17408,
+          1024,
+          1357157.5803606
+        ],
+        [
+          18432,
+          1024,
+          1357157.5828333
+        ],
+        [
+          19456,
+          1024,
+          1357157.5858407
+        ],
+        [
+          20480,
+          1024,
+          1357157.5883459
+        ],
+        [
+          21504,
+          1024,
+          1357157.591358
+        ],
+        [
+          22528,
+          1024,
+          1357157.5943582
+        ],
+        [
+          23552,
+          154,
+          1357157.5974696
+        ]
+      ]
+    },
+    {
+      "frame_id": 2014108,
+      "capture_us_unix": 1793862085541116,
+      "capture_utc": "2026-11-05T07:01:25.541116+00:00",
+      "all_host_packets": [
+        [
+          0,
+          1024,
+          1357167.8955558
+        ],
+        [
+          1024,
+          1024,
+          1357167.8985943
+        ],
+        [
+          2048,
+          1024,
+          1357167.9015634
+        ],
+        [
+          3072,
+          1024,
+          1357167.9045638
+        ],
+        [
+          4096,
+          1024,
+          1357167.9075566
+        ],
+        [
+          5120,
+          1024,
+          1357167.9105379
+        ],
+        [
+          6144,
+          1024,
+          1357167.9135567
+        ],
+        [
+          7168,
+          1024,
+          1357167.9165165
+        ],
+        [
+          8192,
+          1024,
+          1357167.9195607
+        ],
+        [
+          9216,
+          1024,
+          1357167.9225098
+        ],
+        [
+          10240,
+          1024,
+          1357167.9255159
+        ],
+        [
+          11264,
+          1024,
+          1357167.9280263
+        ],
+        [
+          12288,
+          1024,
+          1357167.9311042
+        ],
+        [
+          13312,
+          1024,
+          1357167.934028
+        ],
+        [
+          14336,
+          1024,
+          1357167.9370194
+        ],
+        [
+          15360,
+          1024,
+          1357167.9403704
+        ],
+        [
+          16384,
+          1024,
+          1357167.9431853
+        ],
+        [
+          17408,
+          37,
+          1357167.946157
+        ]
+      ]
+    },
+    {
+      "frame_id": 2014109,
+      "capture_us_unix": 1793862085589548,
+      "capture_utc": "2026-11-05T07:01:25.589548+00:00",
+      "all_host_packets": [
+        [
+          0,
+          1024,
+          1357167.9465107
+        ],
+        [
+          1024,
+          1024,
+          1357167.9491341
+        ],
+        [
+          2048,
+          1024,
+          1357167.9521198
+        ],
+        [
+          3072,
+          1024,
+          1357167.9551315
+        ],
+        [
+          4096,
+          1024,
+          1357167.9581218
+        ],
+        [
+          5120,
+          1024,
+          1357167.9611042
+        ],
+        [
+          6144,
+          1024,
+          1357167.9641047
+        ],
+        [
+          7168,
+          1024,
+          1357167.9670932
+        ],
+        [
+          8192,
+          1024,
+          1357167.9699414
+        ],
+        [
+          9216,
+          1024,
+          1357167.9729367
+        ],
+        [
+          10240,
+          1024,
+          1357167.9758867
+        ],
+        [
+          11264,
+          1024,
+          1357167.9790858
+        ],
+        [
+          12288,
+          1024,
+          1357167.9820885
+        ],
+        [
+          13312,
+          1024,
+          1357167.9850931
+        ],
+        [
+          14336,
+          1024,
+          1357167.9880821
+        ],
+        [
+          15360,
+          1024,
+          1357167.9910661
+        ],
+        [
+          16384,
+          1024,
+          1357167.9940687
+        ],
+        [
+          17408,
+          260,
+          1357167.9970581
+        ]
+      ]
+    }
+  ],
+  "requested_packets": [
+    {
+      "frame_id": 2013780,
+      "offset": 9216,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357151.5469749,
+      "previous_frame_id": 2013780,
+      "previous_offset": 8192,
+      "host_gap_ms": 3.028000006452203,
+      "pcap_epoch_s": 1793862069.204533,
+      "pcap_utc": "2026-11-05T07:01:09.204533+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 3.0851364135742188,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013780,
+      "offset": 10240,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357151.5495842,
+      "previous_frame_id": 2013780,
+      "previous_offset": 9216,
+      "host_gap_ms": 2.609299961477518,
+      "pcap_epoch_s": 1793862069.207144,
+      "pcap_utc": "2026-11-05T07:01:09.207144+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 2.610921859741211,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013780,
+      "offset": 11264,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357151.5526589,
+      "previous_frame_id": 2013780,
+      "previous_offset": 10240,
+      "host_gap_ms": 3.0747000128030777,
+      "pcap_epoch_s": 1793862069.210157,
+      "pcap_utc": "2026-11-05T07:01:09.210157+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 3.0128955841064453,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013900,
+      "offset": 0,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357157.5312324,
+      "previous_frame_id": 2013899,
+      "previous_offset": 19456,
+      "host_gap_ms": 3.1797001138329506,
+      "pcap_epoch_s": 1793862075.188769,
+      "pcap_utc": "2026-11-05T07:01:15.188769+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013900,
+      "offset": 1024,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357157.5340447,
+      "previous_frame_id": 2013900,
+      "previous_offset": 0,
+      "host_gap_ms": 2.8122998774051666,
+      "pcap_epoch_s": 1793862075.191599,
+      "pcap_utc": "2026-11-05T07:01:15.191599+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 2.8297901153564453,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013900,
+      "offset": 2048,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357157.5370489,
+      "previous_frame_id": 2013900,
+      "previous_offset": 1024,
+      "host_gap_ms": 3.0042000580579042,
+      "pcap_epoch_s": 1793862075.194598,
+      "pcap_utc": "2026-11-05T07:01:15.194598+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 2.9990673065185547,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2013900,
+      "offset": 3072,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357157.5399575,
+      "previous_frame_id": 2013900,
+      "previous_offset": 2048,
+      "host_gap_ms": 2.908600028604269,
+      "pcap_epoch_s": 1793862075.197498,
+      "pcap_utc": "2026-11-05T07:01:15.197498+00:00",
+      "pcap_gap_from_previous_same_frame_packet_ms": 2.9001235961914062,
+      "pcap_status": "present"
+    },
+    {
+      "frame_id": 2014108,
+      "offset": 15360,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9403704,
+      "previous_frame_id": 2014108,
+      "previous_offset": 14336,
+      "host_gap_ms": 3.350999904796481,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014108,
+      "offset": 16384,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9431853,
+      "previous_frame_id": 2014108,
+      "previous_offset": 15360,
+      "host_gap_ms": 2.814900130033493,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014108,
+      "offset": 17408,
+      "payload_bytes": 37,
+      "host_post_send_monotonic_s": 1357167.946157,
+      "previous_frame_id": 2014108,
+      "previous_offset": 16384,
+      "host_gap_ms": 2.9716999270021915,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014109,
+      "offset": 0,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9465107,
+      "previous_frame_id": 2014108,
+      "previous_offset": 17408,
+      "host_gap_ms": 0.35370001569390297,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014109,
+      "offset": 1024,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9491341,
+      "previous_frame_id": 2014109,
+      "previous_offset": 0,
+      "host_gap_ms": 2.6233999524265528,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014109,
+      "offset": 2048,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9521198,
+      "previous_frame_id": 2014109,
+      "previous_offset": 1024,
+      "host_gap_ms": 2.9857000336050987,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    },
+    {
+      "frame_id": 2014109,
+      "offset": 3072,
+      "payload_bytes": 1024,
+      "host_post_send_monotonic_s": 1357167.9551315,
+      "previous_frame_id": 2014109,
+      "previous_offset": 2048,
+      "host_gap_ms": 3.0116999987512827,
+      "pcap_epoch_s": null,
+      "pcap_utc": null,
+      "pcap_gap_from_previous_same_frame_packet_ms": null,
+      "pcap_status": "outside capture coverage"
+    }
+  ]
+}
