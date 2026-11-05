@@ -1,0 +1,544 @@
+{
+  "scope": "Partial Npcap/NDIS Wi-Fi outbound capture, Ethernet encapsulation, not RF delivery",
+  "capture_interface": "\\Device\\NPF_{B505491B-79C2-46D6-9030-5C95C2CA2B10}",
+  "interface_description": "Wi-Fi / Intel Wi-Fi 6 AX201 160MHz",
+  "filter": "udp and host 192.168.0.47 and host 192.168.0.157 and (port 5533 or port 5534)",
+  "capture_reported_received": 8971,
+  "capture_reported_dropped": 0,
+  "coverage_complete": false,
+  "stop_not_captured": true,
+  "coverage_limit": "50-second capture started too early and ended before the final approximately nine seconds of streaming",
+  "outbound_video_packets": 7175,
+  "host_video_packets": 10251,
+  "first_captured_video_utc": "2026-11-05T07:01:00.182122+00:00",
+  "last_captured_video_utc": "2026-11-05T07:01:20.962951+00:00",
+  "video_capture_span_s": 20.780828952789307,
+  "first_frame_id": 2013600,
+  "last_frame_id": 2014016,
+  "last_offset": 4096,
+  "missing_logged_keys_within_covered_interval": [],
+  "duplicate_capture_keys": 0,
+  "captured_offset_order_errors": [],
+  "complete_captured_frames": 350,
+  "complete_frame_crc_failures": 0,
+  "failure_frame_evidence": [
+    {
+      "frame_id": 2013780,
+      "captured_packets": 20,
+      "complete_crc_check": {
+        "frame_id": 2013780,
+        "bytes": 20384,
+        "crc_matches": true
+      },
+      "packet_metadata": [
+        {
+          "pcap_frame": 3945,
+          "pcap_epoch_s": 1793862069.1764,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 0,
+          "count": 1024,
+          "flags": 1,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3946,
+          "pcap_epoch_s": 1793862069.179461,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 1024,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3947,
+          "pcap_epoch_s": 1793862069.182476,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 2048,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3948,
+          "pcap_epoch_s": 1793862069.1854,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 3072,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3949,
+          "pcap_epoch_s": 1793862069.188384,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 4096,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3950,
+          "pcap_epoch_s": 1793862069.191385,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 5120,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3951,
+          "pcap_epoch_s": 1793862069.194362,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 6144,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3952,
+          "pcap_epoch_s": 1793862069.198538,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 7168,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3953,
+          "pcap_epoch_s": 1793862069.201448,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 8192,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3954,
+          "pcap_epoch_s": 1793862069.204533,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 9216,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3955,
+          "pcap_epoch_s": 1793862069.207144,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 10240,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3956,
+          "pcap_epoch_s": 1793862069.210157,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 11264,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3961,
+          "pcap_epoch_s": 1793862069.213071,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 12288,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3962,
+          "pcap_epoch_s": 1793862069.215979,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 13312,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3963,
+          "pcap_epoch_s": 1793862069.218892,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 14336,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3964,
+          "pcap_epoch_s": 1793862069.221979,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 15360,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3966,
+          "pcap_epoch_s": 1793862069.224952,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 16384,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3967,
+          "pcap_epoch_s": 1793862069.227771,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 17408,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3968,
+          "pcap_epoch_s": 1793862069.230798,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 18432,
+          "count": 1024,
+          "flags": 0,
+          "crc": 403876311
+        },
+        {
+          "pcap_frame": 3969,
+          "pcap_epoch_s": 1793862069.233785,
+          "frame_id": 2013780,
+          "capture_us": 1793862069142206,
+          "length": 20384,
+          "offset": 19456,
+          "count": 928,
+          "flags": 2,
+          "crc": 403876311
+        }
+      ]
+    },
+    {
+      "frame_id": 2013900,
+      "captured_packets": 24,
+      "complete_crc_check": {
+        "frame_id": 2013900,
+        "bytes": 23706,
+        "crc_matches": true
+      },
+      "packet_metadata": [
+        {
+          "pcap_frame": 6508,
+          "pcap_epoch_s": 1793862075.188769,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 0,
+          "count": 1024,
+          "flags": 1,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6511,
+          "pcap_epoch_s": 1793862075.191599,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 1024,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6512,
+          "pcap_epoch_s": 1793862075.194598,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 2048,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6513,
+          "pcap_epoch_s": 1793862075.197498,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 3072,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6514,
+          "pcap_epoch_s": 1793862075.200332,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 4096,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6515,
+          "pcap_epoch_s": 1793862075.202616,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 5120,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6517,
+          "pcap_epoch_s": 1793862075.20562,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 6144,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6518,
+          "pcap_epoch_s": 1793862075.208512,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 7168,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6519,
+          "pcap_epoch_s": 1793862075.211505,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 8192,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6520,
+          "pcap_epoch_s": 1793862075.214498,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 9216,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6522,
+          "pcap_epoch_s": 1793862075.217069,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 10240,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6523,
+          "pcap_epoch_s": 1793862075.220124,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 11264,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6525,
+          "pcap_epoch_s": 1793862075.223049,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 12288,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6526,
+          "pcap_epoch_s": 1793862075.226069,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 13312,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6527,
+          "pcap_epoch_s": 1793862075.228966,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 14336,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6530,
+          "pcap_epoch_s": 1793862075.232015,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 15360,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6533,
+          "pcap_epoch_s": 1793862075.235011,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 16384,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6535,
+          "pcap_epoch_s": 1793862075.237921,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 17408,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6537,
+          "pcap_epoch_s": 1793862075.240345,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 18432,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6539,
+          "pcap_epoch_s": 1793862075.243345,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 19456,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6542,
+          "pcap_epoch_s": 1793862075.245906,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 20480,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6544,
+          "pcap_epoch_s": 1793862075.248909,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 21504,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6546,
+          "pcap_epoch_s": 1793862075.251913,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 22528,
+          "count": 1024,
+          "flags": 0,
+          "crc": 2888082061
+        },
+        {
+          "pcap_frame": 6548,
+          "pcap_epoch_s": 1793862075.254973,
+          "frame_id": 2013900,
+          "capture_us": 1793862075141377,
+          "length": 23706,
+          "offset": 23552,
+          "count": 154,
+          "flags": 2,
+          "crc": 2888082061
+        }
+      ]
+    },
+    {
+      "frame_id": 2014109,
+      "captured_packets": 0,
+      "complete_crc_check": null,
+      "packet_metadata": []
+    },
+    {
+      "frame_id": 2014108,
+      "captured_packets": 0,
+      "complete_crc_check": null,
+      "packet_metadata": []
+    }
+  ]
+}
