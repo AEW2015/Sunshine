@@ -1,0 +1,8 @@
+{
+  "original_log_sha256": "4ad7f3d347472f4c5a17c90c59e6ef95b69dc2c5477706f6bfa4e4fe2c482faf",
+  "excerpt_log_sha256": "e4d70837f3223093e3e20cc120c351b34bdb524e5ad2a2382c50153ff3605d8d",
+  "original_log_records": 28812,
+  "excerpt_log_records": 690,
+  "scope": "Frame-ID windows only; no original JPEG payload, UDP/RF capture or game imagery",
+  "baseline_result_was_generated_from_full_original_log": true
+}

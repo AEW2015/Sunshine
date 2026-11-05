@@ -1,0 +1,316 @@
+{
+  "rejected_feedback": [
+    {
+      "event": "feedback",
+      "frame_id": 2001110,
+      "capture_us": 1793852391011046,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 7808,
+      "received_frames": 975,
+      "dropped_frames": 3
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004706,
+      "capture_us": 1793852570812056,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 13785,
+      "received_frames": 4290,
+      "dropped_frames": 4
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004708,
+      "capture_us": 1793852570911995,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 17861,
+      "received_frames": 4290,
+      "dropped_frames": 5
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004714,
+      "capture_us": 1793852571212949,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 8642,
+      "received_frames": 4293,
+      "dropped_frames": 6
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004716,
+      "capture_us": 1793852571311651,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 9680,
+      "received_frames": 4293,
+      "dropped_frames": 7
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004723,
+      "capture_us": 1793852571660649,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 5524,
+      "received_frames": 4297,
+      "dropped_frames": 8
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004725,
+      "capture_us": 1793852571760130,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 5524,
+      "received_frames": 4297,
+      "dropped_frames": 9
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004737,
+      "capture_us": 1793852572360523,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 18087,
+      "received_frames": 4305,
+      "dropped_frames": 10
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004748,
+      "capture_us": 1793852572910611,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 16020,
+      "received_frames": 4313,
+      "dropped_frames": 11
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004752,
+      "capture_us": 1793852573110994,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 18066,
+      "received_frames": 4315,
+      "dropped_frames": 12
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004753,
+      "capture_us": 1793852573160636,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 18066,
+      "received_frames": 4315,
+      "dropped_frames": 13
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004756,
+      "capture_us": 1793852573311898,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 11932,
+      "received_frames": 4316,
+      "dropped_frames": 14
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004757,
+      "capture_us": 1793852573360673,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 11932,
+      "received_frames": 4316,
+      "dropped_frames": 15
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004764,
+      "capture_us": 1793852573711299,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 12123,
+      "received_frames": 4320,
+      "dropped_frames": 16
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004765,
+      "capture_us": 1793852573760165,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 12123,
+      "received_frames": 4320,
+      "dropped_frames": 17
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004769,
+      "capture_us": 1793852573961410,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 3936,
+      "received_frames": 4322,
+      "dropped_frames": 18
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004773,
+      "capture_us": 1793852574161511,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 3937,
+      "received_frames": 4323,
+      "dropped_frames": 19
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004780,
+      "capture_us": 1793852574511325,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 4351,
+      "received_frames": 4327,
+      "dropped_frames": 20
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004781,
+      "capture_us": 1793852574560409,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 8454,
+      "received_frames": 4327,
+      "dropped_frames": 21
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004785,
+      "capture_us": 1793852574762230,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 9679,
+      "received_frames": 4330,
+      "dropped_frames": 22
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004786,
+      "capture_us": 1793852574810815,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 9679,
+      "received_frames": 4330,
+      "dropped_frames": 23
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004790,
+      "capture_us": 1793852575010866,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 10727,
+      "received_frames": 4333,
+      "dropped_frames": 24
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004796,
+      "capture_us": 1793852575310749,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 12856,
+      "received_frames": 4338,
+      "dropped_frames": 25
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004797,
+      "capture_us": 1793852575360173,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 14920,
+      "received_frames": 4338,
+      "dropped_frames": 26
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004802,
+      "capture_us": 1793852575610746,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 10829,
+      "received_frames": 4341,
+      "dropped_frames": 27
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004803,
+      "capture_us": 1793852575661686,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 0,
+      "received_frames": 4341,
+      "dropped_frames": 28
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004807,
+      "capture_us": 1793852575861498,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 4674,
+      "received_frames": 4343,
+      "dropped_frames": 29
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004808,
+      "capture_us": 1793852575910878,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 4674,
+      "received_frames": 4343,
+      "dropped_frames": 30
+    },
+    {
+      "event": "feedback",
+      "frame_id": 2004810,
+      "capture_us": 1793852576011045,
+      "status": 1,
+      "buttons": 0,
+      "free_bytes": 8772,
+      "received_frames": 4344,
+      "dropped_frames": 31
+    }
+  ],
+  "sends_without_matched_feedback": [
+    {
+      "event": "send",
+      "frame_id": 2004772,
+      "capture_us": 1793852574110624,
+      "jpeg_bytes": 20321,
+      "wire_bytes": 21121,
+      "complete": true,
+      "queue_age_ms": 4.2782,
+      "age_ms": 84.0308
+    },
+    {
+      "event": "send",
+      "frame_id": 2004806,
+      "capture_us": 1793852575810463,
+      "jpeg_bytes": 16962,
+      "wire_bytes": 17642,
+      "complete": true,
+      "queue_age_ms": 21.6871,
+      "age_ms": 84.8304
+    }
+  ]
+}

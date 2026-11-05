@@ -1,0 +1,276 @@
+{
+  "scope": "Successful host send-call records, not NIC or RF departure timestamps; receiver measurements supplied by operator",
+  "receiver_final": {
+    "received": 6202,
+    "decoded": 6202,
+    "presented": 6202,
+    "dropped": 31,
+    "queue_packet_drops": 45,
+    "queue_high_water": 32,
+    "core_completed": 6202,
+    "core_drops": 27,
+    "faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "transport_overflows": 0,
+    "power_save_restored": "MIN_MODEM",
+    "entry_errors": 0,
+    "restore_errors": 0
+  },
+  "all_29_rejections_reported_sequence": true,
+  "selected_comparisons": [
+    {
+      "frame_id": 2001110,
+      "receiver_expected": 18432,
+      "receiver_observed": 19456,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 17408,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347473.4286809,
+          "gap_from_previous_ms": 3.8211001083254814
+        },
+        {
+          "offset": 18432,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347473.4325843,
+          "gap_from_previous_ms": 3.903399920091033
+        },
+        {
+          "offset": 19456,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347473.4356357,
+          "gap_from_previous_ms": 3.051399951800704
+        },
+        {
+          "offset": 20480,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347473.4388334,
+          "gap_from_previous_ms": 3.1977000180631876
+        }
+      ]
+    },
+    {
+      "frame_id": 2004706,
+      "receiver_expected": 9216,
+      "receiver_observed": 10240,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 8192,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.2476383,
+          "gap_from_previous_ms": 3.0623001512140036
+        },
+        {
+          "offset": 9216,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.2515585,
+          "gap_from_previous_ms": 3.9202000480145216
+        },
+        {
+          "offset": 10240,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.2546471,
+          "gap_from_previous_ms": 3.0886000022292137
+        },
+        {
+          "offset": 11264,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.2585672,
+          "gap_from_previous_ms": 3.9200999308377504
+        }
+      ]
+    },
+    {
+      "frame_id": 2004708,
+      "receiver_expected": 4096,
+      "receiver_observed": 8192,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 3072,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.3087792,
+          "gap_from_previous_ms": 3.8580000400543213
+        },
+        {
+          "offset": 4096,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.3126297,
+          "gap_from_previous_ms": 3.850499866530299
+        },
+        {
+          "offset": 7168,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.3227603,
+          "gap_from_previous_ms": 2.995300106704235
+        },
+        {
+          "offset": 8192,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.326168,
+          "gap_from_previous_ms": 3.4076999872922897
+        },
+        {
+          "offset": 9216,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347653.3291107,
+          "gap_from_previous_ms": 2.9426999390125275
+        }
+      ]
+    },
+    {
+      "frame_id": 2004748,
+      "receiver_expected": 5120,
+      "receiver_observed": 14336,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 4096,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347655.3084241,
+          "gap_from_previous_ms": 2.9637999832630157
+        },
+        {
+          "offset": 5120,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347655.3113998,
+          "gap_from_previous_ms": 2.975699957460165
+        },
+        {
+          "offset": 13312,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347655.3393754,
+          "gap_from_previous_ms": 2.930500078946352
+        },
+        {
+          "offset": 14336,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347655.3425725,
+          "gap_from_previous_ms": 3.1971000134944916
+        },
+        {
+          "offset": 15360,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347655.3463849,
+          "gap_from_previous_ms": 3.8123999256640673
+        }
+      ]
+    },
+    {
+      "frame_id": 2004773,
+      "receiver_expected": 16384,
+      "receiver_observed": 1024,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 0,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347656.5407716,
+          "gap_from_previous_ms": null
+        },
+        {
+          "offset": 1024,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347656.5437338,
+          "gap_from_previous_ms": 2.9621999710798264
+        },
+        {
+          "offset": 2048,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347656.5474322,
+          "gap_from_previous_ms": 3.6983999889343977
+        },
+        {
+          "offset": 15360,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347656.5893468,
+          "gap_from_previous_ms": 2.990799956023693
+        },
+        {
+          "offset": 16384,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347656.5924215,
+          "gap_from_previous_ms": 3.0747000128030777
+        }
+      ]
+    },
+    {
+      "frame_id": 2004807,
+      "receiver_expected": 14336,
+      "receiver_observed": 6144,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 5120,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.2563537,
+          "gap_from_previous_ms": 2.9633999802172184
+        },
+        {
+          "offset": 6144,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.2593566,
+          "gap_from_previous_ms": 3.002899931743741
+        },
+        {
+          "offset": 7168,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.26309,
+          "gap_from_previous_ms": 3.733400022611022
+        },
+        {
+          "offset": 13312,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.2812952,
+          "gap_from_previous_ms": 2.936100121587515
+        },
+        {
+          "offset": 14336,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.2843394,
+          "gap_from_previous_ms": 3.0441998969763517
+        }
+      ]
+    },
+    {
+      "frame_id": 2004810,
+      "receiver_expected": 10240,
+      "receiver_observed": 11264,
+      "host_offsets_strictly_increasing": true,
+      "selected_packets": [
+        {
+          "offset": 9216,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.4277012,
+          "gap_from_previous_ms": 3.0049998313188553
+        },
+        {
+          "offset": 10240,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.4307247,
+          "gap_from_previous_ms": 3.0235000886023045
+        },
+        {
+          "offset": 11264,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.4337044,
+          "gap_from_previous_ms": 2.9796999879181385
+        },
+        {
+          "offset": 12288,
+          "payload_bytes": 1024,
+          "host_post_send_seconds": 1347658.4366707,
+          "gap_from_previous_ms": 2.966300118714571
+        }
+      ]
+    }
+  ],
+  "unresolved_complete_send_ids": [
+    2004772,
+    2004806
+  ],
+  "camera_coverage": "Changing content during first 2m40s; remaining interval unrecorded"
+}
