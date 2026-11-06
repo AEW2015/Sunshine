@@ -44,4 +44,3 @@ From `C:\ai\sunshine-gamebub`, first recheck the source hash above and reserve a
 ```
 
 Interface4 must still resolve to the intended Wi-Fi adapter before the run. Capture uses the existing natural safety tail and exact STOP verification; capture finalization can continue passively after video/AV STOP. No installed Sunshine service restart or receiver flash is part of this test.
-
