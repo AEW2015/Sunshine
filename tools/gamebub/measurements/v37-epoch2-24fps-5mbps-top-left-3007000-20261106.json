@@ -1,0 +1,584 @@
+{
+  "frame_range_target": [
+    3007000,
+    3007719
+  ],
+  "target_slots": 720,
+  "encoded": 720,
+  "complete_sends": 700,
+  "replaced": 20,
+  "partial_sends": 0,
+  "skipped_slots": 0,
+  "accepted_feedback": 494,
+  "rejected_feedback": 203,
+  "pending_feedback": 3,
+  "unmatched_sent_ids": [
+    3007305,
+    3007374,
+    3007572
+  ],
+  "rejected_ids": [
+    3007045,
+    3007046,
+    3007047,
+    3007048,
+    3007049,
+    3007050,
+    3007051,
+    3007052,
+    3007054,
+    3007055,
+    3007056,
+    3007058,
+    3007059,
+    3007060,
+    3007061,
+    3007062,
+    3007064,
+    3007065,
+    3007066,
+    3007067,
+    3007068,
+    3007069,
+    3007071,
+    3007072,
+    3007073,
+    3007074,
+    3007075,
+    3007076,
+    3007077,
+    3007079,
+    3007080,
+    3007081,
+    3007082,
+    3007083,
+    3007085,
+    3007086,
+    3007087,
+    3007088,
+    3007089,
+    3007090,
+    3007091,
+    3007092,
+    3007094,
+    3007095,
+    3007096,
+    3007097,
+    3007098,
+    3007099,
+    3007100,
+    3007102,
+    3007103,
+    3007104,
+    3007105,
+    3007106,
+    3007108,
+    3007109,
+    3007110,
+    3007111,
+    3007112,
+    3007113,
+    3007114,
+    3007116,
+    3007117,
+    3007118,
+    3007119,
+    3007121,
+    3007122,
+    3007123,
+    3007124,
+    3007125,
+    3007126,
+    3007127,
+    3007128,
+    3007129,
+    3007130,
+    3007132,
+    3007133,
+    3007134,
+    3007135,
+    3007136,
+    3007137,
+    3007138,
+    3007139,
+    3007140,
+    3007141,
+    3007142,
+    3007143,
+    3007144,
+    3007145,
+    3007146,
+    3007147,
+    3007148,
+    3007149,
+    3007150,
+    3007151,
+    3007152,
+    3007153,
+    3007154,
+    3007156,
+    3007157,
+    3007158,
+    3007159,
+    3007160,
+    3007161,
+    3007162,
+    3007163,
+    3007164,
+    3007165,
+    3007166,
+    3007167,
+    3007168,
+    3007169,
+    3007170,
+    3007171,
+    3007172,
+    3007173,
+    3007174,
+    3007175,
+    3007176,
+    3007177,
+    3007178,
+    3007179,
+    3007180,
+    3007181,
+    3007182,
+    3007183,
+    3007184,
+    3007185,
+    3007186,
+    3007188,
+    3007190,
+    3007191,
+    3007192,
+    3007193,
+    3007194,
+    3007195,
+    3007196,
+    3007197,
+    3007198,
+    3007199,
+    3007200,
+    3007201,
+    3007202,
+    3007203,
+    3007204,
+    3007205,
+    3007206,
+    3007207,
+    3007208,
+    3007209,
+    3007210,
+    3007212,
+    3007214,
+    3007217,
+    3007263,
+    3007264,
+    3007265,
+    3007266,
+    3007268,
+    3007269,
+    3007270,
+    3007271,
+    3007273,
+    3007274,
+    3007275,
+    3007276,
+    3007277,
+    3007278,
+    3007280,
+    3007281,
+    3007282,
+    3007283,
+    3007284,
+    3007285,
+    3007286,
+    3007287,
+    3007288,
+    3007289,
+    3007290,
+    3007291,
+    3007292,
+    3007293,
+    3007294,
+    3007295,
+    3007296,
+    3007297,
+    3007298,
+    3007299,
+    3007300,
+    3007301,
+    3007302,
+    3007303,
+    3007304,
+    3007306,
+    3007375,
+    3007376,
+    3007388,
+    3007400,
+    3007403,
+    3007449,
+    3007545,
+    3007555,
+    3007577
+  ],
+  "last_feedback": {
+    "event": "feedback",
+    "frame_id": 3007719,
+    "capture_us": 1793992392985575,
+    "status": 0,
+    "buttons": 0,
+    "free_bytes": 0,
+    "received_frames": 2547,
+    "dropped_frames": 763
+  },
+  "session_config": {
+    "event": "session_config",
+    "fps": 24,
+    "cap_mbps": 5.0,
+    "max_age_ms": 200.0,
+    "initial_quality": 25,
+    "min_quality": 25,
+    "frames_target": 720,
+    "source_backend": "clip",
+    "start_frame_id": 3007000,
+    "packet_timing": true,
+    "max_jpeg_bytes": 262144,
+    "jpeg_retry_quality_drop": 0,
+    "shift_right_px": 0,
+    "content_origin": "top-left",
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "clip_selection": "legacy"
+  },
+  "actual_pacing": {
+    "calls": 12786,
+    "native_calls": 12681,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 21.293035928392783,
+    "elapsed_seconds": 22.766022807219997,
+    "max_overshoot_ms": 3.4439999144524336,
+    "thread_cpu_seconds": 2.59375,
+    "spin_calls": 8288,
+    "spin_wall_seconds": 2.1579113902989775,
+    "spin_thread_cpu_seconds": 0.109375,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "sender_duration_seconds": 30.3479039,
+  "actual_sent_fps": 23.065843437048713,
+  "encoded_mbps": 3.6260404791910523,
+  "wire_mbps": 3.639743962679413,
+  "sender_thread_cpu_seconds": 3.296875,
+  "video_process_cpu_seconds": 29.296875,
+  "host_api_packet_gaps": {
+    "scope": "Host post-send monotonic gaps; nearest-rank percentiles; not RF/receiver arrival",
+    "full_to_full_within_frame": {
+      "samples": 11907,
+      "min_ms": 1.770599978044629,
+      "median_ms": 1.8650998827069998,
+      "p95_ms": 2.4101000744849443,
+      "p99_ms": 3.601000178605318,
+      "max_ms": 5.342599935829639
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 699,
+      "min_ms": 1.7740000039339066,
+      "median_ms": 1.8955999985337257,
+      "p95_ms": 3.244399791583419,
+      "p99_ms": 3.7758001126348972,
+      "max_ms": 4.356099991127849
+    },
+    "all_within_frame": {
+      "samples": 12606,
+      "min_ms": 1.770599978044629,
+      "median_ms": 1.8662000074982643,
+      "p95_ms": 2.4833001662045717,
+      "p99_ms": 3.6171998362988234,
+      "max_ms": 5.342599935829639
+    },
+    "frame_boundaries": {
+      "samples": 699,
+      "min_ms": 0.47789979726076126,
+      "median_ms": 6.234800210222602,
+      "p95_ms": 17.49160001054406,
+      "p99_ms": 22.205500165000558,
+      "max_ms": 26.514200028032064
+    },
+    "configured_cap_mbps": 5,
+    "nominal_full_datagram_interval_ms_at_cap": 1.7024
+  },
+  "outbound_capture_full_to_full_within_frame_gaps": {
+    "samples": 11907,
+    "min_ms": 1.771,
+    "median_ms": 1.867,
+    "p95_ms": 2.402,
+    "p99_ms": 3.712,
+    "max_ms": 6.762
+  },
+  "outbound_capture_all_within_frame_gaps": {
+    "samples": 12606,
+    "min_ms": 1.771,
+    "median_ms": 1.868,
+    "p95_ms": 2.473,
+    "p99_ms": 3.752,
+    "max_ms": 6.762
+  },
+  "captured_complete_crc_valid_frames": 700,
+  "captured_outbound_datagrams": 13306,
+  "captured_frames_with_increasing_chunk_order": 700,
+  "video_source": [
+    "192.168.0.47",
+    49910
+  ],
+  "av_source": [
+    "192.168.0.47",
+    49909
+  ],
+  "av_session": "97c88ad4126261e1",
+  "av": {
+    "input_packets": 1466,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "audio_sent": 0,
+    "audio_stale": 0,
+    "source_inactive_events": 0,
+    "last_status": {
+      "buttons": 0,
+      "accepted_audio_blocks": 0,
+      "rejected_or_unconfirmed_audio_blocks": 0,
+      "queued_pcm_frames": 0,
+      "played_pcm_frames": 0,
+      "underruns": 0,
+      "state": 5,
+      "fpga_build_id": 1296191312
+    },
+    "stop_sent": true,
+    "cleanup_errors": []
+  },
+  "media_end_utc": "2026-11-06T19:13:13.431011+00:00",
+  "capture_finalized_utc": "2026-11-06T19:15:13.977838+00:00",
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 18212,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 18212,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 18212",
+        "Packets received/dropped on interface 'Wi-Fi': 18212/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 17742,
+        "epoch_seconds": "1793992393.430327000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "a483780074299fc011685e0959d5f3ef2b36ca00315dfaa4923a4ad7019b7ed4",
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_context": {
+    "source": "operator-provided readiness",
+    "app": "V37",
+    "fpga": "build50",
+    "overlap": true,
+    "queue_slots": 32,
+    "baseline_received_decoded_presented_dropped": [
+      2053,
+      2053,
+      2053,
+      558
+    ],
+    "camera_deadline": "2026-11-06T12:30:00-07:00",
+    "trace_epoch": 2,
+    "baseline_queue_packet_drops": 5468,
+    "baseline_cumulative_queue_peak": 32,
+    "new_receiver_firmware_installed": false
+  },
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "unmatched_feedback_packets": 34,
+  "requested_preencode_geometry": {
+    "origin": [
+      0,
+      0
+    ],
+    "scaled_picture": [
+      691,
+      405
+    ],
+    "canvas": [
+      720,
+      480
+    ],
+    "padding_right": 29,
+    "padding_bottom": 75,
+    "aspect_preserved": true,
+    "cropping": false
+  },
+  "first_outbound_matches_locally_validated_top_left_preview": true,
+  "first_outbound_jpeg_sha256": "2608f1a7aad660fbf13f25733ae9b78ea6157f957259186b84971ee36ef5d8b4",
+  "receiver_counter_increase_from_operator_baseline": {
+    "received": 494,
+    "dropped": 205
+  },
+  "unmatched_outcome_note": "700complete sends;494accepted+203rejected ACKs+3unmatched. Last receiver counter increases494received+205dropped account699outcomes, leaving1unexplained by aggregate totals. Individual pending IDs remain unresolved.",
+  "code_commit": "28dd10a5",
+  "comparison_scope": "Operating point changes fps, cap and requested content placement; not a single-variable comparison",
+  "sender_left_stopped_for_receiver_trace_export": true,
+  "artifact_directory": "artifacts/hardware-24fps-5mbps-top-left-v37-epoch2-20261106-3007000",
+  "rejected_id_ranges": [
+    [
+      3007045,
+      3007052
+    ],
+    [
+      3007054,
+      3007056
+    ],
+    [
+      3007058,
+      3007062
+    ],
+    [
+      3007064,
+      3007069
+    ],
+    [
+      3007071,
+      3007077
+    ],
+    [
+      3007079,
+      3007083
+    ],
+    [
+      3007085,
+      3007092
+    ],
+    [
+      3007094,
+      3007100
+    ],
+    [
+      3007102,
+      3007106
+    ],
+    [
+      3007108,
+      3007114
+    ],
+    [
+      3007116,
+      3007119
+    ],
+    [
+      3007121,
+      3007130
+    ],
+    [
+      3007132,
+      3007154
+    ],
+    [
+      3007156,
+      3007186
+    ],
+    [
+      3007188,
+      3007188
+    ],
+    [
+      3007190,
+      3007210
+    ],
+    [
+      3007212,
+      3007212
+    ],
+    [
+      3007214,
+      3007214
+    ],
+    [
+      3007217,
+      3007217
+    ],
+    [
+      3007263,
+      3007266
+    ],
+    [
+      3007268,
+      3007271
+    ],
+    [
+      3007273,
+      3007278
+    ],
+    [
+      3007280,
+      3007304
+    ],
+    [
+      3007306,
+      3007306
+    ],
+    [
+      3007375,
+      3007376
+    ],
+    [
+      3007388,
+      3007388
+    ],
+    [
+      3007400,
+      3007400
+    ],
+    [
+      3007403,
+      3007403
+    ],
+    [
+      3007449,
+      3007449
+    ],
+    [
+      3007545,
+      3007545
+    ],
+    [
+      3007555,
+      3007555
+    ],
+    [
+      3007577,
+      3007577
+    ]
+  ]
+}
