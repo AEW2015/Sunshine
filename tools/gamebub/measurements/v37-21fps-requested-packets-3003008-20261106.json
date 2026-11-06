@@ -1,0 +1,105 @@
+{
+  "frame_id": 3003008,
+  "header_capture_us": 1793987117884320,
+  "jpeg_frame_bytes": 15112,
+  "msv1_frame_datagram_bytes": 15712,
+  "host_send_complete": true,
+  "requested_packets": [
+    {
+      "offset": 0,
+      "payload_bytes": 1024,
+      "host_send_api_monotonic_seconds": 1482200.2791385,
+      "npcap": {
+        "pcap_frame_number": 190,
+        "pcap_unix_seconds": "1793987117.936684000",
+        "source_ip": "192.168.0.47",
+        "source_port": 50607,
+        "offset": 0,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "flags": 1,
+        "crc32": 2322352486
+      }
+    },
+    {
+      "offset": 1024,
+      "payload_bytes": 1024,
+      "host_send_api_monotonic_seconds": 1482200.2816501,
+      "npcap": {
+        "pcap_frame_number": 192,
+        "pcap_unix_seconds": "1793987117.939177000",
+        "source_ip": "192.168.0.47",
+        "source_port": 50607,
+        "offset": 1024,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "flags": 0,
+        "crc32": 2322352486
+      }
+    },
+    {
+      "offset": 2048,
+      "payload_bytes": 1024,
+      "host_send_api_monotonic_seconds": 1482200.2851847,
+      "npcap": {
+        "pcap_frame_number": 194,
+        "pcap_unix_seconds": "1793987117.942716000",
+        "source_ip": "192.168.0.47",
+        "source_port": 50607,
+        "offset": 2048,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "flags": 0,
+        "crc32": 2322352486
+      }
+    },
+    {
+      "offset": 3072,
+      "payload_bytes": 1024,
+      "host_send_api_monotonic_seconds": 1482200.2889331,
+      "npcap": {
+        "pcap_frame_number": 196,
+        "pcap_unix_seconds": "1793987117.946455000",
+        "source_ip": "192.168.0.47",
+        "source_port": 50607,
+        "offset": 3072,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "flags": 0,
+        "crc32": 2322352486
+      }
+    }
+  ],
+  "captured_chunk_count": 15,
+  "captured_frame_complete": true,
+  "captured_jpeg_crc32_valid": true,
+  "capture_chunk_offsets_increasing": true,
+  "run_summary": {
+    "duration_s": 30.4238442,
+    "pacing_wait": {
+      "backend": "sleep"
+    },
+    "encoded_mbps": 3.2996482410332617,
+    "wire_mbps": 2.724186445840398
+  },
+  "configured_spin_tail_us_from_session_config": 600,
+  "spin_tail_scope": "Configured600us is unused by sleep; summary reports backend sleep and contains no active hybrid spin-tail field",
+  "receiver_report": {
+    "source": "User-provided receiver results",
+    "received": 513,
+    "decoded": 513,
+    "presented": 513,
+    "dropped": 1,
+    "expected_offset": 1024,
+    "observed_offset": 2048,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "queue_drops": "unknown: USB export truncated",
+    "queue_peak": "unknown: USB export truncated",
+    "stop_power_save_restored": 1
+  },
+  "pcap_sha256": "082f754c9d3c1ed53a76f2d79bd0e35ad0809c88b6b57e687293250fa0583e7e",
+  "scope": "Saved host API and Npcap observations only; not RF arrival/receiver admission. No transmission or cross-clock subtraction.",
+  "bitrate_scope": "Both summary rates use sender duration; encoded includes frames later replaced, wire includes sent MSV1 headers but excludes UDP/IP/Wi-Fi and AV traffic."
+}
