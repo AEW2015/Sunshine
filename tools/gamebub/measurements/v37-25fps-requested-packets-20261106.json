@@ -1,0 +1,116 @@
+{
+  "scope": "Existing saved Windows send API and Npcap records; not receiver or RF arrival timestamps",
+  "frames": [
+    {
+      "frame_id": 3002561,
+      "header_capture_us": 1793984689713271,
+      "frame_jpeg_bytes": 20124,
+      "frame_msv1_datagram_bytes": 20924,
+      "all_chunks_captured": true,
+      "jpeg_crc32_valid": true,
+      "chunk_count": 20,
+      "requested_chunks": [
+        {
+          "pcap_frame_number": 9276,
+          "pcap_unix_seconds": "1793984689.814713000",
+          "source_ip": "192.168.0.47",
+          "source_port": 51035,
+          "frame_jpeg_bytes": 20124,
+          "header_capture_us": 1793984689713271,
+          "offset": 17408,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "jpeg_crc32": 1522313589,
+          "host_send_api_monotonic_seconds": 1479772.1571966
+        },
+        {
+          "pcap_frame_number": 9277,
+          "pcap_unix_seconds": "1793984689.817913000",
+          "source_ip": "192.168.0.47",
+          "source_port": 51035,
+          "frame_jpeg_bytes": 20124,
+          "header_capture_us": 1793984689713271,
+          "offset": 18432,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "jpeg_crc32": 1522313589,
+          "host_send_api_monotonic_seconds": 1479772.1604332
+        },
+        {
+          "pcap_frame_number": 9278,
+          "pcap_unix_seconds": "1793984689.820689000",
+          "source_ip": "192.168.0.47",
+          "source_port": 51035,
+          "frame_jpeg_bytes": 20124,
+          "header_capture_us": 1793984689713271,
+          "offset": 19456,
+          "payload_bytes": 668,
+          "udp_payload_bytes": 708,
+          "flags": 2,
+          "jpeg_crc32": 1522313589,
+          "host_send_api_monotonic_seconds": 1479772.1631888
+        }
+      ]
+    },
+    {
+      "frame_id": 3002563,
+      "header_capture_us": 1793984689791391,
+      "frame_jpeg_bytes": 19453,
+      "frame_msv1_datagram_bytes": 20213,
+      "all_chunks_captured": true,
+      "jpeg_crc32_valid": true,
+      "chunk_count": 19,
+      "requested_chunks": [
+        {
+          "pcap_frame_number": 9279,
+          "pcap_unix_seconds": "1793984689.822657000",
+          "source_ip": "192.168.0.47",
+          "source_port": 51035,
+          "frame_jpeg_bytes": 19453,
+          "header_capture_us": 1793984689791391,
+          "offset": 0,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 1,
+          "jpeg_crc32": 4263768396,
+          "host_send_api_monotonic_seconds": 1479772.1651183
+        },
+        {
+          "pcap_frame_number": 9280,
+          "pcap_unix_seconds": "1793984689.825659000",
+          "source_ip": "192.168.0.47",
+          "source_port": 51035,
+          "frame_jpeg_bytes": 19453,
+          "header_capture_us": 1793984689791391,
+          "offset": 1024,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "jpeg_crc32": 4263768396,
+          "host_send_api_monotonic_seconds": 1479772.1681284
+        }
+      ]
+    }
+  ],
+  "pcap_sha256": "da89c223f3b7526474ed662aedb96a122a645bd199fa76525379377c72d3a0d4",
+  "clock_note": "Frame header capture_us is host Unix microseconds; send API is host monotonic seconds; pcap is its Unix timestamp. No cross-clock subtraction used.",
+  "receiver_report": {
+    "received": 516,
+    "decoded": 516,
+    "presented": 516,
+    "dropped": 1,
+    "queue_packet_drops": 0,
+    "queue_peak": "unavailable due to USB diagnostic truncation",
+    "explicit_failure": {
+      "incoming_frame_id": 3002563,
+      "expected_offset": 19456,
+      "observed_offset": 1024,
+      "active_assembler_frame_id": "not supplied"
+    },
+    "source": "User-provided final receiver counters; no remote USB file read on this host"
+  },
+  "unresolved": "One of 517 complete host sends remains unaccounted for by receiver totals; frame 3002561 has no matched ACK. Its final receiver disposition remains unknown.",
+  "artifact_directory": "artifacts/hardware-25fps-v37-32slot-20261106-3002001"
+}
