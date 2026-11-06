@@ -1,0 +1,545 @@
+{
+  "scope": "Existing saved host API and outbound Npcap data only. No new transmission.",
+  "frame_range_target": [
+    3004000,
+    3004749
+  ],
+  "video_source": [
+    "192.168.0.47",
+    60461
+  ],
+  "receiver": "192.168.0.157:5533",
+  "frame_windows": [
+    {
+      "incoming_frame_id": 3004035,
+      "header_capture_us": 1793988652586409,
+      "jpeg_frame_bytes": 22248,
+      "msv1_frame_datagram_bytes": 23128,
+      "captured_chunks": 22,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "9c18cc7d",
+      "actual_full_jpeg_crc32_hex": "9c18cc7d",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "8fed8a03e5619d65095530d6793538cd6a983814a82127cd6d0c6de55451b50d",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 1024,
+      "receiver_observed_offset": 4096,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 0,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 1,
+          "host_send_api_monotonic_seconds": 1483734.9627505,
+          "pcap_unix_seconds": "1793988652.620253000",
+          "pcap_frame_number": 686,
+          "previous_same_frame_offset": null,
+          "host_gap_from_previous_ms": null,
+          "pcap_gap_from_previous_ms": null
+        },
+        {
+          "offset": 1024,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483734.965063,
+          "pcap_unix_seconds": "1793988652.622552000",
+          "pcap_frame_number": 687,
+          "previous_same_frame_offset": 0,
+          "host_gap_from_previous_ms": 2.3125000298023224,
+          "pcap_gap_from_previous_ms": 2.299
+        },
+        {
+          "offset": 2048,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483734.9677354,
+          "pcap_unix_seconds": "1793988652.625186000",
+          "pcap_frame_number": 688,
+          "previous_same_frame_offset": 1024,
+          "host_gap_from_previous_ms": 2.6723998598754406,
+          "pcap_gap_from_previous_ms": 2.634
+        },
+        {
+          "offset": 3072,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483734.9701472,
+          "pcap_unix_seconds": "1793988652.627608000",
+          "pcap_frame_number": 689,
+          "previous_same_frame_offset": 2048,
+          "host_gap_from_previous_ms": 2.4117999710142612,
+          "pcap_gap_from_previous_ms": 2.422
+        },
+        {
+          "offset": 4096,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483734.9728,
+          "pcap_unix_seconds": "1793988652.630300000",
+          "pcap_frame_number": 690,
+          "previous_same_frame_offset": 3072,
+          "host_gap_from_previous_ms": 2.652800176292658,
+          "pcap_gap_from_previous_ms": 2.692
+        }
+      ]
+    },
+    {
+      "incoming_frame_id": 3004411,
+      "header_capture_us": 1793988667623340,
+      "jpeg_frame_bytes": 16663,
+      "msv1_frame_datagram_bytes": 17343,
+      "captured_chunks": 17,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "819d2db1",
+      "actual_full_jpeg_crc32_hex": "819d2db1",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "fb964fe649aa03a68d584cfa0aa072c82c90ed5b9a55ed8f40235160850ea7fe",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 6144,
+      "receiver_observed_offset": 7168,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 5120,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483750.0125925,
+          "pcap_unix_seconds": "1793988667.670121000",
+          "pcap_frame_number": 7915,
+          "previous_same_frame_offset": 4096,
+          "host_gap_from_previous_ms": 2.253500046208501,
+          "pcap_gap_from_previous_ms": 2.298
+        },
+        {
+          "offset": 6144,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483750.0152294,
+          "pcap_unix_seconds": "1793988667.672759000",
+          "pcap_frame_number": 7916,
+          "previous_same_frame_offset": 5120,
+          "host_gap_from_previous_ms": 2.6368999388068914,
+          "pcap_gap_from_previous_ms": 2.638
+        },
+        {
+          "offset": 7168,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483750.0176792,
+          "pcap_unix_seconds": "1793988667.675193000",
+          "pcap_frame_number": 7917,
+          "previous_same_frame_offset": 6144,
+          "host_gap_from_previous_ms": 2.4498000275343657,
+          "pcap_gap_from_previous_ms": 2.434
+        }
+      ]
+    },
+    {
+      "incoming_frame_id": 3004542,
+      "header_capture_us": 1793988672866950,
+      "jpeg_frame_bytes": 16424,
+      "msv1_frame_datagram_bytes": 17104,
+      "captured_chunks": 17,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "8f007c31",
+      "actual_full_jpeg_crc32_hex": "8f007c31",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "e1ba75c4827f815efca385df14fd771ad8e25c9f4f75e8719432d1323bf9c480",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 6144,
+      "receiver_observed_offset": 7168,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 5120,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483755.240398,
+          "pcap_unix_seconds": "1793988672.897940000",
+          "pcap_frame_number": 10511,
+          "previous_same_frame_offset": 4096,
+          "host_gap_from_previous_ms": 2.565900096669793,
+          "pcap_gap_from_previous_ms": 2.565
+        },
+        {
+          "offset": 6144,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483755.2426183,
+          "pcap_unix_seconds": "1793988672.900158000",
+          "pcap_frame_number": 10512,
+          "previous_same_frame_offset": 5120,
+          "host_gap_from_previous_ms": 2.2203000262379646,
+          "pcap_gap_from_previous_ms": 2.218
+        },
+        {
+          "offset": 7168,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483755.2449445,
+          "pcap_unix_seconds": "1793988672.902446000",
+          "pcap_frame_number": 10513,
+          "previous_same_frame_offset": 6144,
+          "host_gap_from_previous_ms": 2.3262000177055597,
+          "pcap_gap_from_previous_ms": 2.288
+        }
+      ]
+    },
+    {
+      "incoming_frame_id": 3004543,
+      "header_capture_us": 1793988672903899,
+      "jpeg_frame_bytes": 15922,
+      "msv1_frame_datagram_bytes": 16562,
+      "captured_chunks": 16,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "d2969db8",
+      "actual_full_jpeg_crc32_hex": "d2969db8",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "bd4bdeb0556329a43af93ef8e876cc84319e70f5d14ef2ce5f7b7781c4cf5686",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 1024,
+      "receiver_observed_offset": 2048,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 0,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 1,
+          "host_send_api_monotonic_seconds": 1483755.2663707,
+          "pcap_unix_seconds": "1793988672.923918000",
+          "pcap_frame_number": 10525,
+          "previous_same_frame_offset": null,
+          "host_gap_from_previous_ms": null,
+          "pcap_gap_from_previous_ms": null
+        },
+        {
+          "offset": 1024,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483755.2685832,
+          "pcap_unix_seconds": "1793988672.926126000",
+          "pcap_frame_number": 10527,
+          "previous_same_frame_offset": 0,
+          "host_gap_from_previous_ms": 2.2124999668449163,
+          "pcap_gap_from_previous_ms": 2.208
+        },
+        {
+          "offset": 2048,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483755.2709069,
+          "pcap_unix_seconds": "1793988672.928394000",
+          "pcap_frame_number": 10528,
+          "previous_same_frame_offset": 1024,
+          "host_gap_from_previous_ms": 2.323700115084648,
+          "pcap_gap_from_previous_ms": 2.268
+        }
+      ]
+    },
+    {
+      "incoming_frame_id": 3004572,
+      "header_capture_us": 1793988674065163,
+      "jpeg_frame_bytes": 17058,
+      "msv1_frame_datagram_bytes": 17738,
+      "captured_chunks": 17,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "790aeed8",
+      "actual_full_jpeg_crc32_hex": "790aeed8",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "39e7f5ae3b7aca364d5c44d64dae73888cd3b6f8b040ff0c007e3faa52ea308d",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 13312,
+      "receiver_observed_offset": 14336,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 12288,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.4749043,
+          "pcap_unix_seconds": "1793988674.132448000",
+          "pcap_frame_number": 11148,
+          "previous_same_frame_offset": 11264,
+          "host_gap_from_previous_ms": 2.21619987860322,
+          "pcap_gap_from_previous_ms": 2.234
+        },
+        {
+          "offset": 13312,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.4771441,
+          "pcap_unix_seconds": "1793988674.134669000",
+          "pcap_frame_number": 11149,
+          "previous_same_frame_offset": 12288,
+          "host_gap_from_previous_ms": 2.2398000583052635,
+          "pcap_gap_from_previous_ms": 2.221
+        },
+        {
+          "offset": 14336,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.4796384,
+          "pcap_unix_seconds": "1793988674.137176000",
+          "pcap_frame_number": 11150,
+          "previous_same_frame_offset": 13312,
+          "host_gap_from_previous_ms": 2.494300017133355,
+          "pcap_gap_from_previous_ms": 2.507
+        }
+      ]
+    },
+    {
+      "incoming_frame_id": 3004580,
+      "header_capture_us": 1793988674386113,
+      "jpeg_frame_bytes": 16826,
+      "msv1_frame_datagram_bytes": 17506,
+      "captured_chunks": 17,
+      "captured_frame_complete": true,
+      "captured_chunk_offsets_increasing": true,
+      "expected_full_jpeg_crc32_hex": "0b2bbfb1",
+      "actual_full_jpeg_crc32_hex": "0b2bbfb1",
+      "full_jpeg_crc32_valid": true,
+      "jpeg_sha256": "5a10c9a973e20a6a1c6fa25ee9fd2753f39fb83b3fcb033320e3844b2c9ec509",
+      "receiver_reported_outcome": "explicit Sequence rejection",
+      "receiver_expected_offset": 6144,
+      "receiver_observed_offset": 7168,
+      "receiver_active_assembler_frame_id": null,
+      "receiver_packet_stage_disposition": "unknown: active ID and per-stage history not retained",
+      "requested_packets": [
+        {
+          "offset": 5120,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.787379,
+          "pcap_unix_seconds": "1793988674.444912000",
+          "pcap_frame_number": 11307,
+          "previous_same_frame_offset": 4096,
+          "host_gap_from_previous_ms": 2.2484001237899065,
+          "pcap_gap_from_previous_ms": 2.251
+        },
+        {
+          "offset": 6144,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.7896351,
+          "pcap_unix_seconds": "1793988674.447157000",
+          "pcap_frame_number": 11308,
+          "previous_same_frame_offset": 5120,
+          "host_gap_from_previous_ms": 2.25609983317554,
+          "pcap_gap_from_previous_ms": 2.245
+        },
+        {
+          "offset": 7168,
+          "payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "flags": 0,
+          "host_send_api_monotonic_seconds": 1483756.7918842,
+          "pcap_unix_seconds": "1793988674.449411000",
+          "pcap_frame_number": 11310,
+          "previous_same_frame_offset": 6144,
+          "host_gap_from_previous_ms": 2.24910001270473,
+          "pcap_gap_from_previous_ms": 2.254
+        }
+      ]
+    }
+  ],
+  "requested_record_count": 20,
+  "actual_video_sender_duration_seconds": 30.3740074,
+  "duration_scope": "Sender lifetime including its feedback drain; source slot window was30seconds, capture lifetime is separate",
+  "media_end_utc": "2026-11-06T18:11:21.600031+00:00",
+  "capture_finalized_utc": "2026-11-06T18:13:21.856794+00:00",
+  "actual_pacing": {
+    "calls": 11834,
+    "native_calls": 11690,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 24.42668021004647,
+    "elapsed_seconds": 26.99173429911025,
+    "max_overshoot_ms": 4.54870006069541,
+    "thread_cpu_seconds": 2.15625,
+    "spin_calls": 6613,
+    "spin_wall_seconds": 2.149284103186801,
+    "spin_thread_cpu_seconds": 0.078125,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "wire_mbps": 3.298211878357546,
+  "encoded_mbps": 3.93881671339818,
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "host_api_packet_gaps": {
+    "scope": "Host monotonic post-send API gaps, not RF or receiver arrival; nearest-rank percentiles",
+    "full_to_full_within_frame": {
+      "samples": 10827,
+      "min_ms": 2.197499852627516,
+      "median_ms": 2.3440998047590256,
+      "p95_ms": 3.35750007070601,
+      "p99_ms": 4.5946999453008175,
+      "max_ms": 7.1564000099897385
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 621,
+      "min_ms": 2.205000026151538,
+      "median_ms": 2.330599818378687,
+      "p95_ms": 3.403299953788519,
+      "p99_ms": 4.3577998876571655,
+      "max_ms": 4.777899943292141
+    },
+    "all_within_frame": {
+      "samples": 11448,
+      "min_ms": 2.197499852627516,
+      "median_ms": 2.3429999127984047,
+      "p95_ms": 3.3669001422822475,
+      "p99_ms": 4.581500077620149,
+      "max_ms": 7.1564000099897385
+    },
+    "frame_boundaries": {
+      "samples": 621,
+      "min_ms": 0.47459988854825497,
+      "median_ms": 1.4213998802006245,
+      "p95_ms": 6.347600137814879,
+      "p99_ms": 10.217400034889579,
+      "max_ms": 15.314700081944466
+    },
+    "nominal_full_datagram_interval_ms_at4Mbps": 2.128
+  },
+  "npcap_full_to_full_within_frame_gaps": {
+    "samples": 10827,
+    "min_ms": 2.2,
+    "median_ms": 2.333,
+    "p95_ms": 3.318,
+    "p99_ms": 4.66,
+    "max_ms": 7.946
+  },
+  "npcap_all_within_frame_gaps": {
+    "samples": 11448,
+    "min_ms": 2.2,
+    "median_ms": 2.332,
+    "p95_ms": 3.347,
+    "p99_ms": 4.647,
+    "max_ms": 7.946
+  },
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 15112,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 15112,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 15112",
+        "Packets received/dropped on interface 'Wi-Fi': 15112/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 14642,
+        "epoch_seconds": "1793988681.599370000"
+      }
+    ],
+    "forced_stop": false,
+    "interface": "Wi-Fi",
+    "capture_point": "Windows Npcap interface observation; not RF",
+    "started_monotonic_s": 1483731.156,
+    "ready_monotonic_s": 1483731.265,
+    "stop_monotonic_s": 1483762.234,
+    "finished_monotonic_s": 1483881.359,
+    "capture_lifetime_seconds": 150.2029999999795,
+    "post_stop_capture_seconds": 119.125
+  },
+  "run_capture_validation": {
+    "complete_crc_valid_frames": 622,
+    "outbound_datagrams": 12070,
+    "frames_with_increasing_chunk_order": 622
+  },
+  "host_outcomes": {
+    "encoded": 750,
+    "complete_sends": 622,
+    "replaced": 128,
+    "partial_sends": 0,
+    "skipped_slots": 0,
+    "accepted_feedback": 616,
+    "rejected_feedback": 6,
+    "pending_feedback": 0
+  },
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_report": {
+    "source": "User-provided report; remote USB file not independently read on this PC",
+    "final_received_decoded_presented_dropped": [
+      1129,
+      1129,
+      1129,
+      7
+    ],
+    "run_increase": [
+      616,
+      616,
+      616,
+      6
+    ],
+    "queue_packet_drops": 0,
+    "queue_peak": 26,
+    "queue_slots": 32,
+    "queue_peak_scope": "cumulative including preceding run; no run-specific peak retained",
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "transport_overflows": 0,
+    "power_save_restored": 1,
+    "restoration_errors": 0,
+    "active_assembler_ids_and_packet_stage_history": "not retained"
+  },
+  "input_hashes": {
+    "pcap_sha256": "f187025b2aadf6eb1185b132427ec40951931f73827a9d95b0db28dcdcb9e88a",
+    "video_log_sha256": "e512c4d48619722a56a9074273de24fb845a9e128238ee6d859b3fac187ff011",
+    "selected_tshark_export_sha256": "6f3b3058a9ac71b719703fc02e61b69754f24ce3d663b720561b6327dab05f68"
+  },
+  "artifact_directory": "artifacts/hardware-25fps-hybrid600-v37-20261106-3004000",
+  "clock_scope": "header capture_us=host Unix microseconds; send API=host monotonic seconds; Npcap=Unix seconds. Gaps use only one clock at a time. No cross-device or cross-clock subtraction.",
+  "interpretation": "All 20 requested records are present in capture and all six complete frames have valid JPEG CRCs. Frame rejection outcomes are known; packet disposition after the PC capture point and receiver active-owner identities remain unknown. Zero application queue drops do not establish socket/RF receipt or SOF admission.",
+  "full_frame_crc_scope": "Expected CRC is declared in captured MSV1 headers; actual CRC is recomputed over reassembled compressed JPEG, not decoded pixels or an independent scene oracle."
+}
