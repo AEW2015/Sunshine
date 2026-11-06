@@ -1,5 +1,10 @@
 # Game Bub host laboratory
 
+This branch starts the separate [CU66 v70 Windows backend](cu66-v70/README.md).
+Its first milestone is offline native-reference qualification, with no live
+CU66 sender yet. The next legacy 25 fps test uses the preserved
+`gamebub-msv1-25fps-candidate-20261105` tag on the MSV1/JPEG development line.
+
 The [CU66 v70 audit and next-phase plan](CU66-V70-AUDIT-AND-NEXT-PLAN-20261105.md)
 tracks the newer receiver prototype, its failed cadence gate and a separate
 Windows CU66 conformance path. It does not replace deployed JPEG/AV or qualify

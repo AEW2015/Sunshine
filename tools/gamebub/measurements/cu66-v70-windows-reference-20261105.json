@@ -1,0 +1,93 @@
+{
+  "reference_commit": "fcc02c58d46f96a26790ce02826a0bf937c2478b",
+  "finished_utc": "2026-11-06T05:06:27.319440+00:00",
+  "scope": "Unmodified upstream native CU66 qualification on Windows; no sender, network, ESP32, FPGA or physical playback",
+  "checks": [
+    {
+      "name": "test_native",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/test_native.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.4387652000878006,
+      "exe_sha256": "bfeddf6874a3ed1292cbe1e6c3c0613b6446800934dd16318f2d8c791a9a1f2a",
+      "log_sha256": "1e6ea1721858558ed48ea423e5668f07f5655948ed35f76e367c1862f80c995c"
+    },
+    {
+      "name": "ab38_check",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/ab38_check.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69/planes.tsv"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 3.88948140013963,
+      "exe_sha256": "c329791477d4ccdbb023a0d2adf90c6f9c816b89b4fc3997a8f40d215d8cddac",
+      "log_sha256": "8d4d275dd09701d0da50ba7c08632b7ce5f91b05b48cab985bc5540370460a84"
+    },
+    {
+      "name": "test_entropy_directed",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/test_entropy_directed.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69/entropy-directed.tsv"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.03321640007197857,
+      "exe_sha256": "a2dbcc6053a783c10615bf6dd35f79adc1602dbd00744c13513c471294f9de8c",
+      "log_sha256": "f094a1478674bc6c906936e5a5eb8cc6570d8b1f0595bf730867245ddf9a62cd"
+    },
+    {
+      "name": "test_hud_directed",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/test_hud_directed.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69/hud-directed.tsv"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.037857400020584464,
+      "exe_sha256": "921ea941de90943bab7885bfab53e6cd490fdabbd97801f996a9641f30703223",
+      "log_sha256": "f8b8b536e99d47bf0020d8c6f51800a3aee516f5f7c23676d3b2b0b31aa989ed"
+    },
+    {
+      "name": "fuzz_native",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/fuzz_native.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 6.781880900030956,
+      "exe_sha256": "a2d5bf9fcb73dec580322199cde737c6a91d534b301171de500c4b81bde6c1ad",
+      "log_sha256": "1af231f7b36cf9b07bc921e5ae3998dc9996526520bb74552a859e27e338ee8d"
+    },
+    {
+      "name": "native_decoder",
+      "argv": [
+        "C:/ai/sunshine-cu66-v70/cmake-build-cu66-reference/native_decoder.exe",
+        "C:/ai/sunshine-cu66-v70/tools/gamebub/artifacts/cu66-v70-initial-20261105/reference/experiments/cu66-native-v69/index.tsv",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 14.992587699787691,
+      "exe_sha256": "ea670bb12829550816571617894d949b82ec1eb02ec74d0fdce4722fb8f7e7d8",
+      "log_sha256": "dcdbd4a20b5f90c55cab326ebd94e9ca91c378db1f39dbbbc7badafa30e51bf2"
+    }
+  ],
+  "complete": true,
+  "reference_source_unchanged_after_checks": true,
+  "reference_files": 3348,
+  "reference_bytes": 30699559,
+  "archive_sha256": "fcd3550b74d7680e9e29843a51b2e1a63b6a6a3b4bb39978364fe0614fdd5426",
+  "manifest_sha256": "d350755f05ec8012cf5bd1631b9fb76c9be31f87330ebc0c12406e5584857099",
+  "frames": 457,
+  "keys": 20,
+  "predicted": 437,
+  "histories": 4,
+  "negative_cases": 28,
+  "compiler": "MSYS2 UCRT64 GNU C++ 16.2.0",
+  "build_type": "Release",
+  "scope_limits": [
+    "Unmodified upstream native programs, not new Sunshine adapters or GoogleTests",
+    "Release only; Windows ASAN/UBSAN and target-device checks not run",
+    "One chronological replay per frame; timing is qualification telemetry, not an isolated performance campaign",
+    "No CU66 encoder, custom network endpoint, installed-service change, receiver flash or physical 30fps proof"
+  ]
+}
