@@ -1,0 +1,322 @@
+{
+  "frame_range_target": [
+    3009000,
+    3009719
+  ],
+  "target_slots": 720,
+  "encoded": 708,
+  "complete_sends": 704,
+  "replaced": 4,
+  "partial_sends": 0,
+  "skipped_slots": 12,
+  "accepted_feedback": 672,
+  "rejected_feedback": 20,
+  "pending_feedback": 12,
+  "unmatched_sent_ids": [
+    3009005,
+    3009027,
+    3009032,
+    3009076,
+    3009207,
+    3009226,
+    3009285,
+    3009307,
+    3009332,
+    3009396,
+    3009426,
+    3009585
+  ],
+  "rejected_ids": [
+    3009003,
+    3009010,
+    3009015,
+    3009023,
+    3009037,
+    3009096,
+    3009101,
+    3009108,
+    3009165,
+    3009212,
+    3009214,
+    3009215,
+    3009216,
+    3009220,
+    3009224,
+    3009286,
+    3009295,
+    3009387,
+    3009676,
+    3009692
+  ],
+  "last_feedback": {
+    "event": "feedback",
+    "frame_id": 3009719,
+    "capture_us": 1793994363459841,
+    "status": 0,
+    "buttons": 0,
+    "free_bytes": 0,
+    "received_frames": 1343,
+    "dropped_frames": 60
+  },
+  "session_config": {
+    "event": "session_config",
+    "fps": 24,
+    "cap_mbps": 5.0,
+    "max_age_ms": 200.0,
+    "initial_quality": 25,
+    "min_quality": 25,
+    "frames_target": 720,
+    "source_backend": "desktop_ddagrab",
+    "start_frame_id": 3009000,
+    "packet_timing": true,
+    "max_jpeg_bytes": 262144,
+    "jpeg_retry_quality_drop": 0,
+    "shift_right_px": 0,
+    "content_origin": "top-left",
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "clip_selection": null
+  },
+  "actual_pacing": {
+    "calls": 10207,
+    "native_calls": 10186,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 17.087457025889307,
+    "elapsed_seconds": 18.18343879468739,
+    "max_overshoot_ms": 5.563000217080116,
+    "thread_cpu_seconds": 1.953125,
+    "spin_calls": 7115,
+    "spin_wall_seconds": 1.8520597955211997,
+    "spin_thread_cpu_seconds": 0.046875,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "sender_duration_seconds": 30.5510087,
+  "actual_sent_fps": 23.043429004686185,
+  "encoded_mbps": 2.8356044427429983,
+  "wire_mbps": 2.9269603788892247,
+  "sender_thread_cpu_seconds": 2.71875,
+  "video_process_cpu_seconds": 32.0,
+  "host_api_packet_gaps": {
+    "scope": "Host post-send monotonic gaps; nearest-rank percentiles; not RF/receiver arrival",
+    "full_to_full_within_frame": {
+      "samples": 9481,
+      "min_ms": 1.7619000282138586,
+      "median_ms": 1.890899846330285,
+      "p95_ms": 2.367400098592043,
+      "p99_ms": 3.799600061029196,
+      "max_ms": 10.845900047570467
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 704,
+      "min_ms": 1.7717001028358936,
+      "median_ms": 1.903599826619029,
+      "p95_ms": 3.047799924388528,
+      "p99_ms": 4.6969999093562365,
+      "max_ms": 7.340500131249428
+    },
+    "all_within_frame": {
+      "samples": 10185,
+      "min_ms": 1.7619000282138586,
+      "median_ms": 1.8921000882983208,
+      "p95_ms": 2.397600095719099,
+      "p99_ms": 3.9157001301646233,
+      "max_ms": 10.845900047570467
+    },
+    "frame_boundaries": {
+      "samples": 703,
+      "min_ms": 0.4583001136779785,
+      "median_ms": 14.526500133797526,
+      "p95_ms": 21.990800043568015,
+      "p99_ms": 34.150199964642525,
+      "max_ms": 96.25869989395142
+    },
+    "configured_cap_mbps": 5,
+    "nominal_full_datagram_interval_ms_at_cap": 1.7024
+  },
+  "outbound_capture_full_to_full_within_frame_gaps": {
+    "samples": 9481,
+    "min_ms": 1.768,
+    "median_ms": 1.898,
+    "p95_ms": 2.362,
+    "p99_ms": 3.772,
+    "max_ms": 10.76
+  },
+  "outbound_capture_all_within_frame_gaps": {
+    "samples": 10185,
+    "min_ms": 1.768,
+    "median_ms": 1.898,
+    "p95_ms": 2.388,
+    "p99_ms": 3.945,
+    "max_ms": 10.76
+  },
+  "captured_complete_crc_valid_frames": 704,
+  "captured_outbound_datagrams": 10889,
+  "captured_frames_with_increasing_chunk_order": 704,
+  "video_source": [
+    "192.168.0.47",
+    65359
+  ],
+  "av_source": [
+    "192.168.0.47",
+    65358
+  ],
+  "av_session": "b8815849d281a617",
+  "av": {
+    "input_packets": 1490,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "audio_sent": 0,
+    "audio_stale": 0,
+    "source_inactive_events": 0,
+    "last_status": {
+      "buttons": 0,
+      "accepted_audio_blocks": 0,
+      "rejected_or_unconfirmed_audio_blocks": 0,
+      "queued_pcm_frames": 0,
+      "played_pcm_frames": 0,
+      "underruns": 0,
+      "state": 5,
+      "fpga_build_id": 1296191312
+    },
+    "stop_sent": true,
+    "cleanup_errors": []
+  },
+  "media_end_utc": "2026-11-06T19:46:03.887127+00:00",
+  "capture_finalized_utc": "2026-11-06T19:48:03.990113+00:00",
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 13958,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 13958,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 13958",
+        "Packets received/dropped on interface 'Wi-Fi': 13958/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 13494,
+        "epoch_seconds": "1793994363.886348000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "2e2ddab77a67030b75c332bd62c685fa8acf3f7f0d397d27088a888d31e7f25f",
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_context": {
+    "source": "operator-provided readiness",
+    "app": "V38",
+    "fpga": "build50",
+    "overlap": true,
+    "queue_slots": 32,
+    "baseline_received_decoded_presented_dropped": [
+      671,
+      671,
+      671,
+      29
+    ],
+    "camera_deadline": "2026-11-06T13:11:00-07:00",
+    "trace_epoch": 2,
+    "baseline_queue_drops": 0,
+    "baseline_queue_peak": 19,
+    "baseline_rejected_tails": 189,
+    "baseline_core_drops": 25
+  },
+  "clip_sha256": null,
+  "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "code_commit": "29d1b176",
+  "actual_capture_backend": "desktop_ddagrab",
+  "capture_graph": "ddagrab=framerate=24:dup_frames=1:draw_mouse=0,hwdownload,format=bgra",
+  "content_origin": [
+    0,
+    0
+  ],
+  "host_shift_right_px": 0,
+  "canvas": [
+    720,
+    480
+  ],
+  "active_16_9": [
+    720,
+    405
+  ],
+  "padding_ltrb": [
+    0,
+    0,
+    0,
+    75
+  ],
+  "clip_used": false,
+  "content_observations": {
+    "method": "Two decoded JPEGs reconstructed from saved outbound capture, manually inspected",
+    "first_frame": 3009000,
+    "first_content": "Mass Effect Mission Computer menu",
+    "later_frame": 3009480,
+    "later_content": "VS Code/desktop",
+    "top_border": "Image content visible from row0 in both samples; host black padding below row405",
+    "continuous_gameplay_motion_verified": false,
+    "limits": "Focus changed during run; this is live desktop content, not a controlled moving gameplay source. No gameplay or controller input was injected."
+  },
+  "timing": {
+    "encode": {
+      "samples": 708,
+      "min_ms": 3.3454,
+      "median_ms": 4.6213,
+      "p95_ms": 7.8132,
+      "p99_ms": 9.0269,
+      "max_ms": 27.3445
+    },
+    "queue_age": {
+      "samples": 704,
+      "min_ms": 0.1551,
+      "median_ms": 0.3002,
+      "p95_ms": 10.6155,
+      "p99_ms": 32.4088,
+      "max_ms": 42.6417
+    },
+    "age_at_send_completion": {
+      "samples": 704,
+      "min_ms": 45.4264,
+      "median_ms": 53.8585,
+      "p95_ms": 91.826,
+      "p99_ms": 112.1173,
+      "max_ms": 144.251
+    },
+    "capture_timestamp_intervals": {
+      "samples": 707,
+      "min_ms": 26.98,
+      "median_ms": 41.773,
+      "p95_ms": 46.429,
+      "p99_ms": 60.096,
+      "max_ms": 117.738
+    },
+    "capture_duration_scope": "capture_us sampled after acquisition, before canvas scaling. Intervals include scheduling/acquisition; standalone capture/scale duration is not instrumented and cannot be reconstructed exactly."
+  },
+  "sender_stopped": true,
+  "comparison_scope": "Real desktop capture; no clip. Source/focus differs from saved-video tests; not an isolated firmware comparison.",
+  "aggregate_outcome_note": "704 complete sends;672accepted ACKs+20rejected+12unmatched. Last feedback1343received/60dropped minus baseline671/29 gives672received+31dropped=703outcomes;1unaccounted by aggregate totals. Individual unmatched outcomes unknown."
+}
