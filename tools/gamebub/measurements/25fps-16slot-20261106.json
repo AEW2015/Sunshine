@@ -1,0 +1,691 @@
+{
+  "scope": "Existing outbound interface capture and host/receiver records; no new transmission",
+  "reconciliation": "750 slots = 538 complete + 212 replaced; 538 = 528 accepted + 10 rejected; receiver video deltas 528 decoded/presented + 10 dropped",
+  "outbound_capture": {
+    "frames": 538,
+    "all_frames_complete_and_jpeg_crc_valid": true,
+    "frames_with_increasing_chunk_order_at_capture": 538,
+    "datagrams": 10416,
+    "duplicate_offsets": 0,
+    "pcap_sha256": "6767cb5d606a47d5e398f7a4d120ae818f09ecd3d87729fda34dfe515d499ac2"
+  },
+  "full_chunk_send_api_gap_ms": {
+    "samples": 9878,
+    "min": 2.169799990952015,
+    "median": 2.987300045788288,
+    "p95": 3.2245300244539976,
+    "max": 4.725799895823002,
+    "ideal_at_4Mbps": 2.128
+  },
+  "receiver": {
+    "source": "User-supplied final receiver report; underlying receiver file is on another machine",
+    "remote_evidence_path": "C:/mb70/evidence/hardware-readiness-20261106T160644Z/video25fps-result.json",
+    "baseline": {
+      "received": 1,
+      "decoded": 1,
+      "presented": 1,
+      "dropped": 0
+    },
+    "final": {
+      "received": 529,
+      "decoded": 529,
+      "presented": 529,
+      "dropped": 10,
+      "queue_packet_drops": 13,
+      "queue_peak": 16,
+      "queue_slots": 16,
+      "core_completed": 529,
+      "core_drops": 7,
+      "core_faults": 0,
+      "overflows": 0,
+      "underruns": 0,
+      "transport_overflow": 0
+    },
+    "failures": [
+      {
+        "frame_id": 3000030,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 4096,
+        "assembler_inactive": false,
+        "observed_offset": 5120
+      },
+      {
+        "frame_id": 3000054,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 23552,
+        "assembler_inactive": false,
+        "observed_offset": 24576
+      },
+      {
+        "frame_id": 3000055,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": null,
+        "assembler_inactive": true,
+        "observed_offset": 1024
+      },
+      {
+        "frame_id": 3000204,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": null,
+        "assembler_inactive": true,
+        "observed_offset": 1024
+      },
+      {
+        "frame_id": 3000369,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 16384,
+        "assembler_inactive": false,
+        "observed_offset": 17408
+      },
+      {
+        "frame_id": 3000405,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 14336,
+        "assembler_inactive": false,
+        "observed_offset": 15360
+      },
+      {
+        "frame_id": 3000410,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 3072,
+        "assembler_inactive": false,
+        "observed_offset": 4096
+      },
+      {
+        "frame_id": 3000412,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 6144,
+        "assembler_inactive": false,
+        "observed_offset": 7168
+      },
+      {
+        "frame_id": 3000413,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": 9216,
+        "assembler_inactive": false,
+        "observed_offset": 11264
+      },
+      {
+        "frame_id": 3000660,
+        "reason": "Invalid/lost frame: Sequence",
+        "expected_offset": null,
+        "assembler_inactive": true,
+        "observed_offset": 7168
+      }
+    ],
+    "camera": "Sampled scenes show updating video; exhaustive freeze assessment unavailable",
+    "av_stop": "Confirmed by receiver; power saving restored to initial value 1 with zero restoration errors",
+    "reboot_observed": false
+  },
+  "failure_packet_windows": [
+    {
+      "frame_id": 3000030,
+      "receiver_expected": 4096,
+      "receiver_observed": 5120,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982277376622,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982277.399215000",
+          "capture_frame": 482,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477359.7416771
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982277.402209000",
+          "capture_frame": 483,
+          "gap_from_previous_chunk_ms": 2.994,
+          "host_send_api_monotonic_seconds": 1477359.7446512
+        },
+        {
+          "offset": 3072,
+          "capture_epoch_seconds": "1793982277.408213000",
+          "capture_frame": 485,
+          "gap_from_previous_chunk_ms": 2.92,
+          "host_send_api_monotonic_seconds": 1477359.7506736
+        },
+        {
+          "offset": 4096,
+          "capture_epoch_seconds": "1793982277.411202000",
+          "capture_frame": 486,
+          "gap_from_previous_chunk_ms": 2.989,
+          "host_send_api_monotonic_seconds": 1477359.7536604
+        },
+        {
+          "offset": 5120,
+          "capture_epoch_seconds": "1793982277.414204000",
+          "capture_frame": 487,
+          "gap_from_previous_chunk_ms": 3.002,
+          "host_send_api_monotonic_seconds": 1477359.7566702
+        },
+        {
+          "offset": 6144,
+          "capture_epoch_seconds": "1793982277.416849000",
+          "capture_frame": 490,
+          "gap_from_previous_chunk_ms": 2.645,
+          "host_send_api_monotonic_seconds": 1477359.7593061
+        }
+      ]
+    },
+    {
+      "frame_id": 3000054,
+      "receiver_expected": 23552,
+      "receiver_observed": 24576,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982278338184,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982278.358280000",
+          "capture_frame": 903,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477360.7007359
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982278.361296000",
+          "capture_frame": 904,
+          "gap_from_previous_chunk_ms": 3.016,
+          "host_send_api_monotonic_seconds": 1477360.7037352
+        },
+        {
+          "offset": 22528,
+          "capture_epoch_seconds": "1793982278.423064000",
+          "capture_frame": 929,
+          "gap_from_previous_chunk_ms": 3.088,
+          "host_send_api_monotonic_seconds": 1477360.76552
+        },
+        {
+          "offset": 23552,
+          "capture_epoch_seconds": "1793982278.427007000",
+          "capture_frame": 930,
+          "gap_from_previous_chunk_ms": 3.943,
+          "host_send_api_monotonic_seconds": 1477360.7694733
+        },
+        {
+          "offset": 24576,
+          "capture_epoch_seconds": "1793982278.430003000",
+          "capture_frame": 931,
+          "gap_from_previous_chunk_ms": 2.996,
+          "host_send_api_monotonic_seconds": 1477360.7724747
+        }
+      ]
+    },
+    {
+      "frame_id": 3000055,
+      "receiver_expected": null,
+      "receiver_observed": 1024,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982278377463,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982278.431562000",
+          "capture_frame": 933,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477360.7740226
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982278.434570000",
+          "capture_frame": 935,
+          "gap_from_previous_chunk_ms": 3.008,
+          "host_send_api_monotonic_seconds": 1477360.7770218
+        }
+      ]
+    },
+    {
+      "frame_id": 3000204,
+      "receiver_expected": null,
+      "receiver_observed": 1024,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982284337225,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982284.373669000",
+          "capture_frame": 3457,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477366.7161096
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982284.376213000",
+          "capture_frame": 3458,
+          "gap_from_previous_chunk_ms": 2.544,
+          "host_send_api_monotonic_seconds": 1477366.7186587
+        }
+      ]
+    },
+    {
+      "frame_id": 3000369,
+      "receiver_expected": 16384,
+      "receiver_observed": 17408,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982290940064,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982290.971793000",
+          "capture_frame": 6272,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477373.3142512
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982290.974778000",
+          "capture_frame": 6273,
+          "gap_from_previous_chunk_ms": 2.985,
+          "host_send_api_monotonic_seconds": 1477373.3172284
+        },
+        {
+          "offset": 15360,
+          "capture_epoch_seconds": "1793982291.016055000",
+          "capture_frame": 6292,
+          "gap_from_previous_chunk_ms": 3.023,
+          "host_send_api_monotonic_seconds": 1477373.3585182
+        },
+        {
+          "offset": 16384,
+          "capture_epoch_seconds": "1793982291.018995000",
+          "capture_frame": 6294,
+          "gap_from_previous_chunk_ms": 2.94,
+          "host_send_api_monotonic_seconds": 1477373.3614486
+        },
+        {
+          "offset": 17408,
+          "capture_epoch_seconds": "1793982291.022014000",
+          "capture_frame": 6296,
+          "gap_from_previous_chunk_ms": 3.019,
+          "host_send_api_monotonic_seconds": 1477373.3644915
+        },
+        {
+          "offset": 18432,
+          "capture_epoch_seconds": "1793982291.025905000",
+          "capture_frame": 6297,
+          "gap_from_previous_chunk_ms": 3.891,
+          "host_send_api_monotonic_seconds": 1477373.3683825
+        }
+      ]
+    },
+    {
+      "frame_id": 3000405,
+      "receiver_expected": 14336,
+      "receiver_observed": 15360,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982292376689,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982292.420083000",
+          "capture_frame": 6895,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477374.7625218
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982292.422744000",
+          "capture_frame": 6896,
+          "gap_from_previous_chunk_ms": 2.661,
+          "host_send_api_monotonic_seconds": 1477374.7651877
+        },
+        {
+          "offset": 13312,
+          "capture_epoch_seconds": "1793982292.457702000",
+          "capture_frame": 6910,
+          "gap_from_previous_chunk_ms": 2.532,
+          "host_send_api_monotonic_seconds": 1477374.8001487
+        },
+        {
+          "offset": 14336,
+          "capture_epoch_seconds": "1793982292.460674000",
+          "capture_frame": 6911,
+          "gap_from_previous_chunk_ms": 2.972,
+          "host_send_api_monotonic_seconds": 1477374.8031534
+        },
+        {
+          "offset": 15360,
+          "capture_epoch_seconds": "1793982292.463657000",
+          "capture_frame": 6913,
+          "gap_from_previous_chunk_ms": 2.983,
+          "host_send_api_monotonic_seconds": 1477374.8061056
+        },
+        {
+          "offset": 16384,
+          "capture_epoch_seconds": "1793982292.466739000",
+          "capture_frame": 6914,
+          "gap_from_previous_chunk_ms": 3.082,
+          "host_send_api_monotonic_seconds": 1477374.8091994
+        }
+      ]
+    },
+    {
+      "frame_id": 3000410,
+      "receiver_expected": 3072,
+      "receiver_observed": 4096,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982292576334,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982292.627078000",
+          "capture_frame": 6987,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477374.9695328
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982292.630672000",
+          "capture_frame": 6988,
+          "gap_from_previous_chunk_ms": 3.594,
+          "host_send_api_monotonic_seconds": 1477374.9731326
+        },
+        {
+          "offset": 2048,
+          "capture_epoch_seconds": "1793982292.633085000",
+          "capture_frame": 6989,
+          "gap_from_previous_chunk_ms": 2.413,
+          "host_send_api_monotonic_seconds": 1477374.9755463
+        },
+        {
+          "offset": 3072,
+          "capture_epoch_seconds": "1793982292.636073000",
+          "capture_frame": 6990,
+          "gap_from_previous_chunk_ms": 2.988,
+          "host_send_api_monotonic_seconds": 1477374.978527
+        },
+        {
+          "offset": 4096,
+          "capture_epoch_seconds": "1793982292.639057000",
+          "capture_frame": 6991,
+          "gap_from_previous_chunk_ms": 2.984,
+          "host_send_api_monotonic_seconds": 1477374.9815053
+        },
+        {
+          "offset": 5120,
+          "capture_epoch_seconds": "1793982292.642055000",
+          "capture_frame": 6992,
+          "gap_from_previous_chunk_ms": 2.998,
+          "host_send_api_monotonic_seconds": 1477374.9845088
+        }
+      ]
+    },
+    {
+      "frame_id": 3000412,
+      "receiver_expected": 6144,
+      "receiver_observed": 7168,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982292657973,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982292.676459000",
+          "capture_frame": 7006,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477375.0189054
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982292.679462000",
+          "capture_frame": 7007,
+          "gap_from_previous_chunk_ms": 3.003,
+          "host_send_api_monotonic_seconds": 1477375.021915
+        },
+        {
+          "offset": 5120,
+          "capture_epoch_seconds": "1793982292.691027000",
+          "capture_frame": 7012,
+          "gap_from_previous_chunk_ms": 3.055,
+          "host_send_api_monotonic_seconds": 1477375.0334799
+        },
+        {
+          "offset": 6144,
+          "capture_epoch_seconds": "1793982292.693953000",
+          "capture_frame": 7014,
+          "gap_from_previous_chunk_ms": 2.926,
+          "host_send_api_monotonic_seconds": 1477375.0363957
+        },
+        {
+          "offset": 7168,
+          "capture_epoch_seconds": "1793982292.696473000",
+          "capture_frame": 7015,
+          "gap_from_previous_chunk_ms": 2.52,
+          "host_send_api_monotonic_seconds": 1477375.0389173
+        },
+        {
+          "offset": 8192,
+          "capture_epoch_seconds": "1793982292.699509000",
+          "capture_frame": 7016,
+          "gap_from_previous_chunk_ms": 3.036,
+          "host_send_api_monotonic_seconds": 1477375.0419627
+        }
+      ]
+    },
+    {
+      "frame_id": 3000413,
+      "receiver_expected": 9216,
+      "receiver_observed": 11264,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982292696513,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982292.724487000",
+          "capture_frame": 7031,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477375.0669249
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982292.727249000",
+          "capture_frame": 7033,
+          "gap_from_previous_chunk_ms": 2.762,
+          "host_send_api_monotonic_seconds": 1477375.06973
+        },
+        {
+          "offset": 8192,
+          "capture_epoch_seconds": "1793982292.748106000",
+          "capture_frame": 7041,
+          "gap_from_previous_chunk_ms": 2.992,
+          "host_send_api_monotonic_seconds": 1477375.0906277
+        },
+        {
+          "offset": 9216,
+          "capture_epoch_seconds": "1793982292.751089000",
+          "capture_frame": 7045,
+          "gap_from_previous_chunk_ms": 2.983,
+          "host_send_api_monotonic_seconds": 1477375.0935287
+        },
+        {
+          "offset": 10240,
+          "capture_epoch_seconds": "1793982292.754108000",
+          "capture_frame": 7047,
+          "gap_from_previous_chunk_ms": 3.019,
+          "host_send_api_monotonic_seconds": 1477375.0965623
+        },
+        {
+          "offset": 11264,
+          "capture_epoch_seconds": "1793982292.756773000",
+          "capture_frame": 7048,
+          "gap_from_previous_chunk_ms": 2.665,
+          "host_send_api_monotonic_seconds": 1477375.0992862
+        },
+        {
+          "offset": 12288,
+          "capture_epoch_seconds": "1793982292.759778000",
+          "capture_frame": 7049,
+          "gap_from_previous_chunk_ms": 3.005,
+          "host_send_api_monotonic_seconds": 1477375.1022743
+        }
+      ]
+    },
+    {
+      "frame_id": 3000660,
+      "receiver_expected": null,
+      "receiver_observed": 7168,
+      "complete_frame_captured_crc_valid": true,
+      "capture_us": 1793982302576314,
+      "implicated_expected_chunk_or_sof_captured": true,
+      "packet_window": [
+        {
+          "offset": 0,
+          "capture_epoch_seconds": "1793982302.621274000",
+          "capture_frame": 11307,
+          "gap_from_previous_chunk_ms": null,
+          "host_send_api_monotonic_seconds": 1477384.9637288
+        },
+        {
+          "offset": 1024,
+          "capture_epoch_seconds": "1793982302.624146000",
+          "capture_frame": 11308,
+          "gap_from_previous_chunk_ms": 2.872,
+          "host_send_api_monotonic_seconds": 1477384.9665876
+        },
+        {
+          "offset": 7168,
+          "capture_epoch_seconds": "1793982302.641410000",
+          "capture_frame": 11315,
+          "gap_from_previous_chunk_ms": 2.991,
+          "host_send_api_monotonic_seconds": 1477384.9838547
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Each expected missing offset or inactive-frame SOF was observed in the host interface capture, but this does not establish RF delivery or receiver admission.",
+    "Queue saturation is confirmed; no packet-specific queue-drop mapping was provided, so it cannot individually explain all ten failures.",
+    "Inactive assembler does not establish whether SOF was missing or rejected; no cross-machine clock subtraction is used.",
+    "Sleep pacing gaps and pre-send replacements are separate host-side limits; firmware-only changes cannot establish the requested 25fps with these host results."
+  ],
+  "host": {
+    "frame_range_target": [
+      3000002,
+      3000751
+    ],
+    "target_slots": 750,
+    "submitted": 750,
+    "encoded": 750,
+    "complete_sends": 538,
+    "partial_sends": 0,
+    "replaced": 212,
+    "skipped": 0,
+    "ack_accepted": 528,
+    "ack_rejected": 10,
+    "pending_ack": 0,
+    "unmatched_feedback_packets": 5,
+    "rejected_ids": [
+      3000030,
+      3000054,
+      3000055,
+      3000204,
+      3000369,
+      3000405,
+      3000410,
+      3000412,
+      3000413,
+      3000660
+    ],
+    "final_feedback": {
+      "event": "feedback",
+      "frame_id": 3000751,
+      "capture_us": 1793982306216225,
+      "status": 0,
+      "buttons": 0,
+      "free_bytes": 0,
+      "received_frames": 529,
+      "dropped_frames": 10
+    },
+    "video_sender_duration_s": 30.4072316,
+    "actual_sent_fps": 17.69315954432366,
+    "actual_application_mbps": 2.844946397553666,
+    "settings": {
+      "fps": 25,
+      "jpeg_quality": 25,
+      "mbps_cap": 4,
+      "pacing": "sleep",
+      "clip_selection": "legacy",
+      "clip_start_offset_seconds": 0,
+      "host_shift": 0,
+      "receiver_queue_slots_operator_reported": 16,
+      "audio": false,
+      "injection": false
+    },
+    "video_endpoint": [
+      "192.168.0.47",
+      63881
+    ],
+    "av_endpoint": [
+      "192.168.0.47",
+      63880
+    ],
+    "av": {
+      "input_packets": 1470,
+      "invalid_packets": 0,
+      "stale_packets": 0,
+      "input_timeouts": 0,
+      "audio_sent": 0,
+      "audio_stale": 0,
+      "source_inactive_events": 0,
+      "last_status": {
+        "buttons": 0,
+        "accepted_audio_blocks": 0,
+        "rejected_or_unconfirmed_audio_blocks": 0,
+        "queued_pcm_frames": 0,
+        "played_pcm_frames": 0,
+        "underruns": 0,
+        "state": 5,
+        "fpga_build_id": 1296191312
+      },
+      "stop_sent": true,
+      "cleanup_errors": []
+    },
+    "media_end_utc": "2026-11-06T16:25:06.691489+00:00",
+    "capture_finalized_utc": "2026-11-06T16:27:06.830145+00:00",
+    "capture": {
+      "complete": true,
+      "stop_packet_verified": true,
+      "statistics": {
+        "available": true,
+        "captured": 13395,
+        "interfaces": [
+          {
+            "interface": "Wi-Fi",
+            "received": 13395,
+            "dropped": 0
+          }
+        ],
+        "lines": [
+          "Packets captured: 13395",
+          "Packets received/dropped on interface 'Wi-Fi': 13395/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+        ]
+      },
+      "stop_packets": [
+        {
+          "frame_number": 12924,
+          "epoch_seconds": "1793982306.691712000"
+        }
+      ],
+      "post_stop_capture_seconds": 119.39000000013039
+    },
+    "logger_drops": {
+      "video": 0,
+      "av": 0
+    },
+    "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "receiver_decode_and_presentation": "Pending independent final counters/camera report",
+    "first_attempt": "Capture failed before AV/video; no media or IDs transmitted",
+    "scope": "Host sends/ACKs and interface capture; no independent full-run physical playback verification"
+  },
+  "artifact_directory": "artifacts/hardware-25fps-20261106-3000002-retry"
+}
