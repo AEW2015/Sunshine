@@ -1,0 +1,293 @@
+{
+  "windows": [
+    {
+      "frame_id": 3008042,
+      "capture_us": 1793993557061364,
+      "jpeg_length_bytes": 24936,
+      "header_crc32_hex": "5fd2b230",
+      "recomputed_crc32_hex": "5fd2b230",
+      "chunk_count": 25,
+      "records": [
+        {
+          "frame_id": 3008042,
+          "capture_us": 1793993557061364,
+          "offset": 17408,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488639.4847151",
+          "npcap_unix_seconds": "1793993557.142231000",
+          "pcap_frame": 944
+        },
+        {
+          "frame_id": 3008042,
+          "capture_us": 1793993557061364,
+          "offset": 18432,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488639.4866436",
+          "npcap_unix_seconds": "1793993557.144153000",
+          "pcap_frame": 945
+        },
+        {
+          "frame_id": 3008042,
+          "capture_us": 1793993557061364,
+          "offset": 19456,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488639.4884979",
+          "npcap_unix_seconds": "1793993557.146013000",
+          "pcap_frame": 947
+        },
+        {
+          "frame_id": 3008042,
+          "capture_us": 1793993557061364,
+          "offset": 20480,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488639.4903401",
+          "npcap_unix_seconds": "1793993557.147862000",
+          "pcap_frame": 949
+        }
+      ]
+    },
+    {
+      "frame_id": 3008404,
+      "capture_us": 1793993572138906,
+      "jpeg_length_bytes": 18205,
+      "header_crc32_hex": "7058d110",
+      "recomputed_crc32_hex": "7058d110",
+      "chunk_count": 18,
+      "records": [
+        {
+          "frame_id": 3008404,
+          "capture_us": 1793993572138906,
+          "offset": 15360,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488654.5445345",
+          "npcap_unix_seconds": "1793993572.202049000",
+          "pcap_frame": 9369
+        },
+        {
+          "frame_id": 3008404,
+          "capture_us": 1793993572138906,
+          "offset": 16384,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488654.5465374",
+          "npcap_unix_seconds": "1793993572.204071000",
+          "pcap_frame": 9372
+        },
+        {
+          "frame_id": 3008404,
+          "capture_us": 1793993572138906,
+          "offset": 17408,
+          "jpeg_payload_bytes": 797,
+          "udp_payload_bytes": 837,
+          "host_post_send_monotonic_seconds": "1488654.5484047",
+          "npcap_unix_seconds": "1793993572.205897000",
+          "pcap_frame": 9373
+        }
+      ]
+    },
+    {
+      "frame_id": 3008405,
+      "capture_us": 1793993572192615,
+      "jpeg_length_bytes": 16690,
+      "header_crc32_hex": "fc400ae3",
+      "recomputed_crc32_hex": "fc400ae3",
+      "chunk_count": 17,
+      "records": [
+        {
+          "frame_id": 3008405,
+          "capture_us": 1793993572192615,
+          "offset": 0,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488654.5555181",
+          "npcap_unix_seconds": "1793993572.213011000",
+          "pcap_frame": 9375
+        },
+        {
+          "frame_id": 3008405,
+          "capture_us": 1793993572192615,
+          "offset": 1024,
+          "jpeg_payload_bytes": 1024,
+          "udp_payload_bytes": 1064,
+          "host_post_send_monotonic_seconds": "1488654.5575426",
+          "npcap_unix_seconds": "1793993572.214985000",
+          "pcap_frame": 9376
+        }
+      ]
+    }
+  ],
+  "next_transmitted_frame_id_after_3008404": 3008405,
+  "boundary_gaps": {
+    "host_post_send_gap_ms": "7.1134000",
+    "npcap_gap_ms": "7.114000000"
+  },
+  "sender_duration_seconds": 30.3811999,
+  "wire_mbps": 3.5921756994199563,
+  "encoded_mbps": 3.5750817070263246,
+  "actual_pacing": {
+    "calls": 12678,
+    "native_calls": 12559,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 21.080507338047028,
+    "elapsed_seconds": 22.577648389851674,
+    "max_overshoot_ms": 4.740299889817834,
+    "thread_cpu_seconds": 2.234375,
+    "spin_calls": 7628,
+    "spin_wall_seconds": 1.9427288107108325,
+    "spin_thread_cpu_seconds": 0.078125,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "unmatched_ids": [
+    3008404
+  ],
+  "rejected_ids": [
+    3008042,
+    3008057,
+    3008079,
+    3008127,
+    3008131,
+    3008132,
+    3008134,
+    3008163,
+    3008175,
+    3008186,
+    3008237,
+    3008277,
+    3008278,
+    3008377,
+    3008392,
+    3008402,
+    3008407,
+    3008409,
+    3008412,
+    3008414,
+    3008419,
+    3008420,
+    3008422,
+    3008427,
+    3008429,
+    3008434,
+    3008623,
+    3008665
+  ],
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 16221,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 16221,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 16221",
+        "Packets received/dropped on interface 'Wi-Fi': 16221/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 15758,
+        "epoch_seconds": "1793993585.762448000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "9e49b3cd9fcbdc139599f180229bc070abaa690e768840576e8ea02567d0d546",
+  "fresh_tshark_export_matches_saved": true,
+  "captured_crc_valid_frames_rechecked": 699,
+  "converted_clip_sha256": "9a369d9cbf06e4ddf3211bd1f9b185a1bb1e9d32073992d1d58f2e4570bef15f",
+  "source_preparation": {
+    "source": "Xonotic-0-8-2-gameplay.webm",
+    "source_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "output": "Xonotic-0-8-2-gameplay-720p.mp4",
+    "output_sha256": "9a369d9cbf06e4ddf3211bd1f9b185a1bb1e9d32073992d1d58f2e4570bef15f",
+    "output_bytes": 236464457,
+    "filter": "crop=1024:576:0:12,scale=1280:720:flags=lanczos,setsar=1",
+    "encoder": "libx264",
+    "preset": "fast",
+    "crf": 16,
+    "pixel_format": "yuv420p",
+    "audio": false,
+    "resolution": [
+      1280,
+      720
+    ],
+    "sample_aspect_ratio": "1:1",
+    "fps": "30",
+    "frames_decoded": 5490,
+    "source_frames_decoded": 5490,
+    "first_frame_seconds": 0.0,
+    "last_frame_seconds": 182.96666666666667,
+    "added_borders": false,
+    "crop_top_pixels": 12,
+    "crop_bottom_pixels": 12,
+    "sender_verified_canvas": [
+      720,
+      480
+    ],
+    "sender_verified_content": [
+      720,
+      405
+    ],
+    "sender_verified_origin": [
+      0,
+      0
+    ],
+    "sender_horizontal_padding": 0,
+    "sender_bottom_padding": 75,
+    "hardware_test_run": false
+  },
+  "receiver_reported": {
+    "source": "operator-provided preserved V38 result; not directly read on Windows",
+    "received_decoded_presented": [
+      671,
+      671,
+      671
+    ],
+    "dropped": 29,
+    "deltas_received_decoded_presented_dropped": [
+      670,
+      670,
+      670,
+      29
+    ],
+    "queue_drops": 0,
+    "queue_peak": 19,
+    "queue_slots": 32,
+    "rejected_tails": 189,
+    "core_completed": 671,
+    "core_drops": 25,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "stop_power_save": 1,
+    "compact_export_crc_index_checks_passed": 124,
+    "unmatched_3008404_explicit_or_compact_disposition": "not retained; unresolved"
+  },
+  "source_endpoint": [
+    "192.168.0.47",
+    62353
+  ],
+  "comparison_scope": "V38 app and converted 1280x720 source differ from requested original 691x405-content V37 control. Real-time scaling now produces720x405. Not an isolated firmware comparison.",
+  "sender_stopped": true,
+  "limits": "Host post-send monotonic and Npcap Unix seconds are separate clock domains; neither establishes RF or ESP arrival. Unmatched frame3008404 disposition unknown despite aggregate counts."
+}

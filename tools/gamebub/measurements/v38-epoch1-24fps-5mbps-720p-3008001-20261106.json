@@ -244,7 +244,33 @@
   "clip_sha256": "9a369d9cbf06e4ddf3211bd1f9b185a1bb1e9d32073992d1d58f2e4570bef15f",
   "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
   "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
-  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "physical_outcomes": {
+    "source": "operator-provided preserved V38 result; not directly read on Windows",
+    "received_decoded_presented": [
+      671,
+      671,
+      671
+    ],
+    "dropped": 29,
+    "deltas_received_decoded_presented_dropped": [
+      670,
+      670,
+      670,
+      29
+    ],
+    "queue_drops": 0,
+    "queue_peak": 19,
+    "queue_slots": 32,
+    "rejected_tails": 189,
+    "core_completed": 671,
+    "core_drops": 25,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "stop_power_save": 1,
+    "compact_export_crc_index_checks_passed": 124,
+    "unmatched_3008404_explicit_or_compact_disposition": "not retained; unresolved"
+  },
   "code_commit": "47f230f57219a0b50c7f6b95d41cad2bcc50e58d",
   "source_conversion": {
     "source": "Xonotic-0-8-2-gameplay.webm",
@@ -313,7 +339,7 @@
       720
     ]
   },
-  "comparison_scope": "V38 app and converted 720p source both differ from V37 control; fps/Q/cap/pacing/input-only choices retained. Not a single-variable firmware comparison.",
+  "comparison_scope": "V38 app and converted 1280x720 source differ from requested original 691x405-content V37 control. Real-time scaling now produces720x405. Not an isolated firmware comparison.",
   "sender_left_stopped_for_receiver_trace_export": true,
   "unmatched_outcome_note": "699 complete = 670 accepted ACKs + 28 rejected ACKs + 1 unmatched (3008404). Final feedback 671 received/29 dropped minus baseline1/0 gives670/29, accounting all699 aggregate outcomes; missing matching ACK identity remains unresolved pending receiver evidence.",
   "artifact_directory": "artifacts\\hardware-24fps-5mbps-720p-v38-epoch1-20261106-3008001",
