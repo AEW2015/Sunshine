@@ -1,0 +1,811 @@
+{
+  "scope": "Saved source/send/Npcap records only; no further transmission",
+  "unmatched_sent_ids": [
+    3006286,
+    3006287,
+    3006366,
+    3006384,
+    3006489
+  ],
+  "complete_rejected_id_list": [
+    3006027,
+    3006028,
+    3006029,
+    3006030,
+    3006031,
+    3006032,
+    3006033,
+    3006034,
+    3006035,
+    3006036,
+    3006037,
+    3006038,
+    3006039,
+    3006040,
+    3006041,
+    3006042,
+    3006043,
+    3006044,
+    3006045,
+    3006046,
+    3006047,
+    3006048,
+    3006049,
+    3006051,
+    3006052,
+    3006053,
+    3006054,
+    3006055,
+    3006056,
+    3006057,
+    3006058,
+    3006059,
+    3006060,
+    3006062,
+    3006063,
+    3006064,
+    3006065,
+    3006067,
+    3006068,
+    3006069,
+    3006070,
+    3006071,
+    3006072,
+    3006073,
+    3006074,
+    3006075,
+    3006077,
+    3006078,
+    3006079,
+    3006080,
+    3006081,
+    3006082,
+    3006083,
+    3006084,
+    3006085,
+    3006086,
+    3006087,
+    3006089,
+    3006090,
+    3006091,
+    3006092,
+    3006093,
+    3006094,
+    3006095,
+    3006096,
+    3006097,
+    3006098,
+    3006099,
+    3006100,
+    3006102,
+    3006103,
+    3006104,
+    3006105,
+    3006106,
+    3006107,
+    3006108,
+    3006109,
+    3006111,
+    3006112,
+    3006113,
+    3006114,
+    3006115,
+    3006116,
+    3006117,
+    3006118,
+    3006119,
+    3006120,
+    3006122,
+    3006123,
+    3006124,
+    3006125,
+    3006126,
+    3006128,
+    3006129,
+    3006130,
+    3006131,
+    3006132,
+    3006133,
+    3006134,
+    3006135,
+    3006136,
+    3006137,
+    3006138,
+    3006139,
+    3006140,
+    3006141,
+    3006142,
+    3006143,
+    3006144,
+    3006145,
+    3006146,
+    3006147,
+    3006148,
+    3006149,
+    3006150,
+    3006151,
+    3006152,
+    3006153,
+    3006154,
+    3006155,
+    3006156,
+    3006157,
+    3006158,
+    3006159,
+    3006160,
+    3006161,
+    3006162,
+    3006163,
+    3006164,
+    3006165,
+    3006166,
+    3006167,
+    3006168,
+    3006169,
+    3006170,
+    3006171,
+    3006172,
+    3006173,
+    3006174,
+    3006175,
+    3006176,
+    3006177,
+    3006178,
+    3006179,
+    3006180,
+    3006181,
+    3006182,
+    3006183,
+    3006184,
+    3006185,
+    3006186,
+    3006187,
+    3006188,
+    3006189,
+    3006190,
+    3006191,
+    3006192,
+    3006193,
+    3006194,
+    3006195,
+    3006196,
+    3006197,
+    3006198,
+    3006199,
+    3006200,
+    3006201,
+    3006202,
+    3006203,
+    3006204,
+    3006205,
+    3006206,
+    3006207,
+    3006208,
+    3006209,
+    3006210,
+    3006211,
+    3006213,
+    3006214,
+    3006215,
+    3006216,
+    3006217,
+    3006218,
+    3006219,
+    3006220,
+    3006221,
+    3006222,
+    3006223,
+    3006224,
+    3006226,
+    3006227,
+    3006228,
+    3006229,
+    3006230,
+    3006231,
+    3006232,
+    3006233,
+    3006234,
+    3006235,
+    3006236,
+    3006237,
+    3006238,
+    3006239,
+    3006240,
+    3006241,
+    3006242,
+    3006243,
+    3006244,
+    3006245,
+    3006246,
+    3006247,
+    3006248,
+    3006249,
+    3006250,
+    3006251,
+    3006252,
+    3006253,
+    3006254,
+    3006255,
+    3006256,
+    3006257,
+    3006258,
+    3006259,
+    3006260,
+    3006261,
+    3006262,
+    3006263,
+    3006264,
+    3006265,
+    3006266,
+    3006267,
+    3006268,
+    3006269,
+    3006271,
+    3006272,
+    3006273,
+    3006274,
+    3006275,
+    3006276,
+    3006277,
+    3006278,
+    3006279,
+    3006280,
+    3006281,
+    3006283,
+    3006284,
+    3006285,
+    3006288,
+    3006289,
+    3006290,
+    3006291,
+    3006292,
+    3006294,
+    3006295,
+    3006296,
+    3006297,
+    3006298,
+    3006299,
+    3006300,
+    3006301,
+    3006302,
+    3006303,
+    3006304,
+    3006305,
+    3006306,
+    3006307,
+    3006308,
+    3006309,
+    3006310,
+    3006311,
+    3006313,
+    3006314,
+    3006318,
+    3006373,
+    3006375,
+    3006376,
+    3006377,
+    3006378,
+    3006379,
+    3006380,
+    3006381,
+    3006382,
+    3006383,
+    3006385,
+    3006387,
+    3006392,
+    3006397,
+    3006418,
+    3006420,
+    3006443,
+    3006477,
+    3006479,
+    3006484,
+    3006497,
+    3006502,
+    3006507,
+    3006515,
+    3006553,
+    3006576,
+    3006589,
+    3006653,
+    3006686,
+    3006712,
+    3006720,
+    3006721,
+    3006722,
+    3006723,
+    3006724,
+    3006725,
+    3006726,
+    3006727,
+    3006728,
+    3006729,
+    3006730,
+    3006731,
+    3006733,
+    3006738,
+    3006739,
+    3006740,
+    3006741,
+    3006742,
+    3006743,
+    3006744,
+    3006745,
+    3006746,
+    3006747,
+    3006748,
+    3006749
+  ],
+  "rejected_id_count": 327,
+  "rejected_id_ranges_inclusive": [
+    [
+      3006027,
+      3006049
+    ],
+    [
+      3006051,
+      3006060
+    ],
+    [
+      3006062,
+      3006065
+    ],
+    [
+      3006067,
+      3006075
+    ],
+    [
+      3006077,
+      3006087
+    ],
+    [
+      3006089,
+      3006100
+    ],
+    [
+      3006102,
+      3006109
+    ],
+    [
+      3006111,
+      3006120
+    ],
+    [
+      3006122,
+      3006126
+    ],
+    [
+      3006128,
+      3006211
+    ],
+    [
+      3006213,
+      3006224
+    ],
+    [
+      3006226,
+      3006269
+    ],
+    [
+      3006271,
+      3006281
+    ],
+    [
+      3006283,
+      3006285
+    ],
+    [
+      3006288,
+      3006292
+    ],
+    [
+      3006294,
+      3006311
+    ],
+    [
+      3006313,
+      3006314
+    ],
+    [
+      3006318,
+      3006318
+    ],
+    [
+      3006373,
+      3006373
+    ],
+    [
+      3006375,
+      3006383
+    ],
+    [
+      3006385,
+      3006385
+    ],
+    [
+      3006387,
+      3006387
+    ],
+    [
+      3006392,
+      3006392
+    ],
+    [
+      3006397,
+      3006397
+    ],
+    [
+      3006418,
+      3006418
+    ],
+    [
+      3006420,
+      3006420
+    ],
+    [
+      3006443,
+      3006443
+    ],
+    [
+      3006477,
+      3006477
+    ],
+    [
+      3006479,
+      3006479
+    ],
+    [
+      3006484,
+      3006484
+    ],
+    [
+      3006497,
+      3006497
+    ],
+    [
+      3006502,
+      3006502
+    ],
+    [
+      3006507,
+      3006507
+    ],
+    [
+      3006515,
+      3006515
+    ],
+    [
+      3006553,
+      3006553
+    ],
+    [
+      3006576,
+      3006576
+    ],
+    [
+      3006589,
+      3006589
+    ],
+    [
+      3006653,
+      3006653
+    ],
+    [
+      3006686,
+      3006686
+    ],
+    [
+      3006712,
+      3006712
+    ],
+    [
+      3006720,
+      3006731
+    ],
+    [
+      3006733,
+      3006733
+    ],
+    [
+      3006738,
+      3006749
+    ]
+  ],
+  "actual_duration_seconds": 30.3394892,
+  "actual_pacing": {
+    "calls": 14041,
+    "native_calls": 13949,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 19.543832424096763,
+    "elapsed_seconds": 21.71474867244251,
+    "max_overshoot_ms": 3.1507331877946854,
+    "thread_cpu_seconds": 2.71875,
+    "spin_calls": 8651,
+    "spin_wall_seconds": 2.468120197299868,
+    "spin_thread_cpu_seconds": 0.140625,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "wire_mbps": 4.011786460795128,
+  "encoded_mbps": 3.9432980302120577,
+  "actual_sent_fps": 24.291773508170994,
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 20006,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 20006,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 20006",
+        "Packets received/dropped on interface 'Wi-Fi': 20006/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 19536,
+        "epoch_seconds": "1793990268.949905000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "bf744e70399dd073ff0976c9d7a1cb887414009fd4e68de8d61d74d1b1258bd5",
+  "logger_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "video_source": [
+    "192.168.0.47",
+    52181
+  ],
+  "run_outbound_frame_crc_passes": 737,
+  "trigger_frame": {
+    "frame_id": 3006027,
+    "header_capture_us": 1793990239651336,
+    "jpeg_frame_bytes": 21252,
+    "msv1_frame_datagram_bytes": 22092,
+    "chunks": 21,
+    "header_jpeg_crc32_hex": "db52ded8",
+    "recomputed_jpeg_crc32_hex": "db52ded8",
+    "jpeg_sha256": "4f573de40efbfb8452ed3f75c3b22434de40b4521829f8c138fc9d9ec1419d70",
+    "full_frame_captured_crc_valid": true,
+    "requested_packets": [
+      {
+        "offset": 0,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0139547,
+        "pcap_unix_seconds": "1793990239.671471000",
+        "pcap_frame_number": 593,
+        "flags": 1
+      },
+      {
+        "offset": 9216,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0289994,
+        "pcap_unix_seconds": "1793990239.686552000",
+        "pcap_frame_number": 603,
+        "flags": 0
+      },
+      {
+        "offset": 10240,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0304987,
+        "pcap_unix_seconds": "1793990239.688039000",
+        "pcap_frame_number": 604,
+        "flags": 0
+      },
+      {
+        "offset": 11264,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0322895,
+        "pcap_unix_seconds": "1793990239.689807000",
+        "pcap_frame_number": 605,
+        "flags": 0
+      },
+      {
+        "offset": 12288,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0338285,
+        "pcap_unix_seconds": "1793990239.691356000",
+        "pcap_frame_number": 606,
+        "flags": 0
+      },
+      {
+        "offset": 16384,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.040086,
+        "pcap_unix_seconds": "1793990239.697621000",
+        "pcap_frame_number": 612,
+        "flags": 0
+      },
+      {
+        "offset": 17408,
+        "payload_bytes": 1024,
+        "udp_payload_bytes": 1064,
+        "host_send_api_monotonic_seconds": 1485322.0420231,
+        "pcap_unix_seconds": "1793990239.699551000",
+        "pcap_frame_number": 613,
+        "flags": 0
+      }
+    ]
+  },
+  "receiver_report": {
+    "source": "User-provided frozen epoch1 report; raw USB file not independently read on this PC",
+    "epoch": 1,
+    "final_received_decoded_presented_dropped": [
+      2053,
+      2053,
+      2053,
+      558
+    ],
+    "run_increase": [
+      405,
+      405,
+      405,
+      332
+    ],
+    "queue_packet_drops_final": 5468,
+    "queue_packet_drops_increase": 3401,
+    "queue_peak": 32,
+    "queue_slots": 32,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "stop_power_save_restored": 1,
+    "trigger_incoming_frame_id": 3006027,
+    "trigger_active_frame_id": 3006027,
+    "trigger_expected_offset": 10240,
+    "trigger_observed_offset": 12288,
+    "observed_packet_socket_to_consumer_ms": 49.848,
+    "trace_losses": "explicit in receiver export; counts not supplied here",
+    "initiating_overflow": "earlier than retained ring; identity/history not reconstructed from host data"
+  },
+  "last15_seconds_host_content": {
+    "window_definition": "Nominal source slots15.00<=t<30.00seconds, IDs3006375..3006749; sourcePTS and capture_us retained separately",
+    "source_samples": 375,
+    "distinct_source_pts": 375,
+    "source_loops": [
+      0
+    ],
+    "outbound_frames": 375,
+    "distinct_outbound_jpeg_hashes": 375,
+    "distinct_decoded_content_hashes": 375,
+    "distinct_decoded_central_roi_hashes": 375,
+    "matched_accepted_frames": 319,
+    "content_crop_xyxy": [
+      14,
+      37,
+      705,
+      442
+    ],
+    "central_roi_xyxy": [
+      200,
+      130,
+      520,
+      330
+    ],
+    "content_changes": {
+      "comparisons": 374,
+      "zero_difference_comparisons": 0,
+      "min_mean_abs_rgb_difference": 2.321651093125607,
+      "median_mean_abs_rgb_difference": 17.896382054992763,
+      "max_mean_abs_rgb_difference": 63.699867193129776
+    },
+    "central_roi_changes": {
+      "comparisons": 374,
+      "zero_difference_comparisons": 0,
+      "min_mean_abs_rgb_difference": 1.783484375,
+      "median_mean_abs_rgb_difference": 18.890890624999997,
+      "max_mean_abs_rgb_difference": 82.72015104166667
+    },
+    "decoder": "Pillow software JPEG RGB decode; not FPGA reconstruction or display timing",
+    "samples": [
+      {
+        "requested_slot_seconds": 15,
+        "frame_id": 3006375,
+        "slot_seconds": 15.0,
+        "source_pts_us": 15007000,
+        "capture_us": 1793990253573552,
+        "jpeg_sha256": "117fbfd50574d412a72134e20165f08f8202467ed44c71db3328ff139cdcd142",
+        "matched_accepted_feedback": false,
+        "artifact": "outbound-15s-frame3006375.jpg",
+        "published_jpeg": "v37-epoch1-outbound-samples-20261106/frame3006375.jpg"
+      },
+      {
+        "requested_slot_seconds": 20,
+        "frame_id": 3006500,
+        "slot_seconds": 20.0,
+        "source_pts_us": 20007000,
+        "capture_us": 1793990258572073,
+        "jpeg_sha256": "b9eccbef5f97a4ef810ac9749b79647d0905bc19f779e1ac47c5ba20de0caf20",
+        "matched_accepted_feedback": true,
+        "artifact": "outbound-20s-frame3006500.jpg",
+        "published_jpeg": "v37-epoch1-outbound-samples-20261106/frame3006500.jpg"
+      },
+      {
+        "requested_slot_seconds": 25,
+        "frame_id": 3006625,
+        "slot_seconds": 25.0,
+        "source_pts_us": 25007000,
+        "capture_us": 1793990263572834,
+        "jpeg_sha256": "8256b564efa2d8cc82ce67917ffd94c35aaf06dafa7f0347b708b7ed43897fb0",
+        "matched_accepted_feedback": true,
+        "artifact": "outbound-25s-frame3006625.jpg",
+        "published_jpeg": "v37-epoch1-outbound-samples-20261106/frame3006625.jpg"
+      },
+      {
+        "requested_slot_seconds": 29.96,
+        "frame_id": 3006749,
+        "slot_seconds": 29.96,
+        "source_pts_us": 29940000,
+        "capture_us": 1793990268529974,
+        "jpeg_sha256": "9fb3531f212a64ed73eb552231d3e8702ba59a28b73dccba9539f6cc5c5b9ea8",
+        "matched_accepted_feedback": false,
+        "artifact": "outbound-29.96s-frame3006749.jpg",
+        "published_jpeg": "v37-epoch1-outbound-samples-20261106/frame3006749.jpg"
+      }
+    ],
+    "scope": "Outgoing image change only. This cannot establish every-frame visible motion, physical display progress or freeze-free playback.",
+    "conclusion": "The source and captured outbound JPEG image content kept changing during final15seconds; no host-side held image was found. Handheld physical display progress remains unverified.",
+    "visual_inspection": {
+      "sample_frame_ids": [
+        3006375,
+        3006625,
+        3006749
+      ],
+      "observation": "Different viewpoints, weapon and HUD content in unchanged extracted outbound JPEGs; not camera images."
+    }
+  },
+  "clock_scope": "Header capture_us is host Unix microseconds; API times are host monotonic seconds; Npcap times are Unix seconds. No cross-clock or cross-machine subtraction.",
+  "artifact_directory": "artifacts/hardware-25fps-6mbps-hybrid600-v37-epoch1-20261106-3006000",
+  "rejected_id_scope": "327 unique matched rejected-ACK IDs. Five sends without matched ACKs are listed separately; do not label the327as a full per-ID account of332receiver-counted drops.",
+  "host_outcomes": {
+    "encoded": 750,
+    "complete_sends": 737,
+    "replaced": 13,
+    "partial_sends": 0,
+    "skipped_slots": 0,
+    "accepted_feedback": 405,
+    "rejected_feedback": 327,
+    "pending_feedback": 5
+  },
+  "gap_summary": {
+    "host_full_to_full": {
+      "samples": 13179,
+      "min_ms": 1.4733001589775085,
+      "median_ms": 1.5589999966323376,
+      "p95_ms": 2.1166999358683825,
+      "p99_ms": 3.28739988617599,
+      "max_ms": 4.724099999293685
+    },
+    "npcap_full_to_full": {
+      "samples": 13179,
+      "min_ms": 1.479,
+      "median_ms": 1.559,
+      "p95_ms": 2.082,
+      "p99_ms": 3.31,
+      "max_ms": 4.694
+    }
+  }
+}
