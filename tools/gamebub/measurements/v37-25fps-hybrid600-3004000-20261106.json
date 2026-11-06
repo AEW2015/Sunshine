@@ -1,0 +1,218 @@
+{
+  "frame_range_target": [
+    3004000,
+    3004749
+  ],
+  "target_slots": 750,
+  "encoded": 750,
+  "complete_sends": 622,
+  "replaced": 128,
+  "partial_sends": 0,
+  "skipped_slots": 0,
+  "accepted_feedback": 616,
+  "rejected_feedback": 6,
+  "pending_feedback": 0,
+  "unmatched_sent_ids": [],
+  "rejected_ids": [
+    3004035,
+    3004411,
+    3004542,
+    3004543,
+    3004572,
+    3004580
+  ],
+  "last_feedback": {
+    "event": "feedback",
+    "frame_id": 3004749,
+    "capture_us": 1793988681143490,
+    "status": 0,
+    "buttons": 0,
+    "free_bytes": 0,
+    "received_frames": 1129,
+    "dropped_frames": 7
+  },
+  "session_config": {
+    "event": "session_config",
+    "fps": 25,
+    "cap_mbps": 4.0,
+    "max_age_ms": 200.0,
+    "initial_quality": 25,
+    "min_quality": 25,
+    "frames_target": 750,
+    "source_backend": "clip",
+    "start_frame_id": 3004000,
+    "packet_timing": true,
+    "max_jpeg_bytes": 262144,
+    "jpeg_retry_quality_drop": 0,
+    "shift_right_px": 0,
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "clip_selection": "legacy"
+  },
+  "actual_pacing": {
+    "calls": 11834,
+    "native_calls": 11690,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 24.42668021004647,
+    "elapsed_seconds": 26.99173429911025,
+    "max_overshoot_ms": 4.54870006069541,
+    "thread_cpu_seconds": 2.15625,
+    "spin_calls": 6613,
+    "spin_wall_seconds": 2.149284103186801,
+    "spin_thread_cpu_seconds": 0.078125,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "sender_duration_seconds": 30.3740074,
+  "actual_sent_fps": 20.47803544026265,
+  "encoded_mbps": 3.93881671339818,
+  "wire_mbps": 3.298211878357546,
+  "sender_thread_cpu_seconds": 2.578125,
+  "video_process_cpu_seconds": 32.5,
+  "host_api_packet_gaps": {
+    "scope": "Host monotonic post-send API gaps, not RF or receiver arrival; nearest-rank percentiles",
+    "full_to_full_within_frame": {
+      "samples": 10827,
+      "min_ms": 2.197499852627516,
+      "median_ms": 2.3440998047590256,
+      "p95_ms": 3.35750007070601,
+      "p99_ms": 4.5946999453008175,
+      "max_ms": 7.1564000099897385
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 621,
+      "min_ms": 2.205000026151538,
+      "median_ms": 2.330599818378687,
+      "p95_ms": 3.403299953788519,
+      "p99_ms": 4.3577998876571655,
+      "max_ms": 4.777899943292141
+    },
+    "all_within_frame": {
+      "samples": 11448,
+      "min_ms": 2.197499852627516,
+      "median_ms": 2.3429999127984047,
+      "p95_ms": 3.3669001422822475,
+      "p99_ms": 4.581500077620149,
+      "max_ms": 7.1564000099897385
+    },
+    "frame_boundaries": {
+      "samples": 621,
+      "min_ms": 0.47459988854825497,
+      "median_ms": 1.4213998802006245,
+      "p95_ms": 6.347600137814879,
+      "p99_ms": 10.217400034889579,
+      "max_ms": 15.314700081944466
+    },
+    "nominal_full_datagram_interval_ms_at4Mbps": 2.128
+  },
+  "outbound_capture_full_to_full_within_frame_gaps": {
+    "samples": 10827,
+    "min_ms": 2.2,
+    "median_ms": 2.333,
+    "p95_ms": 3.318,
+    "p99_ms": 4.66,
+    "max_ms": 7.946
+  },
+  "outbound_capture_all_within_frame_gaps": {
+    "samples": 11448,
+    "min_ms": 2.2,
+    "median_ms": 2.332,
+    "p95_ms": 3.347,
+    "p99_ms": 4.647,
+    "max_ms": 7.946
+  },
+  "captured_complete_crc_valid_frames": 622,
+  "captured_outbound_datagrams": 12070,
+  "captured_frames_with_increasing_chunk_order": 622,
+  "video_source": [
+    "192.168.0.47",
+    60461
+  ],
+  "av_source": [
+    "192.168.0.47",
+    60460
+  ],
+  "av_session": "50df976134a788e0",
+  "av": {
+    "input_packets": 1484,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "audio_sent": 0,
+    "audio_stale": 0,
+    "source_inactive_events": 0,
+    "last_status": {
+      "buttons": 0,
+      "accepted_audio_blocks": 0,
+      "rejected_or_unconfirmed_audio_blocks": 0,
+      "queued_pcm_frames": 0,
+      "played_pcm_frames": 0,
+      "underruns": 0,
+      "state": 5,
+      "fpga_build_id": 1296191312
+    },
+    "stop_sent": true,
+    "cleanup_errors": []
+  },
+  "media_end_utc": "2026-11-06T18:11:21.600031+00:00",
+  "capture_finalized_utc": "2026-11-06T18:13:21.856794+00:00",
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 15112,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 15112,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 15112",
+        "Packets received/dropped on interface 'Wi-Fi': 15112/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 14642,
+        "epoch_seconds": "1793988681.599370000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "f187025b2aadf6eb1185b132427ec40951931f73827a9d95b0db28dcdcb9e88a",
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_context": {
+    "source": "operator-provided readiness",
+    "app": "V37",
+    "fpga": "build50",
+    "overlap": true,
+    "queue_slots": 32,
+    "baseline_received_decoded_presented_dropped": [
+      513,
+      513,
+      513,
+      1
+    ],
+    "camera_deadline": "2026-11-06T11:37:00-07:00"
+  },
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "artifact_directory": "artifacts/hardware-25fps-hybrid600-v37-20261106-3004000"
+}
