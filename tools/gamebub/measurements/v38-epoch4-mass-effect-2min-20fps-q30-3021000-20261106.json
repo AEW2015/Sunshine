@@ -386,7 +386,33 @@
   "clip_sha256": "fb01977e41e649bfb9fd53d1ee0e6db436127fb86e4b3b7ec303158e0568aff5",
   "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
   "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
-  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "physical_outcomes": {
+    "source": "operator-provided frozen/exported epoch4",
+    "received_decoded_presented": [
+      11179,
+      11179,
+      11179
+    ],
+    "dropped": 543,
+    "deltas_received_decoded_presented_dropped": [
+      2232,
+      2232,
+      2232,
+      160
+    ],
+    "queue_drops": 0,
+    "queue_peak": 30,
+    "queue_slots": 32,
+    "rejected_tail_delta": 629,
+    "core_errors": 0,
+    "stop_power_save": 1,
+    "compact_crc_epoch_index_checks_passed": 128,
+    "camera": "changing scenes and stable placement; no new test queued",
+    "unaccounted_complete_send_outcomes": 8,
+    "matched_accepted_acks": 2231,
+    "received_minus_matched_accepted_acks": 1,
+    "individual_unmatched_dispositions": "unresolved; aggregate counters do not assign identities"
+  },
   "code_commit": "58a3a7ec",
   "clip_path": "C:\\Users\\lavat\\Downloads\\YTDown.com_YouTube_Media__luGrl_3Ajc_Mass-Effect-Legendary-Edition-Combat_004_720p.mp4",
   "source_metadata": {
@@ -475,7 +501,7 @@
     "received": 2232,
     "dropped": 160,
     "baseline_reset_observed": false,
-    "scope": "host feedback counters; independent physical final receiver outcome pending"
+    "scope": "host feedback counters now corroborated by operator final receiver results; individual unmatched identities unresolved"
   },
   "q35_comparison_manifest": {
     "differences": {
