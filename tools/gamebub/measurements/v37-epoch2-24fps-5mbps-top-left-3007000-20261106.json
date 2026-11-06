@@ -420,7 +420,25 @@
   "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
   "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
   "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
-  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "physical_outcomes": {
+    "source": "operator-provided final results, not independently read by Windows",
+    "received_decoded_presented": [
+      2547,
+      2547,
+      2547
+    ],
+    "dropped": 763,
+    "received_delta": 494,
+    "dropped_delta": 205,
+    "queue_drops": 7245,
+    "queue_drop_delta": 1777,
+    "queue_peak": 32,
+    "queue_slots": 32,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "stop_power_save": 1
+  },
   "unmatched_feedback_packets": 34,
   "requested_preencode_geometry": {
     "origin": [
