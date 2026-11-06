@@ -1,5 +1,14 @@
 # Finite Windows Game Bub session launcher
 
+Content placement is explicit: `--content-origin center` remains the default;
+`--content-origin top-left` (PowerShell `-ContentOrigin top-left`) anchors the
+fitted source image at canvas (0,0). Scaling still preserves aspect ratio within
+720x405 on the 720x480 canvas. The 1024x600 Xonotic source becomes 691x405;
+top-left placement leaves 29 right columns and 75 bottom rows black. It does
+not stretch, crop or change receiver panel placement. The manifest, child
+command and video session log record the selected origin. Treat it as a content
+change in comparisons, alongside any frame-rate/bitrate changes.
+
 `session_launcher.py` and `start_gamebub_session.ps1` consolidate the existing
 MSV1 JPEG video, AV v1 product-rounded PC audio and profile-selected Xbox input.
 This is a standalone laboratory sender. It does not implement the v20 custom

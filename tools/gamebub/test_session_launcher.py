@@ -96,6 +96,19 @@ class LauncherTests(unittest.TestCase):
             command = result["video_command"]
             self.assertEqual(command[command.index("--pacing-spin-us") + 1], "400")
 
+    def test_content_origin_forwarded_and_invalid_origin_rejected(self):
+        """@brief Preserve placement through the launcher manifest and owned child command."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = self.args(Path(directory), ["--content-origin", "top-left", "--dry-run"])
+            result = launcher.run(args)
+            command = result["video_command"]
+            self.assertEqual(command[command.index("--content-origin") + 1], "top-left")
+            manifest = json.loads((args.output / "manifest.json").read_text())
+            self.assertEqual(manifest["content_origin"], "top-left")
+            args.content_origin = "bottom-left"
+            with self.assertRaises(ValueError):
+                launcher.validate(args)
+
     def test_owned_video_cleanup_normal_timeout_and_kill(self):
         """@brief Bound termination to the spawned process object; record forced shutdown."""
         for waits, forced in (

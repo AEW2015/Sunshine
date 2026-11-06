@@ -35,6 +35,30 @@ def replace_segment(data, marker, transform):
 class ImageTests(unittest.TestCase):
     """@brief Check canvas geometry and deterministic source pixels."""
 
+    def test_top_left_origin_preserves_scaled_pixels_and_canvas(self):
+        """@brief Anchor both image paths at (0,0) without stretching or losing source pixels."""
+        original = Image.new("RGB", (1024, 600), (240, 64, 32))
+        for source in (original, av.VideoFrame.from_image(original)):
+            with self.subTest(source_type=type(source).__name__):
+                centered = host.canvas(source)
+                explicit_center = host.canvas(source, origin="center")
+                anchored = host.canvas(source, origin="top-left")
+                self.assertEqual(centered.tobytes(), explicit_center.tobytes())
+                self.assertEqual(anchored.size, (720, 480))
+                self.assertEqual(anchored.getbbox(), (0, 0, 691, 405))
+                self.assertEqual(
+                    centered.crop((14, 37, 705, 442)).tobytes(),
+                    anchored.crop((0, 0, 691, 405)).tobytes(),
+                )
+                self.assertEqual(anchored.getpixel((691, 0)), (0, 0, 0))
+                self.assertEqual(anchored.getpixel((0, 405)), (0, 0, 0))
+
+    def test_invalid_content_origin_rejected(self):
+        """@brief Reject unsupported placement before any resize or canvas allocation."""
+        for origin in (None, "bottom-left", 12):
+            with self.subTest(origin=origin), self.assertRaises(ValueError):
+                host.canvas(Image.new("RGB", (16, 9)), origin=origin)
+
     def test_geometry_preserves_sixteen_by_nine_and_black_bars(self):
         """@brief A solid 16:9 source occupies exactly 720x405 without stretching."""
         image = host.canvas(Image.new("RGB", (1280, 720), "red"))

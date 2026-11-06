@@ -55,14 +55,21 @@ class Profile:
 
 
 def canvas(
-    image: Image.Image | av.VideoFrame, resampling: Image.Resampling = Image.Resampling.LANCZOS
+    image: Image.Image | av.VideoFrame,
+    resampling: Image.Resampling = Image.Resampling.LANCZOS,
+    *,
+    origin: str = "center",
 ) -> Image.Image:
-    """@brief Fit a source without distortion inside a centered 720x405 viewport.
+    """@brief Fit a source without distortion, centered or anchored at canvas (0,0).
 
     @param image Source RGB-compatible image with square pixels.
     @param resampling Pillow resize filter for image sources; video uses bilinear libswscale.
-    @return A 720x480 RGB canvas; 16:9 input has 37 top and 38 bottom black rows.
+    @param origin Center by default; top-left moves padding to right/bottom without cropping.
+    @return A 720x480 RGB canvas fitted within 720x405; centered 16:9 has 37/38 black rows.
+    @throws ValueError If the requested origin is unsupported.
     """
+    if origin not in ("center", "top-left"):
+        raise ValueError("Content origin must be center or top-left")
     scale = min(WIDTH / image.width, CONTENT_HEIGHT / image.height)
     size = (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
     if isinstance(image, av.VideoFrame):
@@ -73,10 +80,8 @@ def canvas(
     else:
         image = image.convert("RGB").resize(size, resampling)
     result = Image.new("RGB", (WIDTH, HEIGHT))
-    result.paste(
-        image,
-        ((WIDTH - size[0]) // 2, (HEIGHT - size[1]) // 2),
-    )
+    position = (0, 0) if origin == "top-left" else ((WIDTH - size[0]) // 2, (HEIGHT - size[1]) // 2)
+    result.paste(image, position)
     return result
 
 

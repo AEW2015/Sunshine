@@ -898,6 +898,9 @@ def run(args, source=None):
     shift_right_px = getattr(args, "shift_right_px", 0)
     if type(shift_right_px) is not int or not 0 <= shift_right_px < WIDTH:
         raise ValueError("Right shift must be an integer from 0 to 719 pixels")
+    content_origin = getattr(args, "content_origin", "center")
+    if content_origin not in ("center", "top-left"):
+        raise ValueError("Content origin must be center or top-left")
     bind_address = str(ipaddress.IPv4Address(getattr(args, "bind", "0.0.0.0")))
     selection = getattr(args, "clip_selection", "legacy")
     if selection not in ("legacy", "native") or (
@@ -987,6 +990,7 @@ def run(args, source=None):
                 max_jpeg_bytes=session.max_jpeg_bytes,
                 jpeg_retry_quality_drop=session.jpeg_retry_quality_drop,
                 shift_right_px=shift_right_px,
+                content_origin=content_origin,
                 pacing_wait=getattr(args, "pacing_wait", "sleep"),
                 pacing_spin_us=getattr(args, "pacing_spin_us", 600),
                 clip_selection=selection if source is None and args.clip else None,
@@ -1023,7 +1027,9 @@ def run(args, source=None):
                         skipped = max(skipped, actual - slot)
                 slot += skipped
                 stamp_us = time.time_ns() // 1000
-                prepared = canvas(image, Image.Resampling[filter_name.upper()])
+                prepared = canvas(
+                    image, Image.Resampling[filter_name.upper()], origin=content_origin
+                )
                 if shift_right_px:
                     prepared = shift_canvas_right(prepared, shift_right_px)
                 frame_id = (getattr(args, "start_frame_id", 0) + slot) & 0xFFFFFFFF
@@ -1127,6 +1133,12 @@ def main(argv=None):
     parser.add_argument("--max-age-ms", type=float, default=200)
     parser.add_argument("--quality", type=int, default=75)
     parser.add_argument("--min-quality", type=int, default=20)
+    parser.add_argument(
+        "--content-origin",
+        choices=("center", "top-left"),
+        default="center",
+        help="Fit content with centered padding or place its upper-left corner at canvas (0,0)",
+    )
     parser.add_argument(
         "--shift-right-px",
         type=int,

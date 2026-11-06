@@ -1329,6 +1329,7 @@ class StreamSenderTests(unittest.TestCase):
                     "max_jpeg_bytes": 262144,
                     "jpeg_retry_quality_drop": 0,
                     "shift_right_px": 0,
+                    "content_origin": "center",
                     "pacing_wait": "sleep",
                     "pacing_spin_us": 600,
                     "clip_selection": None,
@@ -1480,6 +1481,42 @@ class StreamSenderTests(unittest.TestCase):
         with patch("stream_sender.PreciseWait") as waiter, self.assertRaises(ValueError):
             Session(None, None, 20, 4, 200, 25, 25, pacing_wait="unknown")
         waiter.assert_not_called()
+
+    def test_invalid_content_origin_rejected_before_resources(self):
+        """@brief Invalid placement opens no sender socket or log file."""
+        args = SimpleNamespace(content_origin="bottom", log=Mock())
+        with patch("stream_sender.socket.socket") as sock, self.assertRaises(ValueError):
+            run(args, iter(()))
+        sock.assert_not_called()
+        args.log.open.assert_not_called()
+
+    def test_top_left_content_is_submitted_and_recorded(self):
+        """@brief The sender submits an anchored canvas and records its explicit origin."""
+        with tempfile.TemporaryDirectory() as directory:
+            args = SimpleNamespace(
+                target="127.0.0.1",
+                port=5533,
+                log=Path(directory) / "origin.jsonl",
+                clip=None,
+                frames=1,
+                fps=24,
+                mbps=5,
+                max_age_ms=200,
+                quality=25,
+                min_quality=25,
+                content_origin="top-left",
+            )
+            session = MagicMock()
+            session.lock, session.counts = threading.Lock(), Counter()
+            session.close.return_value = {}
+            with patch("stream_sender.Session", return_value=session):
+                run(args, iter([Image.new("RGB", (1024, 600), "red")]))
+            submitted = session.pipeline.submit.call_args.args[0]
+            self.assertEqual(submitted.image.getbbox(), (0, 0, 691, 405))
+            config = next(
+                c.kwargs for c in session._event.call_args_list if c.args[0] == "session_config"
+            )
+            self.assertEqual(config["content_origin"], "top-left")
 
     def test_invalid_bind_rejected_before_file_or_socket(self):
         """@brief Reject non-IPv4 source addresses before opening any run resources."""
@@ -1814,6 +1851,7 @@ class StreamSenderTests(unittest.TestCase):
             ("--bind", "::1"),
             ("--loop-clip",),
             ("--clip-selection", "native"),
+            ("--content-origin", "invalid"),
         ):
             with self.subTest(extra=extra), self.assertRaises(SystemExit):
                 main(["127.0.0.1", "--desktop", "--log", "unused", *extra])

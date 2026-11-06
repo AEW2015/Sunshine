@@ -36,6 +36,7 @@ def parser():
     result.add_argument("--clip", type=Path, help="Use a saved clip instead of desktop capture")
     result.add_argument("--loop-clip", action="store_true")
     result.add_argument("--clip-selection", choices=("legacy", "native"), default="legacy")
+    result.add_argument("--content-origin", choices=("center", "top-left"), default="center")
     result.add_argument("--audio", action="store_true")
     result.add_argument("--gamepad", action="store_true")
     result.add_argument(
@@ -84,6 +85,8 @@ def validate(args):
         raise ValueError("--loop-clip requires --clip")
     if args.clip_selection == "native" and args.clip is None:
         raise ValueError("--clip-selection native requires --clip")
+    if getattr(args, "content_origin", "center") not in ("center", "top-left"):
+        raise ValueError("Content origin must be center or top-left")
     if args.capture_interface and not (args.av_input or args.audio or args.gamepad):
         raise ValueError("Capture requires an AV owner so STOP can delimit coverage")
     if not 0 <= args.pacing_spin_us <= 1000 or (
@@ -156,6 +159,8 @@ def video_command(args):
         str(args.deadline_ms),
         "--shift-right-px",
         "0",
+        "--content-origin",
+        getattr(args, "content_origin", "center"),
         "--start-frame-id",
         str(args.start_frame_id),
         "--port",
@@ -257,6 +262,7 @@ def run(args):
         "canvas": [720, 480],
         "active_16_9": [720, 405],
         "host_shift": 0,
+        "content_origin": getattr(args, "content_origin", "center"),
         "video_route_preflight": route,
         "scope": "Host sends/ingress feedback; not verified decode/presentation/acoustics",
         "audio_bitrate_is_additional_to_video_cap": True,

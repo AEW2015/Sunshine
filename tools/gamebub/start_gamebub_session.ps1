@@ -15,6 +15,7 @@ param(
     [string]$Clip,
     [switch]$LoopClip,
     [ValidateSet('legacy','native')][string]$ClipSelection = 'legacy',
+    [ValidateSet('center','top-left')][string]$ContentOrigin = 'center',
     [switch]$Audio,
     [switch]$Gamepad,
     [switch]$AvInput,
@@ -41,6 +42,7 @@ if ($Video) {$sessionArgs += '--video'}
 if ($Clip) {$sessionArgs += @('--clip',$Clip)}
 if ($LoopClip) {$sessionArgs += '--loop-clip'}
 if ($ClipSelection -ne 'legacy') {$sessionArgs += @('--clip-selection',$ClipSelection)}
+if ($ContentOrigin -ne 'center') {$sessionArgs += @('--content-origin',$ContentOrigin)}
 if ($Audio) {$sessionArgs += '--audio'}
 if ($Gamepad) {$sessionArgs += '--gamepad'}
 if ($AvInput) {$sessionArgs += '--av-input'}
