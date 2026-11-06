@@ -1,0 +1,321 @@
+{
+  "frame_range_target": [
+    3008001,
+    3008720
+  ],
+  "target_slots": 720,
+  "encoded": 718,
+  "complete_sends": 699,
+  "replaced": 19,
+  "partial_sends": 0,
+  "skipped_slots": 2,
+  "accepted_feedback": 670,
+  "rejected_feedback": 28,
+  "pending_feedback": 1,
+  "unmatched_sent_ids": [
+    3008404
+  ],
+  "rejected_ids": [
+    3008042,
+    3008057,
+    3008079,
+    3008127,
+    3008131,
+    3008132,
+    3008134,
+    3008163,
+    3008175,
+    3008186,
+    3008237,
+    3008277,
+    3008278,
+    3008377,
+    3008392,
+    3008402,
+    3008407,
+    3008409,
+    3008412,
+    3008414,
+    3008419,
+    3008420,
+    3008422,
+    3008427,
+    3008429,
+    3008434,
+    3008623,
+    3008665
+  ],
+  "last_feedback": {
+    "event": "feedback",
+    "frame_id": 3008720,
+    "capture_us": 1793993585312709,
+    "status": 0,
+    "buttons": 0,
+    "free_bytes": 0,
+    "received_frames": 671,
+    "dropped_frames": 29
+  },
+  "session_config": {
+    "event": "session_config",
+    "fps": 24,
+    "cap_mbps": 5.0,
+    "max_age_ms": 200.0,
+    "initial_quality": 25,
+    "min_quality": 25,
+    "frames_target": 720,
+    "source_backend": "clip",
+    "start_frame_id": 3008001,
+    "packet_timing": true,
+    "max_jpeg_bytes": 262144,
+    "jpeg_retry_quality_drop": 0,
+    "shift_right_px": 0,
+    "content_origin": "top-left",
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "clip_selection": "legacy"
+  },
+  "actual_pacing": {
+    "calls": 12678,
+    "native_calls": 12559,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 21.080507338047028,
+    "elapsed_seconds": 22.577648389851674,
+    "max_overshoot_ms": 4.740299889817834,
+    "thread_cpu_seconds": 2.234375,
+    "spin_calls": 7628,
+    "spin_wall_seconds": 1.9427288107108325,
+    "spin_thread_cpu_seconds": 0.078125,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "sender_duration_seconds": 30.3811999,
+  "actual_sent_fps": 23.007649543163698,
+  "encoded_mbps": 3.5750817070263246,
+  "wire_mbps": 3.5921756994199563,
+  "sender_thread_cpu_seconds": 2.6875,
+  "video_process_cpu_seconds": 32.078125,
+  "host_api_packet_gaps": {
+    "scope": "Host post-send monotonic gaps; nearest-rank percentiles; not RF/receiver arrival",
+    "full_to_full_within_frame": {
+      "samples": 11762,
+      "min_ms": 1.7649999354034662,
+      "median_ms": 1.8712000455707312,
+      "p95_ms": 2.4496999103575945,
+      "p99_ms": 3.5013998858630657,
+      "max_ms": 6.686399923637509
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 696,
+      "min_ms": 1.7750998958945274,
+      "median_ms": 1.892999978736043,
+      "p95_ms": 2.792400075122714,
+      "p99_ms": 3.556600073352456,
+      "max_ms": 4.133999813348055
+    },
+    "all_within_frame": {
+      "samples": 12458,
+      "min_ms": 1.7649999354034662,
+      "median_ms": 1.872299937531352,
+      "p95_ms": 2.475900109857321,
+      "p99_ms": 3.510700073093176,
+      "max_ms": 6.686399923637509
+    },
+    "frame_boundaries": {
+      "samples": 698,
+      "min_ms": 0.47960015945136547,
+      "median_ms": 2.855400089174509,
+      "p95_ms": 23.627599934116006,
+      "p99_ms": 29.99339997768402,
+      "max_ms": 35.52350006066263
+    },
+    "configured_cap_mbps": 5,
+    "nominal_full_datagram_interval_ms_at_cap": 1.7024
+  },
+  "outbound_capture_full_to_full_within_frame_gaps": {
+    "samples": 11762,
+    "min_ms": 1.774,
+    "median_ms": 1.872,
+    "p95_ms": 2.422,
+    "p99_ms": 3.525,
+    "max_ms": 6.648
+  },
+  "outbound_capture_all_within_frame_gaps": {
+    "samples": 12458,
+    "min_ms": 1.774,
+    "median_ms": 1.874,
+    "p95_ms": 2.462,
+    "p99_ms": 3.555,
+    "max_ms": 6.648
+  },
+  "captured_complete_crc_valid_frames": 699,
+  "captured_outbound_datagrams": 13157,
+  "captured_frames_with_increasing_chunk_order": 699,
+  "video_source": [
+    "192.168.0.47",
+    62353
+  ],
+  "av_source": [
+    "192.168.0.47",
+    62352
+  ],
+  "av_session": "5dd44026ec46bab1",
+  "av": {
+    "input_packets": 1481,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "audio_sent": 0,
+    "audio_stale": 0,
+    "source_inactive_events": 0,
+    "last_status": {
+      "buttons": 0,
+      "accepted_audio_blocks": 0,
+      "rejected_or_unconfirmed_audio_blocks": 0,
+      "queued_pcm_frames": 0,
+      "played_pcm_frames": 0,
+      "underruns": 0,
+      "state": 5,
+      "fpga_build_id": 1296191312
+    },
+    "stop_sent": true,
+    "cleanup_errors": []
+  },
+  "media_end_utc": "2026-11-06T19:33:05.762149+00:00",
+  "capture_finalized_utc": "2026-11-06T19:35:06.503892+00:00",
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 16221,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 16221,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 16221",
+        "Packets received/dropped on interface 'Wi-Fi': 16221/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 15758,
+        "epoch_seconds": "1793993585.762448000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "9e49b3cd9fcbdc139599f180229bc070abaa690e768840576e8ea02567d0d546",
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_context": {
+    "source": "operator-provided readiness",
+    "app": "V38",
+    "fpga": "build50",
+    "overlap": true,
+    "queue_slots": 32,
+    "baseline_received_decoded_presented_dropped": [
+      1,
+      1,
+      1,
+      0
+    ],
+    "camera_deadline": "2026-11-06T12:56:00-07:00",
+    "trace_epoch": 1,
+    "baseline_queue_packet_drops": 0,
+    "baseline_cumulative_queue_peak": 4,
+    "baseline_rejected_tails": 0,
+    "elf_identity_operator_prefix": "11630ec1"
+  },
+  "clip_sha256": "9a369d9cbf06e4ddf3211bd1f9b185a1bb1e9d32073992d1d58f2e4570bef15f",
+  "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "code_commit": "47f230f57219a0b50c7f6b95d41cad2bcc50e58d",
+  "source_conversion": {
+    "source": "Xonotic-0-8-2-gameplay.webm",
+    "source_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+    "output": "Xonotic-0-8-2-gameplay-720p.mp4",
+    "output_sha256": "9a369d9cbf06e4ddf3211bd1f9b185a1bb1e9d32073992d1d58f2e4570bef15f",
+    "output_bytes": 236464457,
+    "filter": "crop=1024:576:0:12,scale=1280:720:flags=lanczos,setsar=1",
+    "encoder": "libx264",
+    "preset": "fast",
+    "crf": 16,
+    "pixel_format": "yuv420p",
+    "audio": false,
+    "resolution": [
+      1280,
+      720
+    ],
+    "sample_aspect_ratio": "1:1",
+    "fps": "30",
+    "frames_decoded": 5490,
+    "source_frames_decoded": 5490,
+    "first_frame_seconds": 0.0,
+    "last_frame_seconds": 182.96666666666667,
+    "added_borders": false,
+    "crop_top_pixels": 12,
+    "crop_bottom_pixels": 12,
+    "sender_verified_canvas": [
+      720,
+      480
+    ],
+    "sender_verified_content": [
+      720,
+      405
+    ],
+    "sender_verified_origin": [
+      0,
+      0
+    ],
+    "sender_horizontal_padding": 0,
+    "sender_bottom_padding": 75,
+    "hardware_test_run": false
+  },
+  "clip_start_offset_seconds": 0,
+  "requested_preencode_geometry": {
+    "canvas": [
+      720,
+      480
+    ],
+    "scaled_picture": [
+      720,
+      405
+    ],
+    "origin": [
+      0,
+      0
+    ],
+    "padding_ltrb": [
+      0,
+      0,
+      0,
+      75
+    ],
+    "host_shift_right_px": 0,
+    "source_dimensions": [
+      1280,
+      720
+    ]
+  },
+  "comparison_scope": "V38 app and converted 720p source both differ from V37 control; fps/Q/cap/pacing/input-only choices retained. Not a single-variable firmware comparison.",
+  "sender_left_stopped_for_receiver_trace_export": true,
+  "unmatched_outcome_note": "699 complete = 670 accepted ACKs + 28 rejected ACKs + 1 unmatched (3008404). Final feedback 671 received/29 dropped minus baseline1/0 gives670/29, accounting all699 aggregate outcomes; missing matching ACK identity remains unresolved pending receiver evidence.",
+  "artifact_directory": "artifacts\\hardware-24fps-5mbps-720p-v38-epoch1-20261106-3008001",
+  "receiver_rejected_tail_scope": "V38 suppresses repeated rejection ACKs for validated tails of an already rejected frame; first rejection best-effort, per operator. Windows does not infer individual receiver outcomes from missing ACKs."
+}
