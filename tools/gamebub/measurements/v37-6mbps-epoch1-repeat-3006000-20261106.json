@@ -1,0 +1,730 @@
+{
+  "frame_range_target": [
+    3006000,
+    3006749
+  ],
+  "target_slots": 750,
+  "encoded": 750,
+  "complete_sends": 737,
+  "replaced": 13,
+  "partial_sends": 0,
+  "skipped_slots": 0,
+  "accepted_feedback": 405,
+  "rejected_feedback": 327,
+  "pending_feedback": 5,
+  "unmatched_sent_ids": [
+    3006286,
+    3006287,
+    3006366,
+    3006384,
+    3006489
+  ],
+  "rejected_ids": [
+    3006027,
+    3006028,
+    3006029,
+    3006030,
+    3006031,
+    3006032,
+    3006033,
+    3006034,
+    3006035,
+    3006036,
+    3006037,
+    3006038,
+    3006039,
+    3006040,
+    3006041,
+    3006042,
+    3006043,
+    3006044,
+    3006045,
+    3006046,
+    3006047,
+    3006048,
+    3006049,
+    3006051,
+    3006052,
+    3006053,
+    3006054,
+    3006055,
+    3006056,
+    3006057,
+    3006058,
+    3006059,
+    3006060,
+    3006062,
+    3006063,
+    3006064,
+    3006065,
+    3006067,
+    3006068,
+    3006069,
+    3006070,
+    3006071,
+    3006072,
+    3006073,
+    3006074,
+    3006075,
+    3006077,
+    3006078,
+    3006079,
+    3006080,
+    3006081,
+    3006082,
+    3006083,
+    3006084,
+    3006085,
+    3006086,
+    3006087,
+    3006089,
+    3006090,
+    3006091,
+    3006092,
+    3006093,
+    3006094,
+    3006095,
+    3006096,
+    3006097,
+    3006098,
+    3006099,
+    3006100,
+    3006102,
+    3006103,
+    3006104,
+    3006105,
+    3006106,
+    3006107,
+    3006108,
+    3006109,
+    3006111,
+    3006112,
+    3006113,
+    3006114,
+    3006115,
+    3006116,
+    3006117,
+    3006118,
+    3006119,
+    3006120,
+    3006122,
+    3006123,
+    3006124,
+    3006125,
+    3006126,
+    3006128,
+    3006129,
+    3006130,
+    3006131,
+    3006132,
+    3006133,
+    3006134,
+    3006135,
+    3006136,
+    3006137,
+    3006138,
+    3006139,
+    3006140,
+    3006141,
+    3006142,
+    3006143,
+    3006144,
+    3006145,
+    3006146,
+    3006147,
+    3006148,
+    3006149,
+    3006150,
+    3006151,
+    3006152,
+    3006153,
+    3006154,
+    3006155,
+    3006156,
+    3006157,
+    3006158,
+    3006159,
+    3006160,
+    3006161,
+    3006162,
+    3006163,
+    3006164,
+    3006165,
+    3006166,
+    3006167,
+    3006168,
+    3006169,
+    3006170,
+    3006171,
+    3006172,
+    3006173,
+    3006174,
+    3006175,
+    3006176,
+    3006177,
+    3006178,
+    3006179,
+    3006180,
+    3006181,
+    3006182,
+    3006183,
+    3006184,
+    3006185,
+    3006186,
+    3006187,
+    3006188,
+    3006189,
+    3006190,
+    3006191,
+    3006192,
+    3006193,
+    3006194,
+    3006195,
+    3006196,
+    3006197,
+    3006198,
+    3006199,
+    3006200,
+    3006201,
+    3006202,
+    3006203,
+    3006204,
+    3006205,
+    3006206,
+    3006207,
+    3006208,
+    3006209,
+    3006210,
+    3006211,
+    3006213,
+    3006214,
+    3006215,
+    3006216,
+    3006217,
+    3006218,
+    3006219,
+    3006220,
+    3006221,
+    3006222,
+    3006223,
+    3006224,
+    3006226,
+    3006227,
+    3006228,
+    3006229,
+    3006230,
+    3006231,
+    3006232,
+    3006233,
+    3006234,
+    3006235,
+    3006236,
+    3006237,
+    3006238,
+    3006239,
+    3006240,
+    3006241,
+    3006242,
+    3006243,
+    3006244,
+    3006245,
+    3006246,
+    3006247,
+    3006248,
+    3006249,
+    3006250,
+    3006251,
+    3006252,
+    3006253,
+    3006254,
+    3006255,
+    3006256,
+    3006257,
+    3006258,
+    3006259,
+    3006260,
+    3006261,
+    3006262,
+    3006263,
+    3006264,
+    3006265,
+    3006266,
+    3006267,
+    3006268,
+    3006269,
+    3006271,
+    3006272,
+    3006273,
+    3006274,
+    3006275,
+    3006276,
+    3006277,
+    3006278,
+    3006279,
+    3006280,
+    3006281,
+    3006283,
+    3006284,
+    3006285,
+    3006288,
+    3006289,
+    3006290,
+    3006291,
+    3006292,
+    3006294,
+    3006295,
+    3006296,
+    3006297,
+    3006298,
+    3006299,
+    3006300,
+    3006301,
+    3006302,
+    3006303,
+    3006304,
+    3006305,
+    3006306,
+    3006307,
+    3006308,
+    3006309,
+    3006310,
+    3006311,
+    3006313,
+    3006314,
+    3006318,
+    3006373,
+    3006375,
+    3006376,
+    3006377,
+    3006378,
+    3006379,
+    3006380,
+    3006381,
+    3006382,
+    3006383,
+    3006385,
+    3006387,
+    3006392,
+    3006397,
+    3006418,
+    3006420,
+    3006443,
+    3006477,
+    3006479,
+    3006484,
+    3006497,
+    3006502,
+    3006507,
+    3006515,
+    3006553,
+    3006576,
+    3006589,
+    3006653,
+    3006686,
+    3006712,
+    3006720,
+    3006721,
+    3006722,
+    3006723,
+    3006724,
+    3006725,
+    3006726,
+    3006727,
+    3006728,
+    3006729,
+    3006730,
+    3006731,
+    3006733,
+    3006738,
+    3006739,
+    3006740,
+    3006741,
+    3006742,
+    3006743,
+    3006744,
+    3006745,
+    3006746,
+    3006747,
+    3006748,
+    3006749
+  ],
+  "last_feedback": {
+    "event": "feedback",
+    "frame_id": 3006749,
+    "capture_us": 1793990268529974,
+    "status": 1,
+    "buttons": 0,
+    "free_bytes": 20987,
+    "received_frames": 2053,
+    "dropped_frames": 558
+  },
+  "session_config": {
+    "event": "session_config",
+    "fps": 25,
+    "cap_mbps": 6.0,
+    "max_age_ms": 200.0,
+    "initial_quality": 25,
+    "min_quality": 25,
+    "frames_target": 750,
+    "source_backend": "clip",
+    "start_frame_id": 3006000,
+    "packet_timing": true,
+    "max_jpeg_bytes": 262144,
+    "jpeg_retry_quality_drop": 0,
+    "shift_right_px": 0,
+    "pacing_wait": "hybrid",
+    "pacing_spin_us": 600,
+    "clip_selection": "legacy"
+  },
+  "actual_pacing": {
+    "calls": 14041,
+    "native_calls": 13949,
+    "fallback_calls": 0,
+    "runtime_failures": 0,
+    "close_failures": 0,
+    "cancelled": 0,
+    "early_wakes": 0,
+    "requested_seconds": 19.543832424096763,
+    "elapsed_seconds": 21.71474867244251,
+    "max_overshoot_ms": 3.1507331877946854,
+    "thread_cpu_seconds": 2.71875,
+    "spin_calls": 8651,
+    "spin_wall_seconds": 2.468120197299868,
+    "spin_thread_cpu_seconds": 0.140625,
+    "backend": "windows-high-resolution",
+    "fallback_reason": null,
+    "closed": true,
+    "pending_close": 0,
+    "spin_tail_requested_seconds": 0.0006,
+    "spin_tail_effective_seconds": 0.0006,
+    "spin_disabled_reason": null
+  },
+  "sender_duration_seconds": 30.3394892,
+  "actual_sent_fps": 24.291773508170994,
+  "encoded_mbps": 3.9432980302120577,
+  "wire_mbps": 4.011786460795128,
+  "sender_thread_cpu_seconds": 3.328125,
+  "video_process_cpu_seconds": 28.3125,
+  "host_api_packet_gaps": {
+    "scope": "Host monotonic post-send API gaps; nearest-rank percentiles; not RF or receiver arrival",
+    "full_to_full_within_frame": {
+      "samples": 13179,
+      "min_ms": 1.4733001589775085,
+      "median_ms": 1.5589999966323376,
+      "p95_ms": 2.1166999358683825,
+      "p99_ms": 3.28739988617599,
+      "max_ms": 4.724099999293685
+    },
+    "full_to_short_tail_within_frame": {
+      "samples": 736,
+      "min_ms": 1.4873999170958996,
+      "median_ms": 1.6123000532388687,
+      "p95_ms": 3.044300014153123,
+      "p99_ms": 3.6059999838471413,
+      "max_ms": 4.338500089943409
+    },
+    "all_within_frame": {
+      "samples": 13915,
+      "min_ms": 1.4733001589775085,
+      "median_ms": 1.5608998946845531,
+      "p95_ms": 2.154699992388487,
+      "p99_ms": 3.344600088894367,
+      "max_ms": 4.724099999293685
+    },
+    "frame_boundaries": {
+      "samples": 736,
+      "min_ms": 0.47209998592734337,
+      "median_ms": 8.385299937799573,
+      "p95_ms": 18.428200157359242,
+      "p99_ms": 21.466400008648634,
+      "max_ms": 24.211599957197905
+    },
+    "configured_cap_mbps": 6,
+    "nominal_full_datagram_interval_ms_at_cap": 1.4186666666666665
+  },
+  "outbound_capture_full_to_full_within_frame_gaps": {
+    "samples": 13179,
+    "min_ms": 1.479,
+    "median_ms": 1.559,
+    "p95_ms": 2.082,
+    "p99_ms": 3.31,
+    "max_ms": 4.694
+  },
+  "outbound_capture_all_within_frame_gaps": {
+    "samples": 13915,
+    "min_ms": 1.479,
+    "median_ms": 1.56,
+    "p95_ms": 2.116,
+    "p99_ms": 3.413,
+    "max_ms": 4.694
+  },
+  "captured_complete_crc_valid_frames": 737,
+  "captured_outbound_datagrams": 14652,
+  "captured_frames_with_increasing_chunk_order": 737,
+  "video_source": [
+    "192.168.0.47",
+    52181
+  ],
+  "av_source": [
+    "192.168.0.47",
+    52180
+  ],
+  "av_session": "97f0e2e8e7b83137",
+  "av": {
+    "input_packets": 1454,
+    "invalid_packets": 0,
+    "stale_packets": 0,
+    "input_timeouts": 0,
+    "audio_sent": 0,
+    "audio_stale": 0,
+    "source_inactive_events": 0,
+    "last_status": {
+      "buttons": 0,
+      "accepted_audio_blocks": 0,
+      "rejected_or_unconfirmed_audio_blocks": 0,
+      "queued_pcm_frames": 0,
+      "played_pcm_frames": 0,
+      "underruns": 0,
+      "state": 5,
+      "fpga_build_id": 1296191312
+    },
+    "stop_sent": true,
+    "cleanup_errors": []
+  },
+  "media_end_utc": "2026-11-06T18:37:48.950600+00:00",
+  "capture_finalized_utc": "2026-11-06T18:39:49.754587+00:00",
+  "capture": {
+    "complete": true,
+    "stop_packet_verified": true,
+    "statistics": {
+      "available": true,
+      "captured": 20006,
+      "interfaces": [
+        {
+          "interface": "Wi-Fi",
+          "received": 20006,
+          "dropped": 0
+        }
+      ],
+      "lines": [
+        "Packets captured: 20006",
+        "Packets received/dropped on interface 'Wi-Fi': 20006/0 (pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    "stop_packets": [
+      {
+        "frame_number": 19536,
+        "epoch_seconds": "1793990268.949905000"
+      }
+    ],
+    "forced_stop": false
+  },
+  "pcap_sha256": "bf744e70399dd073ff0976c9d7a1cb887414009fd4e68de8d61d74d1b1258bd5",
+  "logging_drops": {
+    "video": 0,
+    "av": 0
+  },
+  "receiver_context": {
+    "source": "operator-provided readiness",
+    "app": "V37",
+    "fpga": "build50",
+    "overlap": true,
+    "queue_slots": 32,
+    "baseline_received_decoded_presented_dropped": [
+      1648,
+      1648,
+      1648,
+      226
+    ],
+    "camera_deadline": "2026-11-06T12:02:00-07:00",
+    "trace_epoch": 1,
+    "baseline_queue_packet_drops": 2067,
+    "baseline_cumulative_queue_peak": 32
+  },
+  "clip_sha256": "36ef854b29293c027dd161185dc0a2e9d03ec7854ea9039800164b03956d3a83",
+  "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
+  "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
+  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "unmatched_feedback_packets": 55,
+  "receiver_counter_increase_from_operator_baseline": {
+    "received": 405,
+    "dropped": 332
+  },
+  "unmatched_outcome_note": "Counter increases405received+332dropped reconcile737complete sends;327rejectedACKsmatched and5sendIDs remainwithoutmatchingACK. Individual receiver records for those IDs await frozen trace.",
+  "sender_left_stopped_for_receiver_trace_export": true,
+  "artifact_directory": "artifacts/hardware-25fps-6mbps-hybrid600-v37-epoch1-20261106-3006000",
+  "rejected_id_ranges": [
+    [
+      3006027,
+      3006049
+    ],
+    [
+      3006051,
+      3006060
+    ],
+    [
+      3006062,
+      3006065
+    ],
+    [
+      3006067,
+      3006075
+    ],
+    [
+      3006077,
+      3006087
+    ],
+    [
+      3006089,
+      3006100
+    ],
+    [
+      3006102,
+      3006109
+    ],
+    [
+      3006111,
+      3006120
+    ],
+    [
+      3006122,
+      3006126
+    ],
+    [
+      3006128,
+      3006211
+    ],
+    [
+      3006213,
+      3006224
+    ],
+    [
+      3006226,
+      3006269
+    ],
+    [
+      3006271,
+      3006281
+    ],
+    [
+      3006283,
+      3006285
+    ],
+    [
+      3006288,
+      3006292
+    ],
+    [
+      3006294,
+      3006311
+    ],
+    [
+      3006313,
+      3006314
+    ],
+    [
+      3006318,
+      3006318
+    ],
+    [
+      3006373,
+      3006373
+    ],
+    [
+      3006375,
+      3006383
+    ],
+    [
+      3006385,
+      3006385
+    ],
+    [
+      3006387,
+      3006387
+    ],
+    [
+      3006392,
+      3006392
+    ],
+    [
+      3006397,
+      3006397
+    ],
+    [
+      3006418,
+      3006418
+    ],
+    [
+      3006420,
+      3006420
+    ],
+    [
+      3006443,
+      3006443
+    ],
+    [
+      3006477,
+      3006477
+    ],
+    [
+      3006479,
+      3006479
+    ],
+    [
+      3006484,
+      3006484
+    ],
+    [
+      3006497,
+      3006497
+    ],
+    [
+      3006502,
+      3006502
+    ],
+    [
+      3006507,
+      3006507
+    ],
+    [
+      3006515,
+      3006515
+    ],
+    [
+      3006553,
+      3006553
+    ],
+    [
+      3006576,
+      3006576
+    ],
+    [
+      3006589,
+      3006589
+    ],
+    [
+      3006653,
+      3006653
+    ],
+    [
+      3006686,
+      3006686
+    ],
+    [
+      3006712,
+      3006712
+    ],
+    [
+      3006720,
+      3006731
+    ],
+    [
+      3006733,
+      3006733
+    ],
+    [
+      3006738,
+      3006749
+    ]
+  ]
+}
