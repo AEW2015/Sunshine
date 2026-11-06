@@ -360,7 +360,33 @@
   "clip_sha256": "fb01977e41e649bfb9fd53d1ee0e6db436127fb86e4b3b7ec303158e0568aff5",
   "clock_scope": "API gaps use host monotonic seconds; Npcap gaps use capture Unix seconds, separately. Neither is RF or receiver-arrival evidence.",
   "bitrate_scope": "MSV1 application bytes over sender duration; excludes UDP/IP/Wi-Fi and AV traffic. Encoded bitrate includes replaced frames.",
-  "physical_outcomes": "Final independent receiver decode/presentation/queue/core records pending",
+  "physical_outcomes": {
+    "source": "operator-provided frozen/exported epoch3",
+    "received_decoded_presented": [
+      8947,
+      8947,
+      8947
+    ],
+    "dropped": 383,
+    "deltas_received_decoded_presented_dropped": [
+      2252,
+      2252,
+      2252,
+      140
+    ],
+    "queue_drops": 0,
+    "cumulative_queue_peak": 21,
+    "queue_slots": 32,
+    "rejected_tail_delta": 532,
+    "core_faults": 0,
+    "overflows": 0,
+    "underruns": 0,
+    "stop_power_save": 1,
+    "margin": 13,
+    "porches": "unchanged",
+    "placement_camera": "stable in sampled views; glare limits lower-right detail",
+    "aggregate_unaccounted_complete_sends": 3
+  },
   "code_commit": "ab6fa438",
   "clip_path": "C:\\Users\\lavat\\Downloads\\YTDown.com_YouTube_Media__luGrl_3Ajc_Mass-Effect-Legendary-Edition-Combat_004_720p.mp4",
   "source_metadata": {
@@ -449,6 +475,6 @@
     "received": 2252,
     "dropped": 140,
     "baseline_reset_observed": false,
-    "scope": "host feedback counters; independent physical final receiver outcome pending"
+    "scope": "host counters now corroborated by operator final receiver result; unmatched identities unresolved"
   }
 }
